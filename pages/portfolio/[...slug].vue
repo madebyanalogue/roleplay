@@ -1,8 +1,6 @@
 <template>
-  <div class="portfolio-detail">
-    <div v-if="pending" class="portfolio-loading">
-     
-    </div>
+  <div class="portfolio-detail" :class="{ 'portfolio-loading': pending }">
+    <template v-if="!pending">
     <div v-if="error" class="portfolio-error">
       <p>Error loading portfolio: {{ error.message }}</p>
     </div>
@@ -178,9 +176,10 @@
       </div>
       </div>
     </div>
-    <div v-else class="portfolio-not-found">
+    <div v-else class="pad-1">
       <p>Portfolio project not found</p>
     </div>
+    </template>
   </div>
 </template>
 
@@ -314,7 +313,7 @@ const { data: project, pending, error } = useAsyncData(
     
     if (process.server) {
       const config = useRuntimeConfig()
-      const projectId = config.public.sanity?.projectId || 'go8920y3'
+      const projectId = config.public.sanity?.projectId || 'uuzbe0e0'
       const dataset = config.public.sanity?.dataset || 'production'
       
       return await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
@@ -330,6 +329,9 @@ const { data: project, pending, error } = useAsyncData(
   },
   { watch: [slug] }
 )
+
+const pageTitle = useState('pageTitle', () => '')
+watch(() => project.value?.title, (t) => { pageTitle.value = t || 'Portfolio' }, { immediate: true })
 
 // Update global loading state
 watch(pending, (isPending) => {

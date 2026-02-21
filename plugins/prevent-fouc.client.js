@@ -1,124 +1,71 @@
-export default defineNuxtPlugin(() => {
-  let isReady = false
+export default defineNuxtPlugin({
+  name: 'prevent-fouc',
+  enforce: 'pre',
+  setup() {
+    let isReady = false
 
-  // Check if specific fonts are loaded
-  function areFontsLoaded() {
-    if (!document.fonts) return true // No Font Loading API, assume loaded
-    
-    // Check for the specific fonts we're using
-    const fontsToCheck = [
-      '12px "Bagoss Standard"',
-      '12px "Ayer"',
-    ]
-    
-    return fontsToCheck.every(font => document.fonts.check(font))
-  }
-
-  function showContent() {
-    if (isReady) return
-    isReady = true
-    
-    // Wait for fonts to load if Font Loading API is available
-    if (document.fonts && document.fonts.ready) {
-      // Set a maximum timeout to prevent content staying hidden forever
-      const maxTimeout = setTimeout(() => {
-        if (!document.documentElement.classList.contains('css-loaded')) {
-          console.warn('[FOUC] Font loading timeout, showing content anyway')
-          document.documentElement.classList.add('css-loaded')
-        }
-      }, 3000) // 3 second max wait
-      
-      // First wait for fonts.ready, then verify specific fonts are loaded
-      document.fonts.ready.then(() => {
-        // Check if our specific fonts are loaded
-        let attempts = 0
-        const maxAttempts = 20 // 20 * 50ms = 1 second max
-        
-        const checkFonts = () => {
-          attempts++
-          if (areFontsLoaded() || attempts >= maxAttempts) {
-            clearTimeout(maxTimeout)
-            // Double RAF to ensure everything is painted
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                document.documentElement.classList.add('css-loaded')
-              })
-            })
-          } else {
-            // Fonts not ready yet, check again
-            setTimeout(checkFonts, 50)
-          }
-        }
-        checkFonts()
-      }).catch(() => {
-        clearTimeout(maxTimeout)
-        // Font loading failed, show anyway after delay
-        setTimeout(() => {
-          document.documentElement.classList.add('css-loaded')
-        }, 200)
-      })
-    } else {
-      // No Font Loading API, wait a bit for fonts then show
-      setTimeout(() => {
+    function reveal() {
+      if (isReady) return
+      isReady = true
+      requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            document.documentElement.classList.add('css-loaded')
-          })
+          document.documentElement.classList.add('css-loaded')
         })
-      }, 300)
+      })
     }
-  }
 
-  // Check if CSS is loaded
-  function checkCSS() {
-    const stylesheets = document.styleSheets
-    let hasStyles = false
+    /** Wait for all stylesheet links to load before revealing (prevents FOUC) */
+    function waitForStylesheets() {
+      const links = document.querySelectorAll('link[rel="stylesheet"]')
+      if (links.length === 0) return Promise.resolve()
 
-    for (let i = 0; i < stylesheets.length; i++) {
-      try {
-        const rules = stylesheets[i].cssRules || stylesheets[i].rules
-        if (rules && rules.length > 0) {
-          hasStyles = true
-          break
+      let pending = links.length
+      return new Promise((resolve) => {
+        const check = () => {
+          if (--pending <= 0) resolve()
         }
-      } catch (e) {
-        // Cross-origin stylesheet, assume loaded
-        hasStyles = true
-        break
+        links.forEach((link) => {
+          if (link.sheet) {
+            check()
+          } else {
+            link.addEventListener('load', check)
+            link.addEventListener('error', check)
+          }
+        })
+        // Fallback: resolve after 2s in case some links never fire
+        setTimeout(resolve, 2000)
+      })
+    }
+
+    function showContent() {
+      waitForStylesheets().then(() => {
+        if (document.fonts?.ready) {
+          const fontTimeout = setTimeout(reveal, 1200)
+          document.fonts.ready.then(() => {
+            clearTimeout(fontTimeout)
+            reveal()
+          }).catch(reveal)
+        } else {
+          reveal()
+        }
+      })
+    }
+
+    function waitForLoad() {
+      if (document.readyState === 'complete') {
+        showContent()
+      } else {
+        window.addEventListener('load', showContent, { once: true })
+        setTimeout(() => {
+          if (!isReady) showContent()
+        }, 3500)
       }
     }
-    return hasStyles
-  }
 
-  // Wait for everything to load
-  function waitForLoad() {
-    // Check if CSS is loaded
-    if (!checkCSS()) {
-      // CSS not loaded yet, check again soon
-      setTimeout(waitForLoad, 10)
-      return
-    }
-
-    // CSS is loaded, now wait for window load (all resources)
-    if (document.readyState === 'complete') {
-      showContent()
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', waitForLoad)
     } else {
-      window.addEventListener('load', showContent, { once: true })
-      
-      // Fallback timeout to prevent content staying hidden forever
-      setTimeout(() => {
-        if (!isReady) {
-          showContent()
-        }
-      }, 500)
+      waitForLoad()
     }
-  }
-
-  // Start checking
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', waitForLoad)
-  } else {
-    waitForLoad()
-  }
+  },
 })
-

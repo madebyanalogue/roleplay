@@ -12,12 +12,18 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "overrides": {
+    "@sanity/visual-editing": "file:./stubs/@sanity/visual-editing"
+  },
   "dependencies": {
     "@nuxt/image": "^1.7.1",
     "@nuxtjs/sanity": "^1.13.3",
     "@sanity/client": "^7.13.2",
     "@sanity/image-url": "^2.0.2",
+    "gsap": "^3.14.1",
+    "lenis": "^1.3.17",
     "nuxt": "^4.2.2",
+    "split-type": "^0.3.4",
     "vite": "^6.3.5"
   },
   "devDependencies": {

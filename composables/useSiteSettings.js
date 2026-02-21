@@ -1,7 +1,14 @@
 export const useSiteSettings = () => {
     const query = `*[_type == "siteSettings"][0] {
       maxWidth,
-      logo,
+      avg {
+        asset-> {
+          _id,
+          url,
+          _ref
+        }
+      },
+      logoSvg,
     title,
       seoTitle,
       seoDescription,
@@ -9,12 +16,6 @@ export const useSiteSettings = () => {
     mobileBreakpoint,
     gutterMobile,
     gutterDesktop,
-    fontSizeBodyMobile,
-    fontSizeLargeMobile,
-    fontSizeLogoMobile,
-    fontSizeBodyDesktop,
-    fontSizeLargeDesktop,
-    fontSizeLogoDesktop,
     lineHeight,
     disablePreloader,
     preloaderImages[] {
@@ -35,11 +36,10 @@ export const useSiteSettings = () => {
           _ref
         }
       },
-      leftMenu-> {
+      mainMenu-> {
         title,
         items[] {
           text,
-        textMobile,
           link {
             type,
             page-> {
@@ -49,13 +49,9 @@ export const useSiteSettings = () => {
             },
             url
           }
-        }
-      },
-      rightMenu-> {
-        title,
-        items[] {
+        },
+        smallItems[] {
           text,
-        textMobile,
           link {
             type,
             page-> {
@@ -68,31 +64,101 @@ export const useSiteSettings = () => {
         }
       },
       footerLinks,
+      footerMenus[] {
+        title,
+        sourceType,
+        link {
+          type,
+          page-> {
+            slug {
+              current
+            }
+          },
+          url
+        },
+        menu-> {
+          items[] {
+            text,
+            link {
+              type,
+              page-> {
+                slug {
+                  current
+                }
+              },
+              url
+            }
+          },
+          smallItems[] {
+            text,
+            link {
+              type,
+              page-> {
+                slug {
+                  current
+                }
+              },
+              url
+            }
+          }
+        },
+        content[] {
+          _type,
+          _key,
+          style,
+          children[] {
+            _type,
+            _key,
+            text,
+            marks
+          },
+          markDefs[] {
+            _type,
+            _key,
+            href
+          }
+        }
+      },
       copyright
     }`
     
-  const { data: settings } = useAsyncData('siteSettings', async () => {
+  const fetchSettings = async (bypassCache = false) => {
     if (process.server) {
       const config = useRuntimeConfig()
-      const projectId = config.public.sanity?.projectId || 'go8920y3'
+      const projectId = config.public.sanity?.projectId || 'uuzbe0e0'
       const dataset = config.public.sanity?.dataset || 'production'
+      const useCdn = !bypassCache
+      const baseUrl = useCdn
+        ? `https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`
+        : `https://${projectId}.api.sanity.io/v2021-10-21/data/query/${dataset}`
       
-      return await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
+      return await $fetch(baseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
-      }).then(result => result?.result || null).catch(() => null)
+      }).then(result => result?.result ?? null).catch(() => null)
     }
     return await $fetch('/api/sanity/query', {
       method: 'POST',
-      body: { query },
-    }).then(result => result?.result || null).catch(() => null)
-  }, { server: true }) // Ensure this runs on server for SSR
+      body: { query, useCdn: !bypassCache },
+    }).then(result => result?.result ?? null).catch(() => null)
+  }
+
+  const { data: settings, refresh } = useAsyncData('siteSettings', () => fetchSettings(false), { server: true })
+
+  // Bypass CDN cache - use when menu/logo was just added in Sanity
+  const refreshBypassCache = async () => {
+    const fresh = await fetchSettings(true)
+    if (fresh !== null) {
+      settings.value = fresh
+    }
+  }
 
   const maxWidth = computed(() => settings.value?.maxWidth || '1800px')
-  const logo = computed(() => settings.value?.logo || [])
-  const title = computed(() => settings.value?.title || 'Roleplay')
-  const seoTitle = computed(() => settings.value?.seoTitle || 'Roleplay')
+  const logo = computed(() => settings.value?.avg?.asset || null)
+  const logoSvg = computed(() => settings.value?.logoSvg || null)
+  const title = computed(() => settings.value?.title || 'Registix')
+  const seoTitle = computed(() => settings.value?.seoTitle || 'Registix')
   const seoDescription = computed(() => settings.value?.seoDescription || '')
   const disablePreloader = computed(() => settings.value?.disablePreloader === true)
   const preloaderImages = computed(() => settings.value?.preloaderImages || [])
@@ -115,30 +181,24 @@ export const useSiteSettings = () => {
       const match = String(asset._id).match(/image-([^-]+)-(\d+)x(\d+)-(\w+)/)
       if (match) {
         const [, assetId, width, height, ext] = match
-        return `https://cdn.sanity.io/images/go8920y3/production/${assetId}-${width}x${height}.${ext}`
+        return `https://cdn.sanity.io/images/uuzbe0e0/production/${assetId}-${width}x${height}.${ext}`
       }
     }
     
     if (asset._ref) {
       const [file, id, extension] = asset._ref.replace('image-', '').split('-')
-    return `https://cdn.sanity.io/images/go8920y3/production/${id}.${extension}`
+    return `https://cdn.sanity.io/images/uuzbe0e0/production/${id}.${extension}`
     }
     
     return null
   })
-  const leftMenu = computed(() => settings.value?.leftMenu)
-  const rightMenu = computed(() => settings.value?.rightMenu)
+  const mainMenu = computed(() => settings.value?.mainMenu)
   const footerLinks = computed(() => settings.value?.footerLinks || [])
+  const footerMenus = computed(() => settings.value?.footerMenus || [])
   const headerType = computed(() => settings.value?.headerType || 'responsive')
   const mobileBreakpoint = computed(() => settings.value?.mobileBreakpoint ?? 800)
   const gutterMobile = computed(() => settings.value?.gutterMobile ?? 15)
   const gutterDesktop = computed(() => settings.value?.gutterDesktop ?? 20)
-  const fontSizeBodyMobile = computed(() => settings.value?.fontSizeBodyMobile ?? 12)
-  const fontSizeLargeMobile = computed(() => settings.value?.fontSizeLargeMobile ?? 18)
-  const fontSizeLogoMobile = computed(() => settings.value?.fontSizeLogoMobile ?? 14)
-  const fontSizeBodyDesktop = computed(() => settings.value?.fontSizeBodyDesktop ?? 16)
-  const fontSizeLargeDesktop = computed(() => settings.value?.fontSizeLargeDesktop ?? 22)
-  const fontSizeLogoDesktop = computed(() => settings.value?.fontSizeLogoDesktop ?? 40)
   const lineHeight = computed(() => settings.value?.lineHeight ?? 1.1)
   const copyright = computed(() => {
     const text = settings.value?.copyright || ''
@@ -148,25 +208,22 @@ export const useSiteSettings = () => {
 
   return {
     settings,
+    refresh,
+    refreshBypassCache,
     maxWidth,
     logo,
+    logoSvg,
     title,
     seoTitle,
     seoDescription,
     facebookShareImage,
-    leftMenu,
-    rightMenu,
+    mainMenu,
     footerLinks,
+    footerMenus,
     headerType,
     mobileBreakpoint,
     gutterMobile,
     gutterDesktop,
-    fontSizeBodyMobile,
-    fontSizeLargeMobile,
-    fontSizeLogoMobile,
-    fontSizeBodyDesktop,
-    fontSizeLargeDesktop,
-    fontSizeLogoDesktop,
     lineHeight,
     copyright,
     disablePreloader,

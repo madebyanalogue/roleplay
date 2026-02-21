@@ -1,6 +1,6 @@
-# Roleplay Nuxt Frontend
+# Registix Nuxt Frontend
 
-This repository contains **only** the Nuxt frontend code for the `Roleplay` project.
+This repository contains **only** the Nuxt frontend code for the `Registix` project.
 
 - **GitHub repository URL**: `https://github.com/madebyanalogue/roleplay.git`
 - **Important**: This folder (`roleplay-nuxt`) is the only folder committed to git. The Sanity Studio is kept separately.

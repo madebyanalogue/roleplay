@@ -1,57 +1,152 @@
 <template>
-  <header :class="['header', 'border-bottom', 'pad-1', { 
-    'header-static': headerType === 'static',
-    'header-fixed': headerType === 'fixed',
-    'header-sticky': headerType === 'responsive' && isPastHeader, 
-    'header-hidden': headerType === 'responsive' && isScrollingDown, 
-    'header-transition': headerType === 'responsive' && shouldAddTransition 
-  }]">
-    <nav class="header-nav header-nav-left underline-links">
-      <NuxtLink
-        v-for="item in leftMenuItems"
-        :key="item._key || item.text"
-        :to="getMenuItemUrl(item)"
-        :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
-        :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
-        :class="['header-link', { 'header-link-active': isActive(item) }]"
-      >
-        <span class="header-link-text-desktop">{{ item.text }}</span>
-        <span v-if="item.textMobile" class="header-link-text-mobile">{{ item.textMobile }}</span>
-        <span v-else class="header-link-text-mobile">{{ item.text }}</span>
-      </NuxtLink>
-    </nav>
-    
-    <div class="header-logo">
-      <NuxtLink to="/">
-        <Logo />
-      </NuxtLink>
+  <nav
+    data-twostep-nav
+    :data-nav-status="isActive ? 'active' : 'not-active'"
+    :class="{ 'twostep-nav': true, 'is--transitioning': isMounted && isTransitioning }"
+  >
+    <div data-nav-toggle="close" class="twostep-nav__bg" @click="closeNav" />
+    <div class="twostep-nav__wrap">
+      <div class="twostep-nav__width">
+        <div class="twostep-nav__bar header">
+          <div class="twostep-nav__back">
+            <div class="twostep-nav__back-bg" />
+          </div>
+          <div class="twostep-nav__top">
+            <NuxtLink to="/" class="twostep-nav__logo">
+              <Logo class="twostep-nav__logo-inner" />
+            </NuxtLink>
+            <ul class="twostep-nav__desktop-nav">
+              <li
+                v-for="item in desktopNavItems"
+                :key="item._key || item.text"
+                class="twostep-nav__desktop-li"
+              >
+                <NuxtLink
+                  :to="getMenuItemUrl(item)"
+                  :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
+                  :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
+                  class="twostep-nav__desktop-link h6"
+                >
+                  {{ item.text }}
+                </NuxtLink>
+              </li>
+            </ul>
+            <button
+              type="button"
+              data-nav-toggle="toggle"
+              class="twostep-nav__toggle"
+              aria-label="Toggle menu"
+              @click="toggleNav"
+            >
+              <div class="twostep-nav__toggle-bar" />
+              <div class="twostep-nav__toggle-bar" />
+            </button>
+            <div class="twostep-nav__top-line" />
+          </div>
+          <div class="twostep-nav__bottom">
+            <div class="twostep-nav__bottom-overflow">
+              <div class="twostep-nav__bottom-inner">
+                <div class="twostep-nav__bottom-row">
+                  <div class="twostep-nav__bottom-col">
+                    <div class="twostep-nav__info">
+                      <ul class="twostep-nav__ul">
+                        <li
+                          v-for="item in navItems"
+                          :key="item._key || item.text"
+                          class="twostep-nav__li"
+                        >
+                          <NuxtLink
+                            :to="getMenuItemUrl(item)"
+                            :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
+                            :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
+                            class="twostep-nav__link"
+                            @click="closeNav"
+                          >
+                            <span class="twostep-nav__link-span">{{ item.text }}</span>
+                          </NuxtLink>
+                        </li>
+                      </ul>
+                      <ul v-if="smallNavItems.length > 0" class="twostep-nav__ul is--small">
+                        <li
+                          v-for="item in smallNavItems"
+                          :key="item._key || item.text"
+                          class="twostep-nav__li"
+                        >
+                          <NuxtLink
+                            :to="getMenuItemUrl(item)"
+                            :target="isExternalUrl(getMenuItemUrl(item)) ? '_blank' : undefined"
+                            :rel="isExternalUrl(getMenuItemUrl(item)) ? 'noopener' : undefined"
+                            class="twostep-nav__link"
+                            @click="closeNav"
+                          >
+                            <span class="twostep-nav__link-eyebrow">{{ item.text }}</span>
+                          </NuxtLink>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div v-if="navImage" class="twostep-nav__bottom-col is--visual">
+                    <div class="twostep-nav__visual">
+                      <NuxtImg
+                        :src="navImage"
+                        alt=""
+                        class="twostep-nav__visual-img"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    
-    <nav class="header-nav header-nav-right underline-links">
-      <NuxtLink
-        v-for="item in rightMenuItems"
-        :key="item._key || item.text"
-        :to="getMenuItemUrl(item)"
-        :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
-        :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
-        :class="['header-link', { 'header-link-active': isActive(item) }]"
-      >
-        <span class="header-link-text-desktop">{{ item.text }}</span>
-        <span v-if="item.textMobile" class="header-link-text-mobile">{{ item.textMobile }}</span>
-        <span v-else class="header-link-text-mobile">{{ item.text }}</span>
-      </NuxtLink>
-    </nav>
-  </header>
+  </nav>
 </template>
 
 <script setup>
+import Logo from '~/components/Logo.vue'
 import { useSiteSettings } from '~/composables/useSiteSettings'
+import { usePageTransition } from '~/composables/usePageTransition'
 
-const route = useRoute()
-const { leftMenu, rightMenu, headerType } = useSiteSettings()
+const { mainMenu, footerLinks, refreshBypassCache } = useSiteSettings()
+const { isTransitioning } = usePageTransition()
 
-const leftMenuItems = computed(() => leftMenu.value?.items || [])
-const rightMenuItems = computed(() => rightMenu.value?.items || [])
+const isActive = ref(false)
+const isMounted = ref(false)
+
+const navItems = computed(() => mainMenu.value?.items || [])
+
+// Desktop nav: show all menu items (main + small) so nothing is hidden
+const desktopNavItems = computed(() => {
+  const items = mainMenu.value?.items || []
+  const smallItems = mainMenu.value?.smallItems || []
+  return [...items, ...smallItems]
+})
+
+// Bypass CDN cache when menu is empty (fixes menu not showing after selecting in Sanity - CDN may serve stale data)
+onMounted(() => {
+  if (!mainMenu.value?.items?.length && !mainMenu.value?.smallItems?.length) {
+    refreshBypassCache()
+  }
+  isMounted.value = true
+})
+
+const smallNavItems = computed(() => mainMenu.value?.smallItems || [])
+
+const navImage = computed(() => null)
+
+const openNav = () => {
+  isActive.value = true
+}
+
+const closeNav = () => {
+  isActive.value = false
+}
+
+const toggleNav = () => {
+  isActive.value = !isActive.value
+}
 
 const isExternalUrl = (url) => {
   if (!url) return false
@@ -64,189 +159,467 @@ const getMenuItemUrl = (item) => {
   if (item.link?.type === 'page' && item.link?.page?.slug?.current) {
     return `/${item.link.page.slug.current}`
   }
+  if (item.link?.type === 'knowledge') {
+    return '/knowledge'
+  }
   if (item.link?.url) {
     return item.link.url
   }
   return '#'
 }
 
-const isActive = (item) => {
-  const itemUrl = getMenuItemUrl(item)
-  if (!itemUrl || itemUrl === '#') return false
-  if (isExternalUrl(itemUrl)) return false
-  
-  // Normalize paths for comparison
-  const currentPath = route.path === '/' ? '/' : route.path.replace(/\/$/, '')
-  const normalizedItemUrl = itemUrl === '/' ? '/' : itemUrl.replace(/\/$/, '')
-  
-  return currentPath === normalizedItemUrl
-}
-
-// Scroll detection for header hide/show
-const isScrollingDown = ref(false)
-const isPastHeader = ref(false)
-const shouldAddTransition = ref(false)
-const headerHeight = ref(0)
-let lastScrollY = 0
-let ticking = false
-
-const handleScroll = () => {
-  // Only run scroll logic for responsive header type
-  if (!process.client || headerType.value !== 'responsive') {
-    ticking = false
-    return
-  }
-  
-  const currentScrollY = window.scrollY
-  
-  // Only update if scroll position changed significantly (avoid jitter)
-  if (Math.abs(currentScrollY - lastScrollY) < 5) {
-    ticking = false
-    return
-  }
-  
-  const headerEl = document.querySelector('.header')
-  if (!headerEl) {
-    ticking = false
-    return
-  }
-  
-  // Get header height if not set
-  if (headerHeight.value === 0) {
-    headerHeight.value = headerEl.offsetHeight
-  }
-  
-  // Check if we've scrolled past the full header height
-  const hasScrolledPastHeader = currentScrollY >= headerHeight.value
-  // Increased threshold for transition (e.g., 2x header height)
-  const transitionThreshold = headerHeight.value * 2
-  
-  // At the very top - header goes back to relative
-  if (currentScrollY <= 0) {
-    isPastHeader.value = false
-    shouldAddTransition.value = false
-    isScrollingDown.value = false
-  } 
-  // Once we've scrolled past header, it becomes sticky and stays sticky
-  else if (hasScrolledPastHeader || isPastHeader.value) {
-    // Once past header, always stay sticky (even when scrolling back up into header zone)
-    isPastHeader.value = true
-    
-    // Only add transition after scrolling past the increased threshold
-    shouldAddTransition.value = currentScrollY >= transitionThreshold
-    
-    // Show header when scrolling up
-    if (currentScrollY < lastScrollY) {
-      isScrollingDown.value = false
-    } 
-    // Hide header when scrolling down
-    else if (currentScrollY > lastScrollY) {
-      isScrollingDown.value = true
-    }
-  } else {
-    // Before scrolling past header for the first time, always show (relative positioning)
-    isPastHeader.value = false
-    shouldAddTransition.value = false
-    isScrollingDown.value = false
-  }
-  
-  lastScrollY = currentScrollY
-  ticking = false
-}
-
-const onScroll = () => {
-  if (!ticking) {
-    window.requestAnimationFrame(handleScroll)
-    ticking = true
+const handleEscape = (e) => {
+  if (e.key === 'Escape' && isActive.value) {
+    closeNav()
   }
 }
 
 onMounted(() => {
-  // Only add scroll listener for responsive header type
-  if (process.client && headerType.value === 'responsive') {
-    lastScrollY = window.scrollY
-    window.addEventListener('scroll', onScroll, { passive: true })
-  }
+  document.addEventListener('keydown', handleEscape)
 })
 
 onUnmounted(() => {
-  // Only remove scroll listener if it was added (responsive header type)
-  if (process.client && headerType.value === 'responsive') {
-    window.removeEventListener('scroll', onScroll)
-  }
+  document.removeEventListener('keydown', handleEscape)
 })
 </script>
 
 <style scoped>
-.header-link-text-desktop {
-  display: inline;
-}
 
-.header-link-text-mobile {
-  display: none;
-}
-
-/* Below 800px, show mobile text and hide desktop text */
-@media (max-width: 799px) {
-  .header-link-text-desktop {
-    display: none;
-  }
-  
-  .header-link-text-mobile {
-    display: inline;
-  }
-}
-.header-link {
-  position: relative;
-  display: inline-block;
-}
-.header-link:after {
-  content: '';
-  position: absolute;
-  bottom: var(--underline-offset);
+nav {
+  position: fixed;
+  top: 0;
   left: 0;
   width: 100%;
-  height: 1px;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.32s ease;
-  background: currentColor;
+  z-index: 1300;
+  --background-color:#111;
+  --text-color:#fff;
 }
-.header-link:hover:after,
-.header-link-active:after {
-  transform: scaleX(1);
-}
-</style>
 
-<style>
-.header {
-  position: relative;
-  z-index: 1000;
-  background-color: var(--background-color);
+/* Above page transition overlay (1100) and entering page (1200) */
+.twostep-nav {
+  z-index: 1300;
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+}
+
+/* Disable nav interactions during page transition */
+.twostep-nav.is--transitioning .twostep-nav__logo,
+.twostep-nav.is--transitioning .twostep-nav__desktop-link,
+.twostep-nav.is--transitioning .twostep-nav__link,
+.twostep-nav.is--transitioning .twostep-nav__toggle {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.twostep-nav__bg {
+  z-index: 0;
+  opacity: 0;
+  pointer-events: auto;
+  visibility: hidden;
+  background-color: rgb(0 0 0 / 30%);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+
+.twostep-nav__wrap {
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.twostep-nav__width {
+  flex-flow: column;
+  flex: none;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  max-width: 48em;
+  padding-top: 1.25em;
+  padding-left: 1.25em;
+  padding-right: 1.25em;
+  display: flex;
+}
+
+.twostep-nav__bar {
+  pointer-events: auto;
   color: var(--text-color);
-  /* transition: color 0.6s ease, background-color 0.6s ease; */
-  transform: translateY(0);
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.header.header-static {
+
+
+.twostep-nav__back {
+  z-index: 0;
+  position: absolute;
+  inset: 0;
+}
+
+.twostep-nav__top {
+  z-index: 1;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 6px 11px 6px 20px;
+  display: flex;
+  position: relative;
+  gap:50px;
+  background-color: var(--background-color);
+}
+
+@media all and (min-width:768px) {
+  .twostep-nav__top {
+   padding: 15px 28px 15px 22px;
+  }
+}
+
+.twostep-nav__bottom {
+  grid-template-rows: 0fr;
+  width: 100%;
+  display: grid;
+  position: relative;
+  overflow: hidden;
+}
+
+.twostep-nav__logo {
+  justify-content: flex-start;
+  align-items: center;
+  height: 100%;
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+}
+
+.twostep-nav__logo-inner {
+  height: 100%;
+  font-size: 1.5em;
+}
+
+.twostep-nav__back-bg {
+  background-color: var(--background-color);
+  border: 1px solid currentColor;
+  border-radius: 0.5em;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+.twostep-nav__toggle {
+  pointer-events: auto;
+  cursor: pointer;
+  background: none;
+  border: none;
+  justify-content: center;
+  align-items: center;
+  width: 2.5em;
+  height: 2.5em;
+  padding: 0;
+  display: flex;
+  position: relative;
+  color: inherit;
+}
+
+.twostep-nav__toggle-bar {
+  background-color: currentColor;
+  width: 1.875em;
+  height: 0.125em;
+  position: absolute;
+}
+
+.twostep-nav__bottom-overflow {
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100%;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.twostep-nav__bottom-inner {
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  padding: 1.5em;
+  display: flex;
   position: relative;
 }
 
-.header.header-fixed {
-  position: sticky;
-  top: 0;
+.twostep-nav__bottom-row {
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  display: flex;
 }
 
-.header.header-sticky {
-  position: sticky;
-  top: 0;
+.twostep-nav__bottom-col {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
 }
 
-.header.header-transition {
-  transition: transform 0.3s ease;
+.twostep-nav__ul {
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
 }
 
-.header.header-hidden {
-  transform: translateY(-100%);
+.twostep-nav__ul.is--small {
+  gap: 0.25em 1em;
+  flex-flow: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.twostep-nav__link {
+  color: inherit;
+  width: 100%;
+  padding-top: 0.375em;
+  padding-bottom: 0.375em;
+  text-decoration: none;
+  position: relative;
+}
+
+.twostep-nav__link-span {
+  letter-spacing: -0.04em;
+  font-family: var(--font-family);
+  font-size: 2.125em;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.twostep-nav__visual {
+  aspect-ratio: 1;
+  border-radius: 0.375em;
+  width: 100%;
+  overflow: hidden;
+}
+
+.twostep-nav__visual-img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.twostep-nav__info {
+  gap: 2em;
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  display: flex;
+}
+
+.twostep-nav__link-eyebrow {
+  opacity: 0.7;
+  letter-spacing: -0.02em;
+  font-family: var(--font-family);
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.twostep-nav__top-line {
+  z-index: 2;
+  background-color: rgb(0 0 0 / 10%);
+  height: 1px;
+  position: absolute;
+  bottom: 0;
+  left: 0.5em;
+  right: 0.5em;
+}
+
+/* Desktop nav - hidden on mobile */
+.twostep-nav__desktop-nav {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.twostep-nav__desktop-li {
+  display: inline-block;
+}
+
+.twostep-nav__desktop-link {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  transition: color var(--animation-default);
+}
+
+.twostep-nav__desktop-link:hover {
+  color: var(--red);
+}
+
+/* Animation variables */
+.twostep-nav {
+  --cubic-default: cubic-bezier(0.625, 0.05, 0, 1);
+  --animation-ease: 0.2s ease;
+  --duration-default: 0.5s;
+  --duration-default-long: 0.75s;
+  --duration-default-half: 0.25s;
+  --animation-default: var(--duration-default) var(--cubic-default);
+  --animation-default-long: var(--duration-default-long) var(--cubic-default);
+  --animation-default-half: var(--duration-default-half) var(--cubic-default);
+}
+
+/* Menu button */
+.twostep-nav__toggle-bar {
+  transition: transform var(--animation-default);
+  transform: translateY(-0.25em) rotate(0.001deg);
+}
+
+.twostep-nav__toggle:hover .twostep-nav__toggle-bar {
+  transform: translateY(0.25em) rotate(0.001deg);
+}
+
+.twostep-nav__toggle .twostep-nav__toggle-bar:nth-child(2) {
+  transform: translateY(0.15em) rotate(0.001deg);
+}
+
+.twostep-nav__toggle:hover .twostep-nav__toggle-bar:nth-child(2) {
+  transform: translateY(-0.15em) rotate(0.001deg);
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__toggle .twostep-nav__toggle-bar {
+  transform: translateY(0) rotate(45deg);
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__toggle .twostep-nav__toggle-bar:nth-child(2) {
+  transform: translateY(0) rotate(-45deg);
+}
+
+/* Page dark overlay */
+.twostep-nav__bg {
+  transition: opacity var(--animation-default), visibility var(--animation-default);
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__bg {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Inner bar grow */
+.twostep-nav__bar {
+  transition: max-width var(--animation-default-long) 0.2s;
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__bar {
+  transition: max-width var(--animation-default) 0s;
+  max-width: 100%;
+}
+
+/* Thin line in nav bar */
+.twostep-nav__top-line {
+  transition: all var(--animation-default) 0s;
+  opacity: 0;
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__top-line {
+  transition: all var(--animation-default) 0.1s;
+  opacity: 1;
+}
+
+/* Nav bar background */
+.twostep-nav__back {
+  transition: all var(--animation-default);
+  inset: 0;
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__back {
+  inset: -0.25em;
+}
+
+/* Nav bottom */
+.twostep-nav__bottom {
+  transition: grid-template-rows var(--animation-default) 0s;
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__bottom {
+  transition: grid-template-rows var(--animation-default-long) 0.25s;
+  grid-template-rows: 1fr;
+}
+
+/* Nav columns reveal */
+.twostep-nav__bottom-row > * {
+  transition: all var(--animation-default) 0s;
+  transform: translateY(2em);
+  opacity: 0;
+}
+
+.twostep-nav__bottom-row > *:nth-child(2) {
+  transition-delay: 0.075s;
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__bottom-row > * {
+  transition: all var(--animation-default-long) 0.5s;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.twostep-nav[data-nav-status="active"] .twostep-nav__bottom-row > *:nth-child(2) {
+  transition-delay: 0.575s;
+}
+
+@media (min-width: 768px) {
+  .twostep-nav__desktop-nav {
+    display: flex;
+    gap: 23px;
+    align-items: center;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .twostep-nav__toggle {
+    display: none;
+  }
+
+}
+
+@media (max-width: 767px) {
+  .twostep-nav__bottom-col.is--visual {
+    display: none;
+  }
+
+  .twostep-nav__top-line {
+    bottom: -0.5em;
+    left: 1em;
+    right: 1em;
+  }
+
+  .twostep-nav[data-nav-status="active"] .twostep-nav__top-line {
+    inset: auto 0 -0.5em;
+  }
+
+  .twostep-nav[data-nav-status="active"] .twostep-nav__back {
+    inset: -1.25em;
+  }
+
+  .twostep-nav__bottom {
+    transition: grid-template-rows var(--animation-default) 0s, transform var(--animation-default) 0s;
+    transform: translateY(-0.625em);
+  }
+
+  .twostep-nav[data-nav-status="active"] .twostep-nav__bottom {
+    transition: grid-template-rows var(--animation-default-long) 0.25s, transform var(--animation-default) 0.25s;
+    transform: translateY(0);
+  }
 }
 </style>

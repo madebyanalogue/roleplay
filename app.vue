@@ -1,17 +1,34 @@
 <template>
-  <ClientOnly>
-    <Preloader 
-      @preloader-complete="onPreloaderComplete" 
-      @preloader-ready="onPreloaderReady" 
-    />
-  </ClientOnly>
-  
-  <div v-if="preloaderReady || disablePreloader" id="app" :style="appStyles">
+  <div id="__registix-app">
+    <ClientOnly>
+      <Preloader 
+        @preloader-complete="onPreloaderComplete" 
+        @preloader-ready="onPreloaderReady" 
+      />
+    </ClientOnly>
+
+    <div
+      id="app"
+      :style="appStyles"
+      :class="{ 'is--hidden': !(preloaderReady || disablePreloader) }"
+    >
     <Header />
     <main class="page-wrapper">
-      <NuxtPage />
+      <Transition
+        mode="in-out"
+        @before-enter="pageTransition.transitionHandlers.beforeEnter"
+        @enter="pageTransition.transitionHandlers.enter"
+        @before-leave="pageTransition.transitionHandlers.beforeLeave"
+        @leave="pageTransition.transitionHandlers.leave"
+        @after-leave="pageTransition.transitionHandlers.afterLeave"
+      >
+        <PageTransitionOuter
+          :key="pageTransition.route.fullPath"
+          :route-path="pageTransition.route.fullPath"
+        />
+      </Transition>
     </main>
-    <Footer :class="{ 'footer-fade-out': isNavigating }" />
+    </div>
   </div>
 </template>
 
@@ -29,17 +46,12 @@ const {
   mobileBreakpoint,
   gutterMobile,
   gutterDesktop,
-  fontSizeBodyMobile,
-  fontSizeLargeMobile,
-  fontSizeLogoMobile,
-  fontSizeBodyDesktop,
-  fontSizeLargeDesktop,
-  fontSizeLogoDesktop,
   lineHeight,
   headerType,
   disablePreloader,
 } = useSiteSettings()
 const { textColor, backgroundColor } = usePageSettings()
+const pageTransition = usePageTransition()
 
 // Store displayed colors separately to control when they update during navigation
 const displayedTextColor = ref(textColor.value || '#000000')
@@ -52,16 +64,8 @@ const preloaderReady = ref(false)
 const { isLoading: isPageLoading } = providePageLoading()
 
 // Store header height to prevent useHead from resetting it
-// Initialize from sessionStorage if available, otherwise default to 0px
+// Use 0px for initial render - sessionStorage is only read in onMounted to avoid SSR/client hydration mismatch
 const currentHeaderHeight = ref('0px')
-
-// Initialize from sessionStorage on client side
-if (process.client) {
-  const stored = sessionStorage.getItem('header-height')
-  if (stored) {
-    currentHeaderHeight.value = stored
-  }
-}
 
 // Preloader handlers
 const onPreloaderReady = () => {
@@ -111,12 +115,6 @@ useHead(() => ({
       --mobile-breakpoint: ${mobileBreakpoint.value};
       --gutter-mobile: ${gutterMobile.value};
       --gutter-desktop: ${gutterDesktop.value};
-      --font-size-body-mobile: ${fontSizeBodyMobile.value};
-      --font-size-large-mobile: ${fontSizeLargeMobile.value};
-      --font-size-logo-mobile: ${fontSizeLogoMobile.value};
-      --font-size-body-desktop: ${fontSizeBodyDesktop.value};
-      --font-size-large-desktop: ${fontSizeLargeDesktop.value};
-      --font-size-logo-desktop: ${fontSizeLogoDesktop.value};
       --line-height: ${lineHeight.value};
     `,
   },
@@ -128,12 +126,6 @@ const appStyles = computed(() => {
     '--mobile-breakpoint': `${mobileBreakpoint.value}`,
     '--gutter-mobile': `${gutterMobile.value}`,
     '--gutter-desktop': `${gutterDesktop.value}`,
-    '--font-size-body-mobile': `${fontSizeBodyMobile.value}`,
-    '--font-size-large-mobile': `${fontSizeLargeMobile.value}`,
-    '--font-size-logo-mobile': `${fontSizeLogoMobile.value}`,
-    '--font-size-body-desktop': `${fontSizeBodyDesktop.value}`,
-    '--font-size-large-desktop': `${fontSizeLargeDesktop.value}`,
-    '--font-size-logo-desktop': `${fontSizeLogoDesktop.value}`,
     '--line-height': `${lineHeight.value}`,
   }
 })
@@ -145,8 +137,15 @@ const isNavigating = ref(false)
 const route = useRoute()
 let previousPath = route.path
 
-// Store ResizeObserver for cleanup
+// Store ResizeObserver for cleanup (must be in closure for onUnmounted)
 let headerResizeObserver = null
+
+onUnmounted(() => {
+  if (headerResizeObserver) {
+    headerResizeObserver.disconnect()
+    headerResizeObserver = null
+  }
+})
 
 // Apply color transitions on navigation (but not on initial load)
 const updateColors = (withTransition = true) => {
@@ -201,12 +200,6 @@ const updateTypography = () => {
     html.style.setProperty('--mobile-breakpoint', `${mobileBreakpoint.value}`)
     html.style.setProperty('--gutter-mobile', `${gutterMobile.value}`)
     html.style.setProperty('--gutter-desktop', `${gutterDesktop.value}`)
-    html.style.setProperty('--font-size-body-mobile', `${fontSizeBodyMobile.value}`)
-    html.style.setProperty('--font-size-large-mobile', `${fontSizeLargeMobile.value}`)
-    html.style.setProperty('--font-size-logo-mobile', `${fontSizeLogoMobile.value}`)
-    html.style.setProperty('--font-size-body-desktop', `${fontSizeBodyDesktop.value}`)
-    html.style.setProperty('--font-size-large-desktop', `${fontSizeLargeDesktop.value}`)
-    html.style.setProperty('--font-size-logo-desktop', `${fontSizeLogoDesktop.value}`)
     html.style.setProperty('--line-height', `${lineHeight.value}`)
   }
 }
@@ -315,14 +308,6 @@ onMounted(async () => {
     }, { immediate: true })
   }
   
-  // Cleanup
-  onUnmounted(() => {
-    if (headerResizeObserver) {
-      headerResizeObserver.disconnect()
-      headerResizeObserver = null
-    }
-  })
-  
   isInitialLoad.value = false
   previousPath = route.path
 })
@@ -413,12 +398,6 @@ watch([
   mobileBreakpoint,
   gutterMobile,
   gutterDesktop,
-  fontSizeBodyMobile,
-  fontSizeLargeMobile,
-  fontSizeLogoMobile,
-  fontSizeBodyDesktop,
-  fontSizeLargeDesktop,
-  fontSizeLogoDesktop,
   lineHeight,
 ], () => {
   if (process.client) {
@@ -438,9 +417,17 @@ watch(headerType, () => {
   }
 }, { immediate: false })
 
+const pageTitle = useState('pageTitle', () => '')
+const fullTitle = computed(() => {
+  const site = seoTitle.value || 'Registix'
+  const page = pageTitle.value
+  return page && page !== site ? `${site} | ${page}` : site
+})
+
 useHead(() => {
   const meta = []
-  const siteTitle = seoTitle.value || 'Roleplay'
+  const docTitle = fullTitle.value
+  const siteName = seoTitle.value || 'Registix'
   const siteUrl = process.client ? window.location.origin : 'https://roleplay.example.com'
   const currentUrl = process.client ? window.location.href : siteUrl
   
@@ -456,7 +443,7 @@ useHead(() => {
   meta.push(
     {
       property: 'og:title',
-      content: siteTitle,
+      content: docTitle,
     },
     {
       property: 'og:type',
@@ -464,7 +451,7 @@ useHead(() => {
     },
     {
       property: 'og:site_name',
-      content: siteTitle,
+      content: siteName,
     },
     {
       property: 'og:url',
@@ -505,7 +492,7 @@ useHead(() => {
     },
     {
       name: 'twitter:title',
-      content: siteTitle,
+      content: docTitle,
     }
   )
   
@@ -524,54 +511,36 @@ useHead(() => {
   }
   
   return {
-    title: siteTitle,
+    title: docTitle,
     meta,
   }
 })
 </script>
 
 <style>
-/* Hide content until preloader is ready */
-body:not(.preloader-ready) #app {
+@import '~/assets/styles/main.css';
+
+/* Hide content until preloader is ready (consistent DOM for hydration) */
+#app.is--hidden {
   visibility: hidden;
   opacity: 0;
+  pointer-events: none;
 }
 
-body.preloader-ready #app {
+#app:not(.is--hidden) {
   visibility: visible;
   opacity: 1;
   transition: opacity 0.2s ease-in;
 }
 
-/* Page wrapper to ensure stable DOM structure during transitions */
-.page-wrapper {
-  min-height: 1px; /* Ensure wrapper has height */
+/* Page transition wrappers - outer is keyed, inner is animated */
+.page-transition-outer {
+  width: 100%;
+  min-height: 100svh;
 }
-
-/* Page transitions */
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 0.6s ease;
-}
-
-.page-enter-from,
-.page-leave-to {
-  opacity: 0;
-}
-
-/* Footer fades with page transition */
-.footer-fade-out {
-  opacity: 0;
-  transition: opacity 0.6s ease;
-}
-
-/* Footer fade-in transition */
-.fade-enter-active {
-  transition: opacity 0.6s ease;
-}
-
-.fade-enter-from {
-  opacity: 0;
+.page-transition-inner {
+  width: 100%;
+  min-height: 100svh;
 }
 
 /* Footer hidden state - use opacity to prevent layout shifts */

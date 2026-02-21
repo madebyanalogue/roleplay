@@ -1,90 +1,72 @@
 <template>
   <div class="logo">
-    <span v-if="logoSpans.length > 0">
-      <component
-        v-for="(span, index) in logoSpans"
-        :key="index"
-        :is="span.tag"
-        class="logo-span"
-      >
-        {{ span.text }}
-      </component>
-    </span>
-    <span v-else>JF</span>
+    <div
+      v-if="logoSvg"
+      class="logo-svg"
+      v-html="logoSvg"
+    />
+    <NuxtImg
+      v-else-if="logoUrl"
+      :src="logoUrl"
+      alt=""
+      class="logo-img"
+    />
+    <span v-else class="logo-fallback">Registix</span>
   </div>
 </template>
 
 <script setup>
 import { useSiteSettings } from '~/composables/useSiteSettings'
+import { useSanityImage } from '~/composables/useSanityImage'
 
-const { logo } = useSiteSettings()
+const { logo, logoSvg, refreshBypassCache } = useSiteSettings()
+const { getImageSrc } = useSanityImage()
 
-const logoSpans = computed(() => {
-  const logoData = logo.value
-  
-  if (!logoData || !Array.isArray(logoData) || logoData.length === 0) {
-    return []
+const logoUrl = computed(() => getImageSrc(logo.value))
+
+// Bypass CDN cache when showing fallback (logo may have been added in Sanity)
+onMounted(() => {
+  if (!logoSvg.value && !logoUrl.value) {
+    refreshBypassCache()
   }
-  
-  const spans = []
-  
-  for (const block of logoData) {
-    if (block._type === 'block' && block.children) {
-      for (const child of block.children) {
-        if (child._type === 'span') {
-          spans.push({
-            tag: getSpanTag(child),
-            text: child.text || '',
-          })
-        }
-      }
-    }
-  }
-  
-  return spans
 })
-
-const getSpanTag = (child) => {
-  if (!child.marks || child.marks.length === 0) return 'span'
-  const mark = child.marks[0]
-  const markMap = {
-    strong: 'strong',
-    em: 'em',
-    underline: 'u',
-    code: 'code',
-  }
-  return markMap[mark] || 'span'
-}
 </script>
 
 <style scoped>
 .logo {
-  font-family: var(--logo-font-family);
-  font-size: var(--font-size-logo);
   color: currentColor;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  white-space: break-spaces;
-  transform: translateY(10%);
-  white-space: break-spaces;
-  line-height: 1;
+  height: 100%;
 }
 
-.logo :deep(p) {
-  margin: 0;
-  display: inline;
+.logo-svg {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.logo-span {
-  display: inline;
+
+
+.logo-svg :deep(svg) {
+  height: 100%;
+  width: auto;
+  fill: currentColor;
+  display: block;
 }
 
-/* Ensure logo link has no decoration */
-.logo :deep(a) {
-  text-decoration: none;
-  color: inherit;
+.logo-img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+.logo .logo-fallback {
+  font-family: var(--logo-font-family);
+  font-size: var(--font-size-logo);
 }
 </style>
 

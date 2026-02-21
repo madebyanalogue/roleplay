@@ -24,7 +24,7 @@ export const usePageSettings = () => {
       
       if (process.server) {
         const config = useRuntimeConfig()
-        const projectId = config.public.sanity?.projectId || 'go8920y3'
+        const projectId = config.public.sanity?.projectId || 'uuzbe0e0'
         const dataset = config.public.sanity?.dataset || 'production'
         
         return await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {

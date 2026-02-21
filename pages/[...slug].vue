@@ -1,38 +1,72 @@
 <template>
-  <div class="page">
-    <div v-if="error">
-    <p>Error loading page: {{ error.message }}</p>
-  </div>
-    <div v-else-if="page">
-    <div v-if="sections.length === 0" style="padding: var(--gutter);">
-      <p>No sections found for this page. Add sections in Sanity.</p>
-    </div>
-    <div v-for="section in sections" :key="section._id" class="page-section">
-      <PageSectionFeaturedProjects
-        v-if="section.sectionType === 'featuredProjects'"
-        :section="section"
-      />
-      <PageSectionInfo
-        v-else-if="section.sectionType === 'info'"
-        :section="section"
-      />
-      <PageSectionServices
-        v-else-if="section.sectionType === 'services'"
-        :section="section"
-      />
-      <PageSectionPressAwards
-        v-else-if="section.sectionType === 'pressAwards'"
-        :section="section"
-      />
-      <PageSectionPortfolio
-        v-else-if="section.sectionType === 'portfolio'"
-        :section="section"
-      />
-    </div>
-  </div>
-    <div v-else>
-    <p>Page not found</p>
-    </div>
+  <div class="page bg-grid" :class="{ 'page-loading': pending }">
+    <template v-if="!pending">
+      <div v-if="error">
+        <p>Error loading page: {{ error.message }}</p>
+      </div>
+      <template v-else-if="page">
+        <div v-if="sections.length === 0" style="padding: var(--gutter);">
+          <p>No sections found for this page. In Sanity: edit the Page document, then add section references to the &quot;Page Sections&quot; field. Sections are created separately under &quot;Page Sections&quot; in the sidebar.</p>
+        </div>
+        <div v-for="section in sections" :key="section._id" class="page-section">
+          <PageSectionHero
+            v-if="section.sectionType === 'hero'"
+            :section="section"
+          />
+          <PageSectionFeaturedProjects
+            v-if="section.sectionType === 'featuredProjects'"
+            :section="section"
+          />
+          <PageSectionInfo
+            v-else-if="section.sectionType === 'info'"
+            :section="section"
+          />
+          <PageSectionServices
+            v-else-if="section.sectionType === 'services'"
+            :section="section"
+          />
+          <PageSectionPressAwards
+            v-else-if="section.sectionType === 'pressAwards'"
+            :section="section"
+          />
+          <PageSectionPortfolio
+            v-else-if="section.sectionType === 'portfolio'"
+            :section="section"
+          />
+          <PageSectionTypography
+            v-else-if="section.sectionType === 'typography'"
+            :section="section"
+          />
+          <PageSectionTestimonials
+            v-else-if="section.sectionType === 'testimonials'"
+            :section="section"
+          />
+          <PageSectionLogoGrid
+            v-else-if="section.sectionType === 'logoGrid'"
+            :section="section"
+          />
+          <PageSectionCTA
+            v-else-if="section.sectionType === 'cta'"
+            :section="section"
+          />
+          <PageSectionHeroSplit
+            v-else-if="section.sectionType === 'heroSplit'"
+            :section="section"
+          />
+          <PageSectionScalingReveal
+            v-else-if="section.sectionType === 'scalingReveal'"
+            :section="section"
+          />
+          <PageSectionNews
+            v-else-if="section.sectionType === 'news'"
+            :section="section"
+          />
+        </div>
+      </template>
+      <div v-else class="pad-1">
+        <p>Page not found</p>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -111,48 +145,149 @@ const { data: page, pending, error } = useAsyncData(
         },
         servicesTitle,
         servicesClassName,
-        servicesContent
+        servicesContent,
+        typographyContent[] {
+          _type,
+          _key,
+          text
+        },
+        testimonials[] {
+          _key,
+          quote,
+          name,
+          company,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata { dimensions { width, height } }
+            }
+          },
+          largeImage {
+            asset-> {
+              _id,
+              url,
+              metadata { dimensions { width, height } }
+            }
+          }
+        },
+        testimonialsAutoplay,
+        testimonialsAutoplayDuration,
+        logoGridTitle,
+        logoGridLogos[] {
+          _key,
+          asset-> {
+            _id,
+            url,
+            metadata { dimensions { width, height } }
+          }
+        },
+        logoGridShuffle,
+        heroTitle,
+        heroSubtitle,
+        heroImage {
+          asset-> {
+            _id,
+            url,
+            metadata { dimensions { width, height } }
+          }
+        },
+        ctaTitle,
+        ctaSubtitle,
+        "ctaLink": ctaLink-> {
+          slug
+        },
+        ctaButtonText,
+        heroLeft {
+          title,
+          subtitle,
+          backgroundImage { asset-> { _id, url, metadata { dimensions { width, height } } } },
+          backgroundMediaType,
+          backgroundMediaImage { asset-> { _id, url, metadata { dimensions { width, height } } } },
+          backgroundMediaVideo { asset-> { _id, url } },
+          categories,
+          link
+        },
+        heroRight {
+          title,
+          subtitle,
+          backgroundImage { asset-> { _id, url, metadata { dimensions { width, height } } } },
+          backgroundMediaType,
+          backgroundMediaImage { asset-> { _id, url, metadata { dimensions { width, height } } } },
+          backgroundMediaVideo { asset-> { _id, url } },
+          categories,
+          link
+        },
+        eyebrow,
+        heading,
+        highlightScrollStart,
+        highlightScrollEnd,
+        highlightFade,
+        highlightStagger,
+        scalingRevealSlides[] {
+          _key,
+          mediaType,
+          image { asset-> { _id, url, metadata { dimensions { width, height } } } },
+          video { asset-> { _id, url } },
+          text
+        },
+        footerHeading,
+        newsTitle,
+        newsItems[] {
+          _key,
+          _type,
+          ratio,
+          news-> {
+            _id,
+            title,
+            link
+          },
+          testimonial-> {
+            _id,
+            quote,
+            name,
+            company
+          },
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata { dimensions { width, height } }
+            }
+          }
+        }
       }
     }`
     
-    if (process.server) {
-      const config = useRuntimeConfig()
-      const projectId = config.public.sanity?.projectId || 'go8920y3'
-      const dataset = config.public.sanity?.dataset || 'production'
-      
-      try {
-        const result = await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query, params: { slug: slug.value } }),
-        })
-        const pageData = result?.result
-        if (pageData && pageData._id) {
-          return pageData
-        }
-        return null
-      } catch (err) {
-        throw err
-      }
+    if (import.meta.server) {
+      const event = useRequestEvent()
+      const sanity = useSanity(event)
+      const pageData = await sanity.fetch(query, { slug: slug.value })
+      return pageData && pageData._id ? pageData : null
     }
-    try {
-      const result = await $fetch('/api/sanity/query', {
-        method: 'POST',
-        body: { query, params: { slug: slug.value } },
-      })
-      const pageData = result?.result
-      if (pageData && pageData._id) {
-        return pageData
-      }
-      return null
-    } catch (err) {
-      throw err
-    }
+    const result = await $fetch('/api/sanity/query', {
+      method: 'POST',
+      body: {
+        query,
+        params: { slug: slug.value },
+        ...(import.meta.dev && { perspective: 'previewDrafts', useCdn: false }),
+      },
+      timeout: 30000,
+    })
+    const pageData = result?.result
+    return pageData && pageData._id ? pageData : null
   },
   { watch: [slug] }
 )
 
-const sections = computed(() => page.value?.sections || [])
+const sections = computed(() => {
+  const raw = page.value?.sections || []
+  return raw.filter(Boolean)
+})
+
+const pageTitle = useState('pageTitle', () => '')
+watch(() => page.value?.title, (t) => { pageTitle.value = t || '' }, { immediate: true })
+
 
 // Update global loading state
 watch(pending, (isPending) => {
@@ -162,11 +297,10 @@ watch(pending, (isPending) => {
 
 <style scoped>
 .page {
-  padding: var(--gutter) 0;
-}
-
-.page-section:not(:last-child) {
-  margin-bottom: var(--gutter);
+  min-height: 100svh;
+  position: relative;
+  z-index: 1;
+  background-color: var(--background-color);
 }
 </style>
 
