@@ -13,24 +13,12 @@
             v-if="section.sectionType === 'hero'"
             :section="section"
           />
-          <PageSectionFeaturedProjects
-            v-if="section.sectionType === 'featuredProjects'"
-            :section="section"
-          />
           <PageSectionInfo
             v-else-if="section.sectionType === 'info'"
             :section="section"
           />
           <PageSectionServices
             v-else-if="section.sectionType === 'services'"
-            :section="section"
-          />
-          <PageSectionPressAwards
-            v-else-if="section.sectionType === 'pressAwards'"
-            :section="section"
-          />
-          <PageSectionPortfolio
-            v-else-if="section.sectionType === 'portfolio'"
             :section="section"
           />
           <PageSectionTypography
@@ -41,14 +29,30 @@
             v-else-if="section.sectionType === 'testimonials'"
             :section="section"
           />
+          <PageSectionFeatures
+            v-else-if="section.sectionType === 'features'"
+            :section="section"
+          />
           <PageSectionLogoGrid
             v-else-if="section.sectionType === 'logoGrid'"
             :section="section"
           />
-          <PageSectionCTA
-            v-else-if="section.sectionType === 'cta'"
+          <PageSectionLogoMarquee
+            v-else-if="section.sectionType === 'logoMarquee'"
             :section="section"
           />
+          <PageSectionMap
+            v-else-if="section.sectionType === 'map'"
+            :section="section"
+          />
+          <ClientOnly v-else-if="section.sectionType === 'cta'">
+            <PageSectionCTA :section="section" />
+            <template #fallback>
+              <section class="cta-section" aria-hidden="true">
+                <div class="cta-section__inner gap-3" />
+              </section>
+            </template>
+          </ClientOnly>
           <PageSectionHeroSplit
             v-else-if="section.sectionType === 'heroSplit'"
             :section="section"
@@ -61,6 +65,58 @@
             v-else-if="section.sectionType === 'news'"
             :section="section"
           />
+          <PageSectionTwoColumns
+            v-else-if="section.sectionType === 'twoColumns'"
+            :section="section"
+          />
+          <ClientOnly v-else-if="section.sectionType === 'faq'">
+            <PageSectionFaq :section="section" />
+            <template #fallback>
+              <section class="faq-section" aria-hidden="true">
+                <div class="grid-1 gap-3" />
+              </section>
+            </template>
+          </ClientOnly>
+          <ClientOnly v-else-if="section.sectionType === 'reviews'">
+            <PageSectionReviews :section="section" />
+            <template #fallback>
+              <section class="reviews-section" aria-hidden="true">
+                <div />
+              </section>
+            </template>
+          </ClientOnly>
+          <ClientOnly v-else-if="section.sectionType === 'productCategories'">
+            <PageSectionProductCategories :section="section" />
+            <template #fallback>
+              <section class="product-categories" aria-hidden="true">
+                <div class="product-categories__grid" />
+              </section>
+            </template>
+          </ClientOnly>
+          <ClientOnly v-else-if="section.sectionType === 'scrollSlider'">
+            <PageSectionScrollSlider :section="section" />
+            <template #fallback>
+              <section class="scroll-slider" aria-hidden="true">
+                <div class="scroll-slider__slider" />
+              </section>
+            </template>
+          </ClientOnly>
+          <ClientOnly v-else-if="section.sectionType === 'zoomScroller'">
+            <PageSectionZoomScroller :section="section" />
+            <template #fallback>
+              <section class="zoom-scroller" aria-hidden="true">
+                <div class="zoom-scroller__section" />
+              </section>
+            </template>
+          </ClientOnly>
+          <ClientOnly v-else-if="section.sectionType === 'spiralGallery'">
+            <PageSectionSpiralGallery :section="section" />
+            <template #fallback>
+              <section class="spiral-gallery" aria-hidden="true">
+                <div class="spiral-gallery__pin-height" />
+              </section>
+            </template>
+          </ClientOnly>
         </div>
       </template>
       <div v-else class="pad-1">
@@ -99,17 +155,6 @@ const { data: page, pending, error } = useAsyncData(
         _type,
         title,
         sectionType,
-        featuredProjects[] {
-          project-> {
-            _id,
-            title,
-            slug,
-            featuredImage {
-              asset->
-            }
-          },
-          format
-        },
         infoImage {
           asset-> {
             _id,
@@ -173,6 +218,14 @@ const { data: page, pending, error } = useAsyncData(
         },
         testimonialsAutoplay,
         testimonialsAutoplayDuration,
+        features[] {
+          _key,
+          heading,
+          description,
+          linkText,
+          image { asset-> { _id, url, metadata { dimensions { width, height } } } },
+          link-> { "slug": slug.current }
+        },
         logoGridTitle,
         logoGridLogos[] {
           _key,
@@ -182,9 +235,34 @@ const { data: page, pending, error } = useAsyncData(
             metadata { dimensions { width, height } }
           }
         },
+        logoMarqueeLogos[] {
+          _key,
+          asset-> {
+            _id,
+            url,
+            metadata { dimensions { width, height } }
+          }
+        },
+        mapTitle,
+        mapDescription,
+        mapLayout,
+        mapAddress,
+        mapEmbedUrl,
+        mapContactItems[] {
+          _key,
+          icon,
+          title,
+          linkText,
+          url
+        },
         logoGridShuffle,
         heroTitle,
         heroSubtitle,
+        "heroButtonLink": heroButtonLink-> {
+          slug
+        },
+        heroButtonText,
+        heroTextAlignment,
         heroImage {
           asset-> {
             _id,
@@ -192,12 +270,15 @@ const { data: page, pending, error } = useAsyncData(
             metadata { dimensions { width, height } }
           }
         },
+        ctaBackgroundVideo { asset-> { _id, url } },
         ctaTitle,
         ctaSubtitle,
         "ctaLink": ctaLink-> {
           slug
         },
         ctaButtonText,
+        heroSplitLayout,
+        heroSplitContentFadeOnScroll,
         heroLeft {
           title,
           subtitle,
@@ -206,7 +287,15 @@ const { data: page, pending, error } = useAsyncData(
           backgroundMediaImage { asset-> { _id, url, metadata { dimensions { width, height } } } },
           backgroundMediaVideo { asset-> { _id, url } },
           categories,
-          link
+          "buttonLink": buttonLink-> { slug },
+          buttonText,
+          parallaxLayers[] {
+            _key,
+            layerType,
+            image { asset-> { _id, url, metadata { dimensions { width, height } } } },
+            heading,
+            parallaxDepth
+          }
         },
         heroRight {
           title,
@@ -216,7 +305,15 @@ const { data: page, pending, error } = useAsyncData(
           backgroundMediaImage { asset-> { _id, url, metadata { dimensions { width, height } } } },
           backgroundMediaVideo { asset-> { _id, url } },
           categories,
-          link
+          "buttonLink": buttonLink-> { slug },
+          buttonText,
+          parallaxLayers[] {
+            _key,
+            layerType,
+            image { asset-> { _id, url, metadata { dimensions { width, height } } } },
+            heading,
+            parallaxDepth
+          }
         },
         eyebrow,
         heading,
@@ -233,6 +330,80 @@ const { data: page, pending, error } = useAsyncData(
         },
         footerHeading,
         newsTitle,
+        faqTitle,
+        faqLinkText,
+        "faqLink": faqLink-> { "slug": slug.current },
+        faqItems[] {
+          _key,
+          question,
+          answer
+        },
+        reviewsTitle,
+        reviews[] {
+          _key,
+          quote,
+          name,
+          job,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata { dimensions { width, height } }
+            }
+          }
+        },
+        productCategories[] {
+          _key,
+          title,
+          description,
+          model-> {
+            _id,
+            title,
+            videoNumber
+          }
+        },
+        "productCategoriesLink": productCategoriesLink-> { "slug": slug.current },
+        productCategoriesButtonText,
+        scrollSliderShowTextBefore,
+        scrollSliderTextBefore,
+        scrollSliderIntroAnimation,
+        scrollSliderSlides[] {
+          _key,
+          title,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata { dimensions { width, height } }
+            }
+          }
+        },
+        zoomScrollerDark,
+        zoomScrollerGalleryEdgeToEdge,
+        zoomScrollerMatrixGrid,
+        zoomScrollerShowContent,
+        zoomScrollerSubtitle,
+        zoomScrollerDescription,
+        "zoomScrollerLink": zoomScrollerLink-> { "slug": slug.current },
+        zoomScrollerButtonText,
+        zoomScrollerImages[] {
+          asset-> {
+            _id,
+            url,
+            metadata { dimensions { width, height } }
+          }
+        },
+        spiralGalleryDark,
+        spiralGalleryShowTextBefore,
+        spiralGalleryTextBefore,
+        spiralGalleryIntroAnimation,
+        spiralGalleryImages[] {
+          asset-> {
+            _id,
+            url,
+            metadata { dimensions { width, height } }
+          }
+        },
         newsItems[] {
           _key,
           _type,
@@ -255,22 +426,33 @@ const { data: page, pending, error } = useAsyncData(
               metadata { dimensions { width, height } }
             }
           }
+        },
+        twoColumnsSubtitle,
+        twoColumnsTitle,
+        twoColumnsDescription,
+        twoColumnsMediaType,
+        twoColumnsImage {
+          asset-> {
+            _id,
+            url,
+            metadata { dimensions { width, height } }
+          }
+        },
+        twoColumnsVideo {
+          asset-> {
+            _id,
+            url
+          }
         }
       }
     }`
     
-    if (import.meta.server) {
-      const event = useRequestEvent()
-      const sanity = useSanity(event)
-      const pageData = await sanity.fetch(query, { slug: slug.value })
-      return pageData && pageData._id ? pageData : null
-    }
     const result = await $fetch('/api/sanity/query', {
       method: 'POST',
       body: {
         query,
         params: { slug: slug.value },
-        ...(import.meta.dev && { perspective: 'previewDrafts', useCdn: false }),
+        useCdn: false,
       },
       timeout: 30000,
     })

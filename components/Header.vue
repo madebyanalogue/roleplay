@@ -25,7 +25,7 @@
                   :to="getMenuItemUrl(item)"
                   :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
                   :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
-                  class="twostep-nav__desktop-link h6"
+                  :class="['twostep-nav__desktop-link h6', { 'current-page': isCurrentPage(item) }]"
                 >
                   {{ item.text }}
                 </NuxtLink>
@@ -59,7 +59,7 @@
                             :to="getMenuItemUrl(item)"
                             :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
                             :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
-                            class="twostep-nav__link"
+                            :class="['twostep-nav__link', { 'current-page': isCurrentPage(item) }]"
                             @click="closeNav"
                           >
                             <span class="twostep-nav__link-span">{{ item.text }}</span>
@@ -76,7 +76,7 @@
                             :to="getMenuItemUrl(item)"
                             :target="isExternalUrl(getMenuItemUrl(item)) ? '_blank' : undefined"
                             :rel="isExternalUrl(getMenuItemUrl(item)) ? 'noopener' : undefined"
-                            class="twostep-nav__link"
+                            :class="['twostep-nav__link', { 'current-page': isCurrentPage(item) }]"
                             @click="closeNav"
                           >
                             <span class="twostep-nav__link-eyebrow">{{ item.text }}</span>
@@ -109,6 +109,7 @@ import Logo from '~/components/Logo.vue'
 import { useSiteSettings } from '~/composables/useSiteSettings'
 import { usePageTransition } from '~/composables/usePageTransition'
 
+const route = useRoute()
 const { mainMenu, footerLinks, refreshBypassCache } = useSiteSettings()
 const { isTransitioning } = usePageTransition()
 
@@ -166,6 +167,12 @@ const getMenuItemUrl = (item) => {
     return item.link.url
   }
   return '#'
+}
+
+const isCurrentPage = (item) => {
+  const url = getMenuItemUrl(item)
+  if (isExternalUrl(url) || url === '#') return false
+  return route.path === url || (url !== '/' && route.path.startsWith(url + '/'))
 }
 
 const handleEscape = (e) => {
@@ -465,6 +472,11 @@ nav {
 }
 
 .twostep-nav__desktop-link:hover {
+  color: var(--red);
+}
+
+.twostep-nav__desktop-link.current-page,
+.twostep-nav__link.current-page {
   color: var(--red);
 }
 

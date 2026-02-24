@@ -22,10 +22,17 @@
         @leave="pageTransition.transitionHandlers.leave"
         @after-leave="pageTransition.transitionHandlers.afterLeave"
       >
-        <PageTransitionOuter
-          :key="pageTransition.route.fullPath"
-          :route-path="pageTransition.route.fullPath"
-        />
+        <div :key="pageTransition.route.fullPath" class="page-transition-outer">
+          <!-- Overlay: only activated on old page during leave -->
+          <div data-transition-wrap class="transition" aria-hidden="true">
+            <div data-transition-dark class="transition__dark" />
+          </div>
+          <div class="page-transition-inner">
+            <NuxtPage />
+            <!-- Footer transitions with page content -->
+            <Footer />
+          </div>
+        </div>
       </Transition>
     </main>
     </div>
@@ -98,6 +105,7 @@ watch(disablePreloader, (disabled) => {
     if (process.client) {
       document.body.classList.add('preloader-ready')
       document.body.classList.add('preloader-complete')
+      document.dispatchEvent(new CustomEvent('preloader-complete'))
     }
   }
 }, { immediate: true })
@@ -418,6 +426,36 @@ watch(headerType, () => {
 }, { immediate: false })
 
 const pageTitle = useState('pageTitle', () => '')
+
+// Toggle .bg-grid visibility with "g" or Ctrl+G / Cmd+G
+function isTypingElement(target) {
+  if (!target?.closest) return false
+  const tag = target.tagName?.toLowerCase()
+  return tag === 'input' || tag === 'textarea' || target.isContentEditable
+}
+
+function onGridKeydown(e) {
+  if (e.key !== 'g') return
+  const isModifier = e.metaKey || e.ctrlKey
+  const isPlainG = !isModifier && !e.altKey && !e.shiftKey
+  if (isPlainG && isTypingElement(e.target)) return
+  if (isModifier || isPlainG) {
+    e.preventDefault()
+    document.documentElement.classList.toggle('hide-bg-grid')
+  }
+}
+
+onMounted(() => {
+  if (import.meta.client) {
+    window.addEventListener('keydown', onGridKeydown)
+  }
+})
+
+onUnmounted(() => {
+  if (import.meta.client) {
+    window.removeEventListener('keydown', onGridKeydown)
+  }
+})
 const fullTitle = computed(() => {
   const site = seoTitle.value || 'Registix'
   const page = pageTitle.value
@@ -518,7 +556,7 @@ useHead(() => {
 </script>
 
 <style>
-@import '~/assets/styles/main.css';
+/* main.css loaded via nuxt.config css[] for blocking load in head (prevents FOUC) */
 
 /* Hide content until preloader is ready (consistent DOM for hydration) */
 #app.is--hidden {

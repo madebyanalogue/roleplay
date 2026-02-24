@@ -7,6 +7,8 @@ const __dirname = dirname(__filename)
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
+  /* Load main CSS as blocking stylesheet in head - prevents FOUC and blue links */
+  css: ['~/assets/styles/main.css'],
   modules: [
     '@nuxtjs/sanity',
     '@nuxt/image',
@@ -28,6 +30,8 @@ export default defineNuxtConfig({
         dataset: 'production',
         apiVersion: '2024-03-19',
       },
+      /** Google Maps API key for map section geocoding. Set NUXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env */
+      googleMapsApiKey: '',
     },
   },
   image: {
@@ -64,9 +68,9 @@ export default defineNuxtConfig({
           children: `
             /* Critical CSS - inline so styles apply before main.css loads (prevents FOUC) */
             @font-face {
-              font-family: 'KH Teka';
-              src: url('/fonts/KHTeka-Regular.otf') format('opentype');
-              font-weight: normal;
+              font-family: 'Overused Grotesk';
+              src: url('/fonts/OverusedGrotesk-VF.woff2') format('woff2');
+              font-weight: 100 900;
               font-style: normal;
               font-display: swap;
             }
@@ -99,6 +103,8 @@ export default defineNuxtConfig({
               font-display: swap;
             }
             :root {
+              --black: #121212;
+              --white: #fff;
               --mobile-breakpoint: 800;
               --gutter-mobile: 15;
               --gutter-desktop: 20;
@@ -112,7 +118,7 @@ export default defineNuxtConfig({
               --max-width: 1800px;
               --text-color: #000000;
               --background-color: #ffffff;
-              --font-family: 'KH Teka', sans-serif;
+              --font-family: 'Overused Grotesk', sans-serif;
               --heading-font-family: 'Fractul', sans-serif;
               --logo-font-family: 'Ayer', sans-serif;
               --header-height: 0px;
@@ -131,6 +137,12 @@ export default defineNuxtConfig({
               box-sizing: border-box;
             }
             *, *::before, *::after { box-sizing: border-box; }
+            /* Links inherit color - prevents default blue flash before main.css loads */
+            a { color: inherit; text-decoration: none; }
+            /* Footer critical - prevents unstyled flash before component CSS loads */
+            .footer__wrap { position: relative; background: #121212; }
+            footer, .footer { background: #121212; color: #fff; position: relative; display: flex; flex-direction: column; padding-top: 100px; }
+            .footer-content { position: relative; display: flex; flex-direction: column; gap: 50px; flex: 1; }
             /* Hide body until CSS and fonts are ready */
             html:not(.css-loaded) body { 
               visibility: hidden !important; 
@@ -159,9 +171,9 @@ export default defineNuxtConfig({
       link: [
         {
           rel: 'preload',
-          href: '/fonts/KHTeka-Regular.otf',
+          href: '/fonts/OverusedGrotesk-VF.woff2',
           as: 'font',
-          type: 'font/otf',
+          type: 'font/woff2',
           crossorigin: 'anonymous',
         },
         {

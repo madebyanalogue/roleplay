@@ -86,20 +86,6 @@
           </div>
         </div>
         
-        <!-- Press & Awards Block -->
-        <div v-else-if="block._type === 'infoPressAwardsBlock'" class="info-press-awards-block">
-          <h2 v-if="block.title" class="info-block-title">{{ block.title }}</h2>
-          <div v-if="pressAwards && pressAwards.length > 0" class="info-press-awards-list">
-            <div
-              v-for="(item, index) in pressAwards"
-              :key="item._id || index"
-              class="info-press-award-item"
-            >
-              <h3 v-if="item.title" class="info-press-award-title">{{ item.title }}</h3>
-              <p v-if="item.details" class="info-press-award-details">{{ item.details }}</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -151,43 +137,6 @@ onMounted(() => {
 
 // Header height is now managed centrally in app.vue and only updates on window resize
 // No need to update it here - it's stored in sessionStorage and persists across navigations
-
-const { data: pressAwards } = useAsyncData('press-awards', async () => {
-  const query = `*[_type == "pressAward"] | order(orderRank) {
-    _id,
-    title,
-    details
-  }`
-  
-  if (process.server) {
-    const config = useRuntimeConfig()
-    const projectId = config.public.sanity?.projectId || 'uuzbe0e0'
-    const dataset = config.public.sanity?.dataset || 'production'
-    
-    try {
-      const result = await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      })
-      return result?.result || []
-    } catch (err) {
-      console.error('[PressAwards] Error fetching:', err)
-      return []
-    }
-  }
-  
-  try {
-    const result = await $fetch('/api/sanity/query', {
-      method: 'POST',
-      body: { query },
-    })
-    return result?.result || []
-  } catch (err) {
-    console.error('[PressAwards] Error fetching:', err)
-    return []
-  }
-}, { server: true })
 
 const shouldOpenInNewTab = (link, openInNewTab) => {
   if (!link) return false

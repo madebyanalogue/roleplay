@@ -2,7 +2,7 @@
   <div data-footer-parallax class="footer__wrap">
     <footer data-footer-parallax-inner class="footer wrapper-padding">
       <MatrixGrid color="white" :gap="20" :opacity="0.06" :spotlight-opacity="0.2" class="footer-matrix" />
-      <div class="footer-content subdued-link">
+      <div class="footer-content subdued-link inverted">
         
         <div class="flex-1 grid-1 grid-md-2 gap-1">
           <div class="footer-icon-svg">
@@ -18,7 +18,7 @@
                 :key="item._key || index"
                 class="footer-menu-item flex flex-col gap-1"
               >
-                <h3 v-if="item.title" class="footer-menu-title h6">{{ item.title }}</h3>
+                <h3 v-if="item.title" class="footer-menu-title h6 subdued">{{ item.title }}</h3>
                 <nav v-if="item.sourceType === 'menu' && item.menu" class="footer-menu-nav h5 line-height-13">
                   <div>
                   <template v-for="(link, i) in (item.menu.items || [])" :key="i">
@@ -35,7 +35,7 @@
                   </template>
                   </div>
                   <template v-for="(link, i) in (item.menu.smallItems || [])" :key="`small-${i}`">
-                    <div class="h4 subdued line-height-135">
+                    <div class="h4 line-height-135">
                       <NuxtLink
                         v-if="getMenuItemUrl(link)"
                         :to="getMenuItemUrl(link)"
@@ -65,16 +65,16 @@
           </div>
         </div>
         
-        <div class="footer-copyright h7 subdued">
+        <!-- <div class="footer-copyright h7 subdued">
           {{ copyright }}
-        </div>
+        </div> -->
         <div class="footer-copyright h7 subdued" style="border-top:1px solid #444;padding-top:60px;">
         </div>
 
 
-        <div class="footer-brand">
+        <!-- <div class="footer-brand">
           <Logo class="footer-logo" />
-        </div>
+        </div> -->
         
       </div>
       <div class="top-right"><div class="triangle triangle--top-left"></div></div>
@@ -130,6 +130,7 @@ const scrollToTop = () => {
 <style scoped>
 .footer__wrap {
   position: relative;
+  background:var(--black);
 }
 
 .footer-icon-svg {
@@ -146,7 +147,7 @@ const scrollToTop = () => {
   position:relative;
 }
 .footer-brand:after {
-  background: linear-gradient(359deg,rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 1) 100%);
+  background: linear-gradient(359deg,rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
   position: absolute;
   top: -10px;
   left: 0;
@@ -178,7 +179,7 @@ const scrollToTop = () => {
 .footer-icon-svg svg {
   width: 100%;
   max-width: 120px;
-  opacity: 0;
+  /* opacity: 0; */
 }
 
 .footer__dark {

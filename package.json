@@ -22,6 +22,7 @@
     "@sanity/image-url": "^2.0.2",
     "gsap": "^3.14.1",
     "lenis": "^1.3.17",
+    "lottie-web": "^5.13.0",
     "nuxt": "^4.2.2",
     "split-type": "^0.3.4",
     "vite": "^6.3.5"

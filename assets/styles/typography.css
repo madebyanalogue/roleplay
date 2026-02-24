@@ -1,0 +1,307 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap');
+
+:root {
+  --body-font: 'Overused Grotesk', sans-serif;
+  --heading-font: 'Overused Grotesk', sans-serif;
+  --fractul-font: 'Fractul', sans-serif;
+  --mono: 'Geist Mono', monospace;
+}
+
+
+/* Overused Grotesk - Variable Font */
+@font-face {
+  font-family: 'Overused Grotesk';
+  src: url('/fonts/OverusedGrotesk-VF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Body font - TT Hoves */
+@font-face {
+  font-family: 'TT Hoves';
+  src: url('/fonts/TTHoves-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Heading font - Fractul */
+@font-face {
+  font-family: 'Fractul';
+  src: url('/fonts/Fractul-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fractul';
+  src: url('/fonts/Fractul-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Monument Grotesk */
+@font-face {
+  font-family: 'Monument Grotesk';
+  src: url('/fonts/ABCMonumentGrotesk-Regular-Trial.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Monument Grotesk */
+@font-face {
+  font-family: 'Fraktion';
+  src: url('/fonts/PPFraktionMono-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+/* ABC ROM */
+@font-face {
+  font-family: 'ABC ROM';
+  src: url('/fonts/ABCROM-Regular-Trial.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ABC ROM Mono */
+@font-face {
+  font-family: 'ABC ROM Mono';
+  src: url('/fonts/ABCROMMono-Regular-Trial.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Saans */
+@font-face {
+  font-family: 'Saans';
+  src: url('/fonts/Saans-TRIAL-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Saans Mono */
+@font-face {
+  font-family: 'Saans Mono';
+  src: url('/fonts/SaansMono-TRIAL-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ABC Diatype */
+@font-face {
+  font-family: 'ABC Diatype';
+  src: url('/fonts/ABCDiatype-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ABC Diatype Mono */
+@font-face {
+  font-family: 'ABCDiatypeMono';
+  src: url('/fonts/ABCDiatypeMono.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Die Grotesk A */
+@font-face {
+  font-family: 'ABCDiatype-Regular';
+  src: url('/fonts/ABCDiatype-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* Desktop */
+:root {
+  --size-unit: 18; /* body font-size in design - no px */
+  --size-container-ideal: 1440; /* screen-size in design - no px */
+  --size-container-min: 992px;
+  --size-container-max:2560px;
+  --size-container: clamp(var(--size-container-min), 100vw, var(--size-container-max));
+  --size-font: calc(var(--size-container) / (var(--size-container-ideal) / var(--size-unit)));
+}
+
+/* Tablet */
+@media screen and (max-width: 991px) {
+  :root {
+    --size-container-ideal: 834; /* screen-size in design - no px */
+    --size-container-min: 768px;
+    --size-container-max: 991px;
+  }
+}
+
+/* Mobile Landscape */
+@media screen and (max-width: 767px) {
+  :root {
+    --size-container-ideal: 550; /* screen-size in design - no px */
+    --size-container-min: 480px;
+    --size-container-max: 767px;
+  }
+}
+
+/* Mobile Portrait */
+@media screen and (max-width: 479px) {
+  :root {
+    --size-container-ideal: 390; /* screen-size in design - no px */
+    --size-container-min: 320px;
+    --size-container-max: 479px;
+  }
+}
+
+.container {
+  max-width: var(--size-container);
+}
+
+.container.medium {
+  max-width: calc(var(--size-container) * 0.85);
+}
+
+.container.small {
+  max-width: calc(var(--size-container) * 0.7);
+}
+
+html {
+  font-family: var(--body-font);
+  line-height: var(--line-height);
+}
+body {
+  font-size: var(--size-font);
+  line-height: 1.4;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font);
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+
+.bold {
+  font-weight: 600;
+}
+
+.line-height-125 {
+  line-height: 1.25;
+}
+.line-height-13 {
+  line-height: 1.3;
+}
+.line-height-135 {
+  line-height: 1.35;
+}
+
+.subdued {
+  opacity: 0.5;
+}
+
+.subdued-link a {
+  opacity: 0.5;
+  transition: opacity var(--animation-default);
+}
+
+.subdued-link a:hover {
+  opacity: 1;
+}
+.subdued-link.inverted a {
+  opacity: 1;
+  transition: opacity var(--animation-default);
+}
+
+.subdued-link.inverted a:hover {
+  opacity: 0.5;
+}
+.chunky-heading {
+  font-size: clamp(24px, 5vw, 80px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-family: var(--fractul-font);
+  line-height: 1;
+}
+
+/* Styleguide typography */
+
+.h1 {
+  font-size: 3.7em;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.h2 {
+  font-size: 3em;
+  line-height: 1;
+}
+
+.h3 {
+  font-size: 2.5em;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.h3.small {
+  font-size: 2em;
+  
+}
+
+.h4 {
+  font-size: 1.75em;
+  line-height: 1.15;
+}
+
+.h5 {
+  font-size: 1.4em;
+}
+
+.h6 {
+  font-size: 14px;
+  text-transform: uppercase;
+  font-family: var(--mono);
+  letter-spacing: 0.1em;
+}
+
+
+.h7 {
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0px;
+}
+.fractul {
+  font-family: var(--fractul-font);
+  letter-spacing: -0.01em;
+}
+
+/* Line reveal animation – reusable text animation style.
+   Use data-line-reveal on scroll, or useLineRevealAnimation() for programmatic (tab/slide change).
+   Attributes: data-line-reveal-start, data-line-reveal-end, data-line-reveal-duration, data-line-reveal-stagger */
+[data-line-reveal] {
+  overflow: hidden;
+  font-kerning: none;
+}
+
+[data-line-reveal] .line,
+.line-reveal-animated .line {
+  display: block;
+  will-change: transform;
+}
+
+.line-reveal-animated {
+  overflow: hidden;
+  font-kerning: none;
+}
+
+.medium { font-weight: 500; }
+.bold { font-weight: 600; }

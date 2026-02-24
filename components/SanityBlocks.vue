@@ -23,7 +23,6 @@ defineProps({
 
 <style scoped>
 .sanity-blocks {
-  line-height: var(--line-height);
 }
 
 .sanity-blocks p {
