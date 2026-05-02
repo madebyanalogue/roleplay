@@ -64,7 +64,6 @@
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useSiteSettings } from '~/composables/useSiteSettings'
 import { useSanityImage } from '~/composables/useSanityImage'
-import { usePageSettings } from '~/composables/usePageSettings'
 import SanityBlocks from '~/components/SanityBlocks.vue'
 
 const props = defineProps({
@@ -85,8 +84,7 @@ const props = defineProps({
 const emit = defineEmits(['preloader-complete', 'preloader-ready'])
 
 const { getImageSrc } = useSanityImage()
-const { settings: siteSettings, disablePreloader, preloaderImages, preloaderText, preloaderSvgCode, preloaderFontSizeMobile, preloaderFontSize, mobileBreakpoint, title: websiteTitle } = useSiteSettings()
-const { backgroundColor, textColor } = usePageSettings()
+const { settings: siteSettings, disablePreloader, preloaderImages, preloaderText, preloaderSvgCode, mobileBreakpoint, title: websiteTitle } = useSiteSettings()
 
 // Helper to get image URL from Sanity image object
 const getImageUrl = (imageSource) => {
@@ -116,15 +114,11 @@ const bgPanel1 = ref(null)
 const bgPanel2 = ref(null)
 const bgPanel3 = ref(null)
 
-// Computed style for responsive font size
+// Preloader headline scale (fixed; was Sanity — matches former defaults 20px / 40px)
 const preloaderFontSizeStyle = computed(() => {
-  const mobileSize = preloaderFontSizeMobile.value
-  const desktopSize = preloaderFontSize.value
-  const breakpoint = mobileBreakpoint.value
-  
-  // Use clamp() for responsive font sizing (matching the pattern used in main.css)
+  const bp = mobileBreakpoint.value
   return {
-    fontSize: `clamp(${mobileSize}px, calc(100vw / ${breakpoint} * ${desktopSize}), ${desktopSize}px)`
+    fontSize: `clamp(20px, calc(100vw / ${bp} * 40), 40px)`,
   }
 })
 

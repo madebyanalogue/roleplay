@@ -86,6 +86,23 @@
           </div>
         </div>
         
+        <!-- News block (legacy type infoPressAwardsBlock until dataset migrated) -->
+        <div
+          v-else-if="block._type === 'infoNewsBlock' || block._type === 'infoPressAwardsBlock'"
+          class="info-news-block"
+        >
+          <h2 v-if="block.title" class="info-block-title">{{ block.title }}</h2>
+          <div v-if="newsItems && newsItems.length > 0" class="info-news-list">
+            <div
+              v-for="(item, index) in newsItems"
+              :key="item._id || index"
+              class="info-news-item"
+            >
+              <h3 v-if="item.title" class="info-news-title">{{ item.title }}</h3>
+              <p v-if="item.details" class="info-news-details">{{ item.details }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -137,6 +154,43 @@ onMounted(() => {
 
 // Header height is now managed centrally in app.vue and only updates on window resize
 // No need to update it here - it's stored in sessionStorage and persists across navigations
+
+const { data: newsItems } = useAsyncData('news-items', async () => {
+  const query = `*[_type in ["news", "pressAward"]] | order(orderRank) {
+    _id,
+    title,
+    details
+  }`
+
+  if (process.server) {
+    const config = useRuntimeConfig()
+    const projectId = config.public.sanity?.projectId || 'go8920y3'
+    const dataset = config.public.sanity?.dataset || 'production'
+
+    try {
+      const result = await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      })
+      return result?.result || []
+    } catch (err) {
+      console.error('[News] Error fetching:', err)
+      return []
+    }
+  }
+
+  try {
+    const result = await $fetch('/api/sanity/query', {
+      method: 'POST',
+      body: { query },
+    })
+    return result?.result || []
+  } catch (err) {
+    console.error('[News] Error fetching:', err)
+    return []
+  }
+}, { server: true })
 
 const shouldOpenInNewTab = (link, openInNewTab) => {
   if (!link) return false
@@ -375,37 +429,36 @@ const shouldOpenInNewTab = (link, openInNewTab) => {
   margin-bottom: 0;
 }
 
-.info-press-awards-block {
+.info-news-block {
   display: flex;
   flex-direction: column;
   gap: var(--gutter);
 }
 
-.info-press-awards-list {
+.info-news-list {
   display: grid;
   gap: var(--gutter);
 }
 @media (min-width:800px) {
-  .info-press-awards-block {
+  .info-news-block {
     grid-column: span 2;
   }
-  .info-press-awards-list {
+  .info-news-list {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-
-.info-press-award-item {
+.info-news-item {
   display: flex;
   flex-direction: column;
 }
 
-.info-press-award-title {
+.info-news-title {
   font-weight: normal;
   margin-bottom: 0;
 }
 
-.info-press-award-details {
+.info-news-details {
   margin: 0;
   white-space: pre-line;
 }

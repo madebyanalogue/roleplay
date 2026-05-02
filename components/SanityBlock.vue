@@ -1,79 +1,77 @@
-<template>
-  <component :is="tag" class="sanity-block">
-    <template v-for="(child, index) in block.children" :key="index">
-      <template v-if="child._type === 'span'">
-        <template v-if="getLinkMark(child)">
-          <a
-            :href="getLinkMark(child).href"
-            :target="isExternalUrl(getLinkMark(child).href) ? '_blank' : undefined"
-            :rel="isExternalUrl(getLinkMark(child).href) ? 'noopener' : undefined"
-          >
-            {{ child.text }}
-          </a>
-        </template>
-        <template v-else>
-          <component
-            :is="getSpanTag(child)"
-            v-for="(mark, markIndex) in child.marks"
-            :key="markIndex"
-          >
-            {{ child.text }}
-          </component>
-          <template v-if="!child.marks || child.marks.length === 0">
-            {{ child.text }}
-          </template>
-        </template>
-      </template>
-    </template>
-  </component>
-</template>
+<script>
+import { h, defineComponent, computed } from 'vue'
 
-<script setup>
-const props = defineProps({
-  block: {
-    type: Object,
-    required: true,
+const DECORATOR_TAGS = {
+  strong: 'strong',
+  em: 'em',
+  underline: 'u',
+  code: 'code',
+}
+
+function isExternalHref(href) {
+  if (!href || typeof href !== 'string') return false
+  return /^https?:\/\//i.test(href) || href.startsWith('//')
+}
+
+function wrapMarks(text, marks, markDefs) {
+  if (!marks?.length) return text
+  return marks.reduce((inner, markKey) => {
+    const decTag = DECORATOR_TAGS[markKey]
+    if (decTag) return h(decTag, inner)
+
+    const def = (markDefs || []).find((d) => d._key === markKey)
+    if (def?._type === 'link' && def.href) {
+      const href = def.href
+      const openBlank =
+        def.target === '_blank' ||
+        (def.target !== '_self' && isExternalHref(href))
+      return h(
+        'a',
+        {
+          href,
+          class: 'sanity-link',
+          target: openBlank ? '_blank' : undefined,
+          rel: openBlank ? 'noopener noreferrer' : undefined,
+        },
+        inner,
+      )
+    }
+    return inner
+  }, text)
+}
+
+export default defineComponent({
+  name: 'SanityBlock',
+  props: {
+    block: {
+      type: Object,
+      required: true,
+    },
+  },
+  setup(props) {
+    const tag = computed(() => {
+      const style = props.block.style || 'normal'
+      const tagMap = {
+        h1: 'h1',
+        h2: 'h2',
+        h3: 'h3',
+        h4: 'h4',
+        blockquote: 'blockquote',
+        normal: 'p',
+      }
+      return tagMap[style] || 'p'
+    })
+
+    return () => {
+      const markDefs = props.block.markDefs || []
+      const children = (props.block.children || [])
+        .filter((c) => c._type === 'span')
+        .map((child, index) =>
+          wrapMarks(child.text, child.marks, markDefs),
+        )
+
+      return h(tag.value, { class: 'sanity-block' }, children)
+    }
   },
 })
-
-const tag = computed(() => {
-  const style = props.block.style || 'normal'
-  const tagMap = {
-    h1: 'h1',
-    h2: 'h2',
-    h3: 'h3',
-    h4: 'h4',
-    blockquote: 'blockquote',
-    normal: 'p',
-  }
-  return tagMap[style] || 'p'
-})
-
-const getLinkMark = (child) => {
-  if (!child.marks?.length || !props.block.markDefs) return null
-  const linkKey = child.marks.find((m) => {
-    const def = props.block.markDefs.find((d) => d._key === m)
-    return def?._type === 'link' && def?.href
-  })
-  if (!linkKey) return null
-  return props.block.markDefs.find((d) => d._key === linkKey && d._type === 'link')
-}
-
-const isExternalUrl = (url) => {
-  if (!url) return false
-  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')
-}
-
-const getSpanTag = (child) => {
-  if (!child.marks || child.marks.length === 0) return 'span'
-  const mark = child.marks[0]
-  const markMap = {
-    strong: 'strong',
-    em: 'em',
-    underline: 'u',
-    code: 'code',
-  }
-  return markMap[mark] || 'span'
-}
 </script>
-

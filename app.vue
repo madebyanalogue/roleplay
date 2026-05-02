@@ -1,48 +1,31 @@
 <template>
-  <div id="__registix-app">
-    <ClientOnly>
-      <Preloader 
-        @preloader-complete="onPreloaderComplete" 
-        @preloader-ready="onPreloaderReady" 
-      />
-    </ClientOnly>
-
-    <div
-      id="app"
-      :style="appStyles"
-      :class="{ 'is--hidden': !(preloaderReady || disablePreloader) }"
-    >
+  <ClientOnly>
+    <Preloader 
+      @preloader-complete="onPreloaderComplete" 
+      @preloader-ready="onPreloaderReady" 
+    />
+  </ClientOnly>
+  
+  <div v-if="preloaderReady || disablePreloader" id="app" :style="appStyles">
     <Header />
     <main class="page-wrapper">
-      <Transition
-        mode="in-out"
-        @before-enter="pageTransition.transitionHandlers.beforeEnter"
-        @enter="pageTransition.transitionHandlers.enter"
-        @before-leave="pageTransition.transitionHandlers.beforeLeave"
-        @leave="pageTransition.transitionHandlers.leave"
-        @after-leave="pageTransition.transitionHandlers.afterLeave"
-      >
-        <div :key="pageTransition.route.fullPath" class="page-transition-outer">
-          <!-- Overlay: only activated on old page during leave -->
-          <div data-transition-wrap class="transition" aria-hidden="true">
-            <div data-transition-dark class="transition__dark" />
-          </div>
-          <div class="page-transition-inner">
-            <NuxtPage />
-            <!-- Footer transitions with page content -->
-            <Footer />
-          </div>
-        </div>
-      </Transition>
+      <NuxtPage />
     </main>
-    </div>
+    <Footer :class="{ 'footer-fade-out': isNavigating }" />
   </div>
+  <!-- Body teleport: avoids transformed/layout ancestors breaking fixed centering + GSAP FLIP -->
+  <Teleport to="body">
+    <div
+      data-click-zoom-lightbox
+      class="click-zoom__lightbox"
+      aria-hidden="true"
+    />
+  </Teleport>
 </template>
 
 <script setup>
 import Preloader from '~/components/Preloader.vue'
 import { useSiteSettings } from '~/composables/useSiteSettings'
-import { usePageSettings } from '~/composables/usePageSettings'
 import { providePageLoading } from '~/composables/usePageLoading'
 
 const { 
@@ -51,18 +34,9 @@ const {
   seoDescription, 
   facebookShareImage,
   mobileBreakpoint,
-  gutterMobile,
-  gutterDesktop,
-  lineHeight,
   headerType,
   disablePreloader,
 } = useSiteSettings()
-const { textColor, backgroundColor } = usePageSettings()
-const pageTransition = usePageTransition()
-
-// Store displayed colors separately to control when they update during navigation
-const displayedTextColor = ref(textColor.value || '#000000')
-const displayedBackgroundColor = ref(backgroundColor.value || '#ffffff')
 
 // Preloader state - hide content until preloader is ready
 const preloaderReady = ref(false)
@@ -71,8 +45,16 @@ const preloaderReady = ref(false)
 const { isLoading: isPageLoading } = providePageLoading()
 
 // Store header height to prevent useHead from resetting it
-// Use 0px for initial render - sessionStorage is only read in onMounted to avoid SSR/client hydration mismatch
+// Initialize from sessionStorage if available, otherwise default to 0px
 const currentHeaderHeight = ref('0px')
+
+// Initialize from sessionStorage on client side
+if (process.client) {
+  const stored = sessionStorage.getItem('header-height')
+  if (stored) {
+    currentHeaderHeight.value = stored
+  }
+}
 
 // Preloader handlers
 const onPreloaderReady = () => {
@@ -105,25 +87,18 @@ watch(disablePreloader, (disabled) => {
     if (process.client) {
       document.body.classList.add('preloader-ready')
       document.body.classList.add('preloader-complete')
-      document.dispatchEvent(new CustomEvent('preloader-complete'))
     }
   }
 }, { immediate: true })
 
-// Inject initial colours, header height, and typography variables into SSR so first paint uses custom values
-// Use displayed colors instead of direct page settings to control update timing
+// Inject layout variables (breakpoint, header height). Gutters: see main.css :root.
 useHead(() => ({
   htmlAttrs: {
     lang: 'en',
     class: headerType.value === 'static' ? 'header-static' : '',
     style: `
-      --text-color: ${displayedTextColor.value}; 
-      --background-color: ${displayedBackgroundColor.value}; 
       --header-height: ${currentHeaderHeight.value};
       --mobile-breakpoint: ${mobileBreakpoint.value};
-      --gutter-mobile: ${gutterMobile.value};
-      --gutter-desktop: ${gutterDesktop.value};
-      --line-height: ${lineHeight.value};
     `,
   },
 }))
@@ -132,20 +107,17 @@ const appStyles = computed(() => {
   return {
     '--max-width': maxWidth.value || '1800px',
     '--mobile-breakpoint': `${mobileBreakpoint.value}`,
-    '--gutter-mobile': `${gutterMobile.value}`,
-    '--gutter-desktop': `${gutterDesktop.value}`,
-    '--line-height': `${lineHeight.value}`,
   }
 })
 
 // Track if this is the initial page load
 const isInitialLoad = ref(true)
-// Track if we're currently navigating to prevent color watcher from interfering
+// Footer / shell coordination during page transition
 const isNavigating = ref(false)
 const route = useRoute()
 let previousPath = route.path
 
-// Store ResizeObserver for cleanup (must be in closure for onUnmounted)
+// Store ResizeObserver for cleanup
 let headerResizeObserver = null
 
 onUnmounted(() => {
@@ -155,60 +127,9 @@ onUnmounted(() => {
   }
 })
 
-// Apply color transitions on navigation (but not on initial load)
-const updateColors = (withTransition = true) => {
+const updateLayoutCssVars = () => {
   if (process.client) {
-    // Update displayed colors (which useHead will pick up)
-    displayedTextColor.value = textColor.value || '#000000'
-    displayedBackgroundColor.value = backgroundColor.value || '#ffffff'
-    
-    const html = document.documentElement
-    const body = document.body
-    const app = document.getElementById('app')
-    
-    // Temporarily disable transitions for instant initial load
-    if (!withTransition) {
-      html.style.setProperty('transition', 'none', 'important')
-      if (body) body.style.setProperty('transition', 'none', 'important')
-      if (app) app.style.setProperty('transition', 'none', 'important')
-    }
-    
-    // Update both CSS variables synchronously to ensure transitions start at the same time
-    const updateBoth = () => {
-      html.style.setProperty('--text-color', displayedTextColor.value)
-      html.style.setProperty('--background-color', displayedBackgroundColor.value)
-    }
-    
-    if (withTransition) {
-      // For transitions, update immediately in the same frame
-      updateBoth()
-    } else {
-      // For instant updates, update immediately
-      updateBoth()
-    }
-    
-    // Re-enable transitions after colors are set if we disabled them
-    if (!withTransition) {
-      // Use requestAnimationFrame to ensure colors are painted before re-enabling transitions
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          html.style.removeProperty('transition')
-          if (body) body.style.removeProperty('transition')
-          if (app) app.style.removeProperty('transition')
-        })
-      })
-    }
-  }
-}
-
-// Update typography CSS variables
-const updateTypography = () => {
-  if (process.client) {
-    const html = document.documentElement
-    html.style.setProperty('--mobile-breakpoint', `${mobileBreakpoint.value}`)
-    html.style.setProperty('--gutter-mobile', `${gutterMobile.value}`)
-    html.style.setProperty('--gutter-desktop', `${gutterDesktop.value}`)
-    html.style.setProperty('--line-height', `${lineHeight.value}`)
+    document.documentElement.style.setProperty('--mobile-breakpoint', `${mobileBreakpoint.value}`)
   }
 }
 
@@ -234,25 +155,8 @@ const updateHeaderHeight = () => {
   return false // Return false if header not found
 }
 
-// Set initial colors instantly when component mounts
 onMounted(async () => {
-  // Initialize displayed colors with current page settings
-  displayedTextColor.value = textColor.value || '#000000'
-  displayedBackgroundColor.value = backgroundColor.value || '#ffffff'
-  
-  // Only update if colors differ from what's already set via useHead
-  const html = document.documentElement
-  const currentTextColor = getComputedStyle(html).getPropertyValue('--text-color').trim()
-  const currentBgColor = getComputedStyle(html).getPropertyValue('--background-color').trim()
-  
-  // Only update if colors have changed (avoid unnecessary style changes)
-  if (currentTextColor !== displayedTextColor.value || 
-      currentBgColor !== displayedBackgroundColor.value) {
-    updateColors(false)
-  }
-  
-  // Update typography variables
-  updateTypography()
+  updateLayoutCssVars()
   
   // Update header type class on html element
   const updateHeaderTypeClass = () => {
@@ -315,7 +219,7 @@ onMounted(async () => {
       }
     }, { immediate: true })
   }
-  
+
   isInitialLoad.value = false
   previousPath = route.path
 })
@@ -323,93 +227,23 @@ onMounted(async () => {
 // Watch for route changes to detect navigation (not initial load)
 watch(() => route.path, (newPath) => {
   if (!isInitialLoad.value && newPath !== previousPath) {
-    // Mark that we're navigating to prevent color watcher from interfering
     isNavigating.value = true
-    
-    // Disable color transitions during page fade-out
-    const html = document.documentElement
-    const body = document.body
-    const app = document.getElementById('app')
-    
-    if (html && body && app) {
-      // Disable transitions immediately to prevent any color changes during fade-out
-      html.style.setProperty('transition', 'none', 'important')
-      if (body) body.style.setProperty('transition', 'none', 'important')
-      if (app) app.style.setProperty('transition', 'none', 'important')
-      
-      // Wait for page fade-out to complete (0.6s), then update displayed colors
+    // Match page transition duration, then scroll and clear navigating state
+    setTimeout(() => {
+      if (process.client) {
+        window.scrollTo(0, 0)
+      }
       setTimeout(() => {
-        // Update displayed colors AFTER fade-out completes
-        // This ensures colors change when content is invisible
-        displayedTextColor.value = textColor.value || '#000000'
-        displayedBackgroundColor.value = backgroundColor.value || '#ffffff'
-        
-        // Also update CSS variables directly (transitions still disabled for instant change)
-        html.style.setProperty('--text-color', displayedTextColor.value)
-        html.style.setProperty('--background-color', displayedBackgroundColor.value)
-
-        // After the old page has fully faded out, jump to the top of the new page
-        // Use an instant scroll (no smooth transition), as requested
-        if (process.client) {
-          window.scrollTo(0, 0)
-        }
-        
-        // Keep transitions disabled for a bit longer to ensure instant color change
-        // Then re-enable transitions for future changes
-        setTimeout(() => {
-          requestAnimationFrame(() => {
-            html.style.removeProperty('transition')
-            if (body) body.style.removeProperty('transition')
-            if (app) app.style.removeProperty('transition')
-            // Navigation complete, allow color watcher to work again
-            isNavigating.value = false
-          })
-        }, 50) // Small delay to ensure color change is instant
-      }, 600) // Match page transition duration - update colors right after fade-out
-    }
-    
-    // Header height is now only updated on window resize, not on navigation
-    // The stored value from sessionStorage is used, preventing page jumps
+        isNavigating.value = false
+      }, 50)
+    }, 600)
   }
   previousPath = newPath
 })
 
-// Watch color values - only transition if not initial load and route changed
-// Note: Route change handler above manages color updates during navigation
-watch([textColor, backgroundColor], () => {
+watch(mobileBreakpoint, () => {
   if (process.client) {
-    // Don't update colors if we're in the middle of a navigation
-    if (isNavigating.value) {
-      return
-    }
-    
-    if (!isInitialLoad.value) {
-      // Only update if route hasn't changed (handled by route watcher above)
-      // This prevents double updates during navigation
-      const currentPath = route.path
-      // Small delay to check if route is still the same
-      setTimeout(() => {
-        if (route.path === currentPath && !isNavigating.value) {
-          // Route didn't change, so this is a programmatic color change
-          updateColors(true)
-        }
-      }, 50)
-    } else {
-      // On initial load, set colors instantly
-      updateColors(false)
-    }
-  }
-}, { immediate: false })
-
-// Watch typography values and update CSS variables
-watch([
-  mobileBreakpoint,
-  gutterMobile,
-  gutterDesktop,
-  lineHeight,
-], () => {
-  if (process.client) {
-    updateTypography()
+    updateLayoutCssVars()
   }
 }, { immediate: false })
 
@@ -425,47 +259,9 @@ watch(headerType, () => {
   }
 }, { immediate: false })
 
-const pageTitle = useState('pageTitle', () => '')
-
-// Toggle .bg-grid visibility with "g" or Ctrl+G / Cmd+G
-function isTypingElement(target) {
-  if (!target?.closest) return false
-  const tag = target.tagName?.toLowerCase()
-  return tag === 'input' || tag === 'textarea' || target.isContentEditable
-}
-
-function onGridKeydown(e) {
-  if (e.key !== 'g') return
-  const isModifier = e.metaKey || e.ctrlKey
-  const isPlainG = !isModifier && !e.altKey && !e.shiftKey
-  if (isPlainG && isTypingElement(e.target)) return
-  if (isModifier || isPlainG) {
-    e.preventDefault()
-    document.documentElement.classList.toggle('hide-bg-grid')
-  }
-}
-
-onMounted(() => {
-  if (import.meta.client) {
-    window.addEventListener('keydown', onGridKeydown)
-  }
-})
-
-onUnmounted(() => {
-  if (import.meta.client) {
-    window.removeEventListener('keydown', onGridKeydown)
-  }
-})
-const fullTitle = computed(() => {
-  const site = seoTitle.value || 'Registix'
-  const page = pageTitle.value
-  return page && page !== site ? `${site} | ${page}` : site
-})
-
 useHead(() => {
   const meta = []
-  const docTitle = fullTitle.value
-  const siteName = seoTitle.value || 'Registix'
+  const siteTitle = seoTitle.value || 'Roleplay'
   const siteUrl = process.client ? window.location.origin : 'https://roleplay.example.com'
   const currentUrl = process.client ? window.location.href : siteUrl
   
@@ -481,7 +277,7 @@ useHead(() => {
   meta.push(
     {
       property: 'og:title',
-      content: docTitle,
+      content: siteTitle,
     },
     {
       property: 'og:type',
@@ -489,7 +285,7 @@ useHead(() => {
     },
     {
       property: 'og:site_name',
-      content: siteName,
+      content: siteTitle,
     },
     {
       property: 'og:url',
@@ -530,7 +326,7 @@ useHead(() => {
     },
     {
       name: 'twitter:title',
-      content: docTitle,
+      content: siteTitle,
     }
   )
   
@@ -549,36 +345,54 @@ useHead(() => {
   }
   
   return {
-    title: docTitle,
+    title: siteTitle,
     meta,
   }
 })
 </script>
 
 <style>
-/* main.css loaded via nuxt.config css[] for blocking load in head (prevents FOUC) */
-
-/* Hide content until preloader is ready (consistent DOM for hydration) */
-#app.is--hidden {
+/* Hide content until preloader is ready */
+body:not(.preloader-ready) #app {
   visibility: hidden;
   opacity: 0;
-  pointer-events: none;
 }
 
-#app:not(.is--hidden) {
+body.preloader-ready #app {
   visibility: visible;
   opacity: 1;
   transition: opacity 0.2s ease-in;
 }
 
-/* Page transition wrappers - outer is keyed, inner is animated */
-.page-transition-outer {
-  width: 100%;
-  min-height: 100svh;
+/* Page wrapper to ensure stable DOM structure during transitions */
+.page-wrapper {
+  min-height: 1px; /* Ensure wrapper has height */
 }
-.page-transition-inner {
-  width: 100%;
-  min-height: 100svh;
+
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.6s ease;
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}
+
+/* Footer fades with page transition */
+.footer-fade-out {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* Footer fade-in transition */
+.fade-enter-active {
+  transition: opacity 0.6s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
 }
 
 /* Footer hidden state - use opacity to prevent layout shifts */

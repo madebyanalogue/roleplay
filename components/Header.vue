@@ -1,152 +1,219 @@
 <template>
-  <nav
-    data-twostep-nav
-    :data-nav-status="isActive ? 'active' : 'not-active'"
-    :class="{ 'twostep-nav': true, 'is--transitioning': isMounted && isTransitioning }"
-  >
-    <div data-nav-toggle="close" class="twostep-nav__bg" @click="closeNav" />
-    <div class="twostep-nav__wrap">
-      <div class="twostep-nav__width">
-        <div class="twostep-nav__bar header">
-          <div class="twostep-nav__back">
-            <div class="twostep-nav__back-bg" />
+  <header :class="['header', { 
+    'header-static': headerType === 'static',
+    'header-fixed': headerType === 'fixed',
+    'header-sticky': headerType === 'responsive' && isPastHeader, 
+    'header-hidden': headerType === 'responsive' && isScrollingDown, 
+    'header-transition': headerType === 'responsive' && shouldAddTransition 
+  }]">
+
+    <div class="header-bar header--styling">
+      <div class="header-logo">
+        <NuxtLink to="/">
+          <Logo />
+        </NuxtLink>
+      </div>
+
+      <nav class="header-nav" aria-label="Main">
+        <NuxtLink
+          v-for="item in headerMenuItems"
+          :key="item._key || item.text"
+          :to="getMenuItemUrl(item)"
+          :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
+          :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
+          :class="['header-link', { 'header-link-active': isActive(item) }]"
+        >
+          <span class="header-link-text">{{ item.text }}</span>
+        </NuxtLink>
+      </nav>
+    </div>
+
+    <div
+      v-if="showContactButton && contactMounted"
+      ref="contactRoot"
+      class="header-contact show-md"
+    >
+      <button
+        type="button"
+        class="header-contact-toggle header--styling"
+        :class="{ 'header-contact-toggle-open': contactOpen }"
+        :aria-expanded="contactOpen"
+        aria-haspopup="true"
+        @click="toggleContact"
+      >
+        <div>{{ navigationContact.buttonTitle }}</div>
+      </button>
+      <div
+        v-show="contactOpen"
+        class="header-contact-panel"
+        role="region"
+        :aria-label="navigationContact.buttonTitle"
+      >
+        <div
+          v-for="row in navigationContact.contacts"
+          :key="row._key"
+          class="header-contact-item"
+        >
+          <div class="header-contact-item-title">
+            {{ row.title }}
           </div>
-          <div class="twostep-nav__top">
-            <NuxtLink to="/" class="twostep-nav__logo">
-              <Logo class="twostep-nav__logo-inner" />
-            </NuxtLink>
-            <ul class="twostep-nav__desktop-nav">
-              <li
-                v-for="item in desktopNavItems"
-                :key="item._key || item.text"
-                class="twostep-nav__desktop-li"
-              >
-                <NuxtLink
-                  :to="getMenuItemUrl(item)"
-                  :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
-                  :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
-                  :class="['twostep-nav__desktop-link h6', { 'current-page': isCurrentPage(item) }]"
-                >
-                  {{ item.text }}
-                </NuxtLink>
-              </li>
-            </ul>
-            <button
-              type="button"
-              data-nav-toggle="toggle"
-              class="twostep-nav__toggle"
-              aria-label="Toggle menu"
-              @click="toggleNav"
+          <a
+            v-if="contactLinkUsesNative(row.url)"
+            :href="row.url"
+            :target="isExternalHttp(row.url) ? '_blank' : undefined"
+            :rel="isExternalHttp(row.url) ? 'noopener' : undefined"
+            class="header-contact-link"
+          >{{ row.linkText }}</a>
+          <NuxtLink
+            v-else
+            :to="row.url"
+            class="header-contact-link"
+          >
+            {{ row.linkText }}
+          </NuxtLink>
+        </div>
+      </div>
+    </div>
+
+
+    <div
+      ref="mobileMenuRoot"
+      class="header-mobile header--styling"
+    >
+      <button
+        type="button"
+        class="header-menu-toggle"
+        :class="{ 'header-menu-toggle-open': mobileMenuOpen }"
+        :aria-expanded="mobileMenuOpen"
+        aria-controls="header-mobile-nav"
+        @click="toggleMobileMenu"
+      >
+        Menu
+      </button>
+      <div
+        v-show="mobileMenuOpen"
+        id="header-mobile-nav"
+        class="header-mobile-panel header-mobile-panel--fullscreen underline-links"
+        role="navigation"
+        aria-label="Main"
+      >
+        <div class="header-mobile-panel-main">
+          <NuxtLink
+            v-for="item in mobileMenuItems"
+            :key="item._key || item.text"
+            :to="getMenuItemUrl(item)"
+            :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
+            :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
+            :class="['header-mobile-link', 'header-link', { 'header-link-active': isActive(item) }]"
+            @click="mobileMenuOpen = false"
+          >
+            <span class="header-link-text">{{ item.text }}</span>
+          </NuxtLink>
+        </div>
+        <div
+          v-if="showMobileMenuSocialLinks"
+          class="header-mobile-social"
+        >
+          <p
+            v-if="mobileMenuSocialLinksTitle.trim()"
+            class="header-mobile-social-title"
+          >
+            {{ mobileMenuSocialLinksTitle }}
+          </p>
+          <div class="header-mobile-social-links">
+            <template
+              v-for="row in mobileMenuSocialLinks"
+              :key="row._key"
             >
-              <div class="twostep-nav__toggle-bar" />
-              <div class="twostep-nav__toggle-bar" />
-            </button>
-            <div class="twostep-nav__top-line" />
-          </div>
-          <div class="twostep-nav__bottom">
-            <div class="twostep-nav__bottom-overflow">
-              <div class="twostep-nav__bottom-inner">
-                <div class="twostep-nav__bottom-row">
-                  <div class="twostep-nav__bottom-col">
-                    <div class="twostep-nav__info">
-                      <ul class="twostep-nav__ul">
-                        <li
-                          v-for="item in navItems"
-                          :key="item._key || item.text"
-                          class="twostep-nav__li"
-                        >
-                          <NuxtLink
-                            :to="getMenuItemUrl(item)"
-                            :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
-                            :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
-                            :class="['twostep-nav__link', { 'current-page': isCurrentPage(item) }]"
-                            @click="closeNav"
-                          >
-                            <span class="twostep-nav__link-span">{{ item.text }}</span>
-                          </NuxtLink>
-                        </li>
-                      </ul>
-                      <ul v-if="smallNavItems.length > 0" class="twostep-nav__ul is--small">
-                        <li
-                          v-for="item in smallNavItems"
-                          :key="item._key || item.text"
-                          class="twostep-nav__li"
-                        >
-                          <NuxtLink
-                            :to="getMenuItemUrl(item)"
-                            :target="isExternalUrl(getMenuItemUrl(item)) ? '_blank' : undefined"
-                            :rel="isExternalUrl(getMenuItemUrl(item)) ? 'noopener' : undefined"
-                            :class="['twostep-nav__link', { 'current-page': isCurrentPage(item) }]"
-                            @click="closeNav"
-                          >
-                            <span class="twostep-nav__link-eyebrow">{{ item.text }}</span>
-                          </NuxtLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div v-if="navImage" class="twostep-nav__bottom-col is--visual">
-                    <div class="twostep-nav__visual">
-                      <NuxtImg
-                        :src="navImage"
-                        alt=""
-                        class="twostep-nav__visual-img"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <a
+                v-if="contactLinkUsesNative(row.url)"
+                :href="row.url"
+                :target="isExternalHttp(row.url) ? '_blank' : undefined"
+                :rel="isExternalHttp(row.url) ? 'noopener' : undefined"
+                class="header-mobile-social-link"
+                @click="mobileMenuOpen = false"
+              >{{ row.title }}</a>
+              <NuxtLink
+                v-else
+                :to="row.url"
+                class="header-mobile-social-link"
+                @click="mobileMenuOpen = false"
+              >
+                {{ row.title }}
+              </NuxtLink>
+            </template>
           </div>
         </div>
       </div>
     </div>
-  </nav>
+  </header>
 </template>
 
 <script setup>
-import Logo from '~/components/Logo.vue'
 import { useSiteSettings } from '~/composables/useSiteSettings'
-import { usePageTransition } from '~/composables/usePageTransition'
 
 const route = useRoute()
-const { mainMenu, footerLinks, refreshBypassCache } = useSiteSettings()
-const { isTransitioning } = usePageTransition()
+const {
+  headerMenu,
+  mobileMenu,
+  headerType,
+  navigationContact,
+  showMobileMenuSocialLinks,
+  mobileMenuSocialLinksTitle,
+  mobileMenuSocialLinks,
+} = useSiteSettings()
 
-const isActive = ref(false)
-const isMounted = ref(false)
+const headerMenuItems = computed(() => headerMenu.value?.items || [])
+const mobileMenuItems = computed(() => mobileMenu.value?.items || [])
 
-const navItems = computed(() => mainMenu.value?.items || [])
-
-// Desktop nav: show all menu items (main + small) so nothing is hidden
-const desktopNavItems = computed(() => {
-  const items = mainMenu.value?.items || []
-  const smallItems = mainMenu.value?.smallItems || []
-  return [...items, ...smallItems]
+const showContactButton = computed(() => {
+  const nc = navigationContact.value
+  const title = nc?.buttonTitle?.trim()
+  const contacts = nc?.contacts
+  return Boolean(title && Array.isArray(contacts) && contacts.length > 0)
 })
 
-// Bypass CDN cache when menu is empty (fixes menu not showing after selecting in Sanity - CDN may serve stale data)
-onMounted(() => {
-  if (!mainMenu.value?.items?.length && !mainMenu.value?.smallItems?.length) {
-    refreshBypassCache()
+const contactOpen = ref(false)
+const contactRoot = ref(null)
+const mobileMenuOpen = ref(false)
+const mobileMenuRoot = ref(null)
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+/** Avoid SSR/client tree mismatch: omit contact block until after mount (matches SSR). */
+const contactMounted = ref(false)
+
+const toggleContact = () => {
+  contactOpen.value = !contactOpen.value
+}
+
+const contactLinkUsesNative = (url) => {
+  if (!url) return true
+  if (url.startsWith('mailto:') || url.startsWith('tel:')) return true
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) return true
+  return false
+}
+
+const isExternalHttp = (url) => {
+  if (!url) return false
+  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')
+}
+
+const onDocumentPointerDown = (e) => {
+  if (contactOpen.value && contactRoot.value && !contactRoot.value.contains(e.target)) {
+    contactOpen.value = false
   }
-  isMounted.value = true
-})
-
-const smallNavItems = computed(() => mainMenu.value?.smallItems || [])
-
-const navImage = computed(() => null)
-
-const openNav = () => {
-  isActive.value = true
+  if (mobileMenuOpen.value && mobileMenuRoot.value && !mobileMenuRoot.value.contains(e.target)) {
+    mobileMenuOpen.value = false
+  }
 }
 
-const closeNav = () => {
-  isActive.value = false
-}
-
-const toggleNav = () => {
-  isActive.value = !isActive.value
+const onDocumentKeydown = (e) => {
+  if (e.key === 'Escape') {
+    contactOpen.value = false
+    mobileMenuOpen.value = false
+  }
 }
 
 const isExternalUrl = (url) => {
@@ -160,478 +227,339 @@ const getMenuItemUrl = (item) => {
   if (item.link?.type === 'page' && item.link?.page?.slug?.current) {
     return `/${item.link.page.slug.current}`
   }
-  if (item.link?.type === 'knowledge') {
-    return '/knowledge'
-  }
   if (item.link?.url) {
     return item.link.url
   }
   return '#'
 }
 
-const isCurrentPage = (item) => {
-  const url = getMenuItemUrl(item)
-  if (isExternalUrl(url) || url === '#') return false
-  return route.path === url || (url !== '/' && route.path.startsWith(url + '/'))
+const isActive = (item) => {
+  const itemUrl = getMenuItemUrl(item)
+  if (!itemUrl || itemUrl === '#') return false
+  if (isExternalUrl(itemUrl)) return false
+  
+  // Normalize paths for comparison
+  const currentPath = route.path === '/' ? '/' : route.path.replace(/\/$/, '')
+  const normalizedItemUrl = itemUrl === '/' ? '/' : itemUrl.replace(/\/$/, '')
+  
+  return currentPath === normalizedItemUrl
 }
 
-const handleEscape = (e) => {
-  if (e.key === 'Escape' && isActive.value) {
-    closeNav()
+// Scroll detection for header hide/show
+const isScrollingDown = ref(false)
+const isPastHeader = ref(false)
+const shouldAddTransition = ref(false)
+const headerHeight = ref(0)
+let lastScrollY = 0
+let ticking = false
+
+const handleScroll = () => {
+  // Only run scroll logic for responsive header type
+  if (!process.client || headerType.value !== 'responsive') {
+    ticking = false
+    return
+  }
+  
+  const currentScrollY = window.scrollY
+  
+  // Only update if scroll position changed significantly (avoid jitter)
+  if (Math.abs(currentScrollY - lastScrollY) < 5) {
+    ticking = false
+    return
+  }
+  
+  const headerEl = document.querySelector('.header')
+  if (!headerEl) {
+    ticking = false
+    return
+  }
+  
+  // Get header height if not set
+  if (headerHeight.value === 0) {
+    headerHeight.value = headerEl.offsetHeight
+  }
+  
+  // Check if we've scrolled past the full header height
+  const hasScrolledPastHeader = currentScrollY >= headerHeight.value
+  // Increased threshold for transition (e.g., 2x header height)
+  const transitionThreshold = headerHeight.value * 2
+  
+  // At the very top - header goes back to relative
+  if (currentScrollY <= 0) {
+    isPastHeader.value = false
+    shouldAddTransition.value = false
+    isScrollingDown.value = false
+  } 
+  // Once we've scrolled past header, it becomes sticky and stays sticky
+  else if (hasScrolledPastHeader || isPastHeader.value) {
+    // Once past header, always stay sticky (even when scrolling back up into header zone)
+    isPastHeader.value = true
+    
+    // Only add transition after scrolling past the increased threshold
+    shouldAddTransition.value = currentScrollY >= transitionThreshold
+    
+    // Show header when scrolling up
+    if (currentScrollY < lastScrollY) {
+      isScrollingDown.value = false
+    } 
+    // Hide header when scrolling down
+    else if (currentScrollY > lastScrollY) {
+      isScrollingDown.value = true
+    }
+  } else {
+    // Before scrolling past header for the first time, always show (relative positioning)
+    isPastHeader.value = false
+    shouldAddTransition.value = false
+    isScrollingDown.value = false
+  }
+  
+  lastScrollY = currentScrollY
+  ticking = false
+}
+
+const onScroll = () => {
+  if (!ticking) {
+    window.requestAnimationFrame(handleScroll)
+    ticking = true
   }
 }
 
 onMounted(() => {
-  document.addEventListener('keydown', handleEscape)
+  contactMounted.value = true
+  if (process.client) {
+    document.addEventListener('pointerdown', onDocumentPointerDown)
+    document.addEventListener('keydown', onDocumentKeydown)
+  }
+  // Only add scroll listener for responsive header type
+  if (process.client && headerType.value === 'responsive') {
+    lastScrollY = window.scrollY
+    window.addEventListener('scroll', onScroll, { passive: true })
+  }
 })
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleEscape)
+  if (process.client) {
+    document.removeEventListener('pointerdown', onDocumentPointerDown)
+    document.removeEventListener('keydown', onDocumentKeydown)
+  }
+  // Only remove scroll listener if it was added (responsive header type)
+  if (process.client && headerType.value === 'responsive') {
+    window.removeEventListener('scroll', onScroll)
+  }
 })
 </script>
 
 <style scoped>
-
-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1300;
-  --background-color:#111;
-  --text-color:#fff;
-}
-
-/* Above page transition overlay (1100) and entering page (1200) */
-.twostep-nav {
-  z-index: 1300;
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-}
-
-/* Disable nav interactions during page transition */
-.twostep-nav.is--transitioning .twostep-nav__logo,
-.twostep-nav.is--transitioning .twostep-nav__desktop-link,
-.twostep-nav.is--transitioning .twostep-nav__link,
-.twostep-nav.is--transitioning .twostep-nav__toggle {
-  pointer-events: none;
-  cursor: not-allowed;
-}
-
-.twostep-nav__bg {
-  z-index: 0;
-  opacity: 0;
-  pointer-events: auto;
-  visibility: hidden;
-  background-color: rgb(0 0 0 / 30%);
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  cursor: pointer;
-}
-
-.twostep-nav__wrap {
-  justify-content: center;
-  align-items: stretch;
-  width: 100%;
+.header {
+  gap: 10px;
   display: flex;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.twostep-nav__width {
-  flex-flow: column;
-  flex: none;
-  justify-content: flex-start;
   align-items: center;
-  width: 100%;
-  max-width: 48em;
-  padding-top: 1.25em;
-  padding-left: 1.25em;
-  padding-right: 1.25em;
-  display: flex;
-}
-
-.twostep-nav__bar {
-  pointer-events: auto;
-  color: var(--text-color);
   position: relative;
-  border-radius: 8px;
-  overflow: hidden;
+  z-index: 1000;
+  font-size: 16px;
+  /* transition: color 0.6s ease, background-color 0.6s ease; */
+  transform: translateY(0);
 }
 
-
-
-.twostep-nav__back {
-  z-index: 0;
-  position: absolute;
-  inset: 0;
-}
-
-.twostep-nav__top {
-  z-index: 1;
-  justify-content: space-between;
+.header--styling {
+  border-radius: 10px;
+  background-color: var(--white);
+  height: var(--header-height);
+  display: flex;
   align-items: center;
-  width: 100%;
-  padding: 6px 11px 6px 20px;
-  display: flex;
-  position: relative;
-  gap:50px;
-  background-color: var(--background-color);
+  gap: 10px;
+  padding: 12px 16px;
 }
 
-@media all and (min-width:768px) {
-  .twostep-nav__top {
-   padding: 15px 28px 15px 22px;
+
+@media (min-width: 800px) {
+  .header--styling {
+    padding: 12px 20px;
+    
   }
 }
 
-.twostep-nav__bottom {
-  grid-template-rows: 0fr;
-  width: 100%;
-  display: grid;
-  position: relative;
-  overflow: hidden;
-}
-
-.twostep-nav__logo {
-  justify-content: flex-start;
-  align-items: center;
-  height: 100%;
+.header-logo {
   display: flex;
-  text-decoration: none;
-  color: inherit;
-}
-
-.twostep-nav__logo-inner {
-  height: 100%;
-  font-size: 1.5em;
-}
-
-.twostep-nav__back-bg {
-  background-color: var(--background-color);
-  border: 1px solid currentColor;
-  border-radius: 0.5em;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-}
-
-.twostep-nav__toggle {
-  pointer-events: auto;
-  cursor: pointer;
-  background: none;
-  border: none;
-  justify-content: center;
-  align-items: center;
-  width: 2.5em;
-  height: 2.5em;
-  padding: 0;
-  display: flex;
-  position: relative;
-  color: inherit;
-}
-
-.twostep-nav__toggle-bar {
-  background-color: currentColor;
-  width: 1.875em;
-  height: 0.125em;
-  position: absolute;
-}
-
-.twostep-nav__bottom-overflow {
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: center;
-  height: 100%;
-  display: flex;
-  position: relative;
-  overflow: hidden;
-}
-
-.twostep-nav__bottom-inner {
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  padding: 1.5em;
-  display: flex;
-  position: relative;
-}
-
-.twostep-nav__bottom-row {
-  justify-content: flex-start;
-  align-items: flex-start;
-  width: 100%;
-  display: flex;
-}
-
-.twostep-nav__bottom-col {
   flex: 1;
-  min-height: 100%;
+  color: var(--orange);
+}
+.header-bar {
+  flex: 1;
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gutter);
+  padding: 12px 20px;
 }
 
-.twostep-nav__ul {
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.header-nav {
   display: flex;
+  gap: 40px;
+  padding: 0 10px;
 }
 
-.twostep-nav__ul.is--small {
-  gap: 0.25em 1em;
-  flex-flow: wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-
-.twostep-nav__link {
-  color: inherit;
-  width: 100%;
-  padding-top: 0.375em;
-  padding-bottom: 0.375em;
-  text-decoration: none;
+.header-mobile {
+  display: none;
   position: relative;
 }
 
-.twostep-nav__link-span {
-  letter-spacing: -0.04em;
-  font-family: var(--font-family);
-  font-size: 2.125em;
-  font-weight: 400;
-  line-height: 1;
+@media (max-width: 799px) {
+  .header-nav {
+    display: none;
+  }
+
+  .header-mobile {
+    display: flex;
+  }
 }
 
-.twostep-nav__visual {
-  aspect-ratio: 1;
-  border-radius: 0.375em;
-  width: 100%;
-  overflow: hidden;
+/* .header-link {
+  position: relative;
+  display: inline-block;
 }
-
-.twostep-nav__visual-img {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-}
-
-.twostep-nav__info {
-  gap: 2em;
-  flex-flow: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-  display: flex;
-}
-
-.twostep-nav__link-eyebrow {
-  opacity: 0.7;
-  letter-spacing: -0.02em;
-  font-family: var(--font-family);
-  font-size: 1em;
-  font-weight: 400;
-  line-height: 1;
-}
-
-.twostep-nav__top-line {
-  z-index: 2;
-  background-color: rgb(0 0 0 / 10%);
-  height: 1px;
+.header-link:after {
+  content: '';
   position: absolute;
-  bottom: 0;
-  left: 0.5em;
-  right: 0.5em;
+  bottom: var(--underline-offset);
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.32s ease;
+  background: currentColor;
 }
+.header-link:hover:after,
+.header-link-active:after {
+  transform: scaleX(1);
+} */
 
-/* Desktop nav - hidden on mobile */
-.twostep-nav__desktop-nav {
-  display: none;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.twostep-nav__desktop-li {
+.header-contact {
+  position: relative;
   display: inline-block;
 }
 
-.twostep-nav__desktop-link {
+.header-contact-toggle {
+  background: var(--orange);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.header-contact-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: min(18rem, calc(100vw - var(--gutter) * 2));
+  padding: calc(var(--gutter) * 0.75);
+  background: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid currentColor;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gutter) * 0.75);
+}
+
+.header-menu-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
   color: inherit;
-  text-decoration: none;
-  display: block;
-  transition: color var(--animation-default);
+  padding: 0;
 }
 
-.twostep-nav__desktop-link:hover {
-  color: var(--red);
+.header-mobile-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: min(18rem, calc(100vw - var(--gutter) * 2));
+  padding: calc(var(--gutter) * 0.75);
+  background: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid currentColor;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gutter) * 0.5);
 }
 
-.twostep-nav__desktop-link.current-page,
-.twostep-nav__link.current-page {
-  color: var(--red);
-}
-
-/* Animation variables */
-.twostep-nav {
-  --cubic-default: cubic-bezier(0.625, 0.05, 0, 1);
-  --animation-ease: 0.2s ease;
-  --duration-default: 0.5s;
-  --duration-default-long: 0.75s;
-  --duration-default-half: 0.25s;
-  --animation-default: var(--duration-default) var(--cubic-default);
-  --animation-default-long: var(--duration-default-long) var(--cubic-default);
-  --animation-default-half: var(--duration-default-half) var(--cubic-default);
-}
-
-/* Menu button */
-.twostep-nav__toggle-bar {
-  transition: transform var(--animation-default);
-  transform: translateY(-0.25em) rotate(0.001deg);
-}
-
-.twostep-nav__toggle:hover .twostep-nav__toggle-bar {
-  transform: translateY(0.25em) rotate(0.001deg);
-}
-
-.twostep-nav__toggle .twostep-nav__toggle-bar:nth-child(2) {
-  transform: translateY(0.15em) rotate(0.001deg);
-}
-
-.twostep-nav__toggle:hover .twostep-nav__toggle-bar:nth-child(2) {
-  transform: translateY(-0.15em) rotate(0.001deg);
-}
-
-.twostep-nav[data-nav-status="active"] .twostep-nav__toggle .twostep-nav__toggle-bar {
-  transform: translateY(0) rotate(45deg);
-}
-
-.twostep-nav[data-nav-status="active"] .twostep-nav__toggle .twostep-nav__toggle-bar:nth-child(2) {
-  transform: translateY(0) rotate(-45deg);
-}
-
-/* Page dark overlay */
-.twostep-nav__bg {
-  transition: opacity var(--animation-default), visibility var(--animation-default);
-}
-
-.twostep-nav[data-nav-status="active"] .twostep-nav__bg {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Inner bar grow */
-.twostep-nav__bar {
-  transition: max-width var(--animation-default-long) 0.2s;
-}
-
-.twostep-nav[data-nav-status="active"] .twostep-nav__bar {
-  transition: max-width var(--animation-default) 0s;
-  max-width: 100%;
-}
-
-/* Thin line in nav bar */
-.twostep-nav__top-line {
-  transition: all var(--animation-default) 0s;
-  opacity: 0;
-}
-
-.twostep-nav[data-nav-status="active"] .twostep-nav__top-line {
-  transition: all var(--animation-default) 0.1s;
-  opacity: 1;
-}
-
-/* Nav bar background */
-.twostep-nav__back {
-  transition: all var(--animation-default);
+.header-mobile-panel--fullscreen {
+  position: fixed;
   inset: 0;
+  width: 100vw;
+  min-height: 100dvh;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  top: 0;
+  right: 0;
+  padding: calc(var(--gutter) * 1.25);
+  padding-top: max(calc(var(--gutter) * 1.25), env(safe-area-inset-top));
+  padding-bottom: max(calc(var(--gutter) * 1.25), env(safe-area-inset-bottom));
+  z-index: 1200;
+  justify-content: space-between;
+  overflow: auto;
 }
 
-.twostep-nav[data-nav-status="active"] .twostep-nav__back {
-  inset: -0.25em;
+.header-mobile-panel-main {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--gutter) * 0.5);
 }
 
-/* Nav bottom */
-.twostep-nav__bottom {
-  transition: grid-template-rows var(--animation-default) 0s;
+.header-mobile-social {
+  margin-top: auto;
+  padding-top: calc(var(--gutter) * 1);
+  border-top: 1px solid currentColor;
 }
 
-.twostep-nav[data-nav-status="active"] .twostep-nav__bottom {
-  transition: grid-template-rows var(--animation-default-long) 0.25s;
-  grid-template-rows: 1fr;
+.header-mobile-social-title {
+  margin: 0 0 calc(var(--gutter) * 0.5);
+  font-weight: 600;
 }
 
-/* Nav columns reveal */
-.twostep-nav__bottom-row > * {
-  transition: all var(--animation-default) 0s;
-  transform: translateY(2em);
-  opacity: 0;
+.header-mobile-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--gutter) * 0.5);
 }
 
-.twostep-nav__bottom-row > *:nth-child(2) {
-  transition-delay: 0.075s;
+.header-mobile-social-link {
+  color: inherit;
 }
 
-.twostep-nav[data-nav-status="active"] .twostep-nav__bottom-row > * {
-  transition: all var(--animation-default-long) 0.5s;
-  transform: translateY(0);
-  opacity: 1;
+.header-mobile-link {
+  display: block;
+}
+</style>
+
+<style>
+
+
+.header.header-static {
+  position: relative;
 }
 
-.twostep-nav[data-nav-status="active"] .twostep-nav__bottom-row > *:nth-child(2) {
-  transition-delay: 0.575s;
+.header.header-fixed {
+  position: sticky;
+  top: 0;
 }
 
-@media (min-width: 768px) {
-  .twostep-nav__desktop-nav {
-    display: flex;
-    gap: 23px;
-    align-items: center;
-    flex: 1;
-    justify-content: flex-end;
-  }
-
-  .twostep-nav__toggle {
-    display: none;
-  }
-
+.header.header-sticky {
+  position: sticky;
+  top: 0;
 }
 
-@media (max-width: 767px) {
-  .twostep-nav__bottom-col.is--visual {
-    display: none;
-  }
+.header.header-transition {
+  transition: transform 0.3s ease;
+}
 
-  .twostep-nav__top-line {
-    bottom: -0.5em;
-    left: 1em;
-    right: 1em;
-  }
-
-  .twostep-nav[data-nav-status="active"] .twostep-nav__top-line {
-    inset: auto 0 -0.5em;
-  }
-
-  .twostep-nav[data-nav-status="active"] .twostep-nav__back {
-    inset: -1.25em;
-  }
-
-  .twostep-nav__bottom {
-    transition: grid-template-rows var(--animation-default) 0s, transform var(--animation-default) 0s;
-    transform: translateY(-0.625em);
-  }
-
-  .twostep-nav[data-nav-status="active"] .twostep-nav__bottom {
-    transition: grid-template-rows var(--animation-default-long) 0.25s, transform var(--animation-default) 0.25s;
-    transform: translateY(0);
-  }
+.header.header-hidden {
+  transform: translateY(-100%);
 }
 </style>

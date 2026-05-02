@@ -25,6 +25,11 @@ defineProps({
 .sanity-blocks {
 }
 
+/* Soft line breaks (e.g. Shift+Enter in Sanity) are stored as \n in span text */
+.sanity-blocks :deep(.sanity-block) {
+  white-space: pre-line;
+}
+
 .sanity-blocks p {
   margin-bottom: calc(var(--gutter) / 2);
 }

@@ -1,0 +1,60 @@
+/* Colour tokens — layout uses --text-color / --background-color from app.vue useHead. */
+:root {
+  --orange: #FF5722;
+  --yellow: #FFD54F;
+  --green: #4CAF50;
+  --blue: #2196F3;
+  --lavender: #DBD2FE;
+  --purple: #9C27B0;
+  --pink: #E91E63;
+  --brown: #795548;
+  --gray: #9E9E9E;
+  --black: #000000;
+  --white: #ffffff;
+  --light-grey: #F3F3F3;
+  --cream: #F0E5DD;
+  --background-color: var(--light-grey);
+  --text-color: var(--black);
+}
+
+svg > * {
+  fill: currentColor;
+}
+
+.orange { background-color: var(--orange); }
+.yellow { background-color: var(--yellow);}
+.green { background-color: var(--green);}
+.blue { background-color: var(--blue);}
+.purple { background-color: var(--purple);}
+.pink { background-color: var(--pink);}
+.brown { background-color: var(--brown);}
+.gray { background-color: var(--gray);}
+.black { background-color: var(--black);}
+.white { background-color: var(--white);}
+.cream { background-color: var(--cream);}
+.lavender { background-color: var(--lavender);}
+
+.orange-text { color: var(--orange); }
+.yellow-text { color: var(--yellow); }
+.green-text { color: var(--green); }
+.blue-text { color: var(--blue); }
+.purple-text { color: var(--purple); }
+.pink-text { color: var(--pink); }
+.brown-text { color: var(--brown); }
+.gray-text { color: var(--gray); }
+.black-text { color: var(--black); }
+.white-text { color: var(--white); }
+.cream-text { color: var(--cream); }
+.lavender-text { color: var(--lavender); }
+
+.orange-dot { --subtitle-dot-color: var(--orange); }
+.yellow-dot { --subtitle-dot-color: var(--yellow); }
+.green-dot { --subtitle-dot-color: var(--green); }
+.blue-dot { --subtitle-dot-color: var(--blue); }
+.purple-dot { --subtitle-dot-color: var(--purple); }
+.pink-dot { --subtitle-dot-color: var(--pink); }
+.brown-dot { --subtitle-dot-color: var(--brown); }
+.gray-dot { --subtitle-dot-color: var(--gray); }
+.black-dot { --subtitle-dot-color: var(--black); }
+.white-dot { --subtitle-dot-color: var(--white); }
+.lavender-dot { --subtitle-dot-color: var(--lavender); }

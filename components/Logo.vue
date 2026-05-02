@@ -1,72 +1,32 @@
 <template>
   <div class="logo">
     <div
-      v-if="logoSvg"
+      v-if="logoSvgHtml && svgMounted"
       class="logo-svg"
-      v-html="logoSvg"
+      v-html="logoSvgHtml"
     />
-    <NuxtImg
-      v-else-if="logoUrl"
-      :src="logoUrl"
-      alt=""
-      class="logo-img"
-    />
-    <span v-else class="logo-fallback">Registix</span>
+    <span v-else>Roleplay</span>
   </div>
 </template>
 
 <script setup>
 import { useSiteSettings } from '~/composables/useSiteSettings'
-import { useSanityImage } from '~/composables/useSanityImage'
 
-const { logo, logoSvg, refreshBypassCache } = useSiteSettings()
-const { getImageSrc } = useSanityImage()
+const { logo } = useSiteSettings()
 
-const logoUrl = computed(() => getImageSrc(logo.value))
+const SVG_TAG_RE = /<\s*svg[\s>]/i
 
-// Bypass CDN cache when showing fallback (logo may have been added in Sanity)
+const logoSvgHtml = computed(() => {
+  const raw = logo.value
+  if (typeof raw !== 'string') return ''
+  const trimmed = raw.trim()
+  return SVG_TAG_RE.test(trimmed) ? trimmed : ''
+})
+
+/** Defer v-html SVG until after mount so SSR and first client paint match (text fallback). */
+const svgMounted = ref(false)
 onMounted(() => {
-  if (!logoSvg.value && !logoUrl.value) {
-    refreshBypassCache()
-  }
+  if (logoSvgHtml.value) svgMounted.value = true
 })
 </script>
-
-<style scoped>
-.logo {
-  color: currentColor;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  height: 100%;
-}
-
-.logo-svg {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-
-.logo-svg :deep(svg) {
-  height: 100%;
-  width: auto;
-  fill: currentColor;
-  display: block;
-}
-
-.logo-img {
-  height: 100%;
-  width: auto;
-  object-fit: contain;
-}
-
-.logo .logo-fallback {
-  font-family: var(--logo-font-family);
-  font-size: var(--font-size-logo);
-}
-</style>
 
