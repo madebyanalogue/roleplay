@@ -20,6 +20,18 @@
         v-else-if="section.sectionType === 'services'"
         :section="section"
       />
+      <PageSectionText
+        v-else-if="section.sectionType === 'text'"
+        :section="section"
+      />
+      <PageSectionCards
+        v-else-if="section.sectionType === 'cards'"
+        :section="section"
+      />
+      <PageSectionAutoscrollGallery
+        v-else-if="section.sectionType === 'autoscrollGallery'"
+        :section="section"
+      />
       <PageSectionNews
         v-else-if="section.sectionType === 'news' || section.sectionType === 'pressAwards'"
         :section="section"
@@ -28,6 +40,18 @@
         v-else-if="section.sectionType === 'portfolio'"
         :section="section"
         :projects="portfolioProjects"
+      />
+      <PageSectionTeam
+        v-else-if="section.sectionType === 'team'"
+        :section="section"
+      />
+      <PageSectionLogoWall
+        v-else-if="section.sectionType === 'logoWall'"
+        :section="section"
+      />
+      <PageSectionClients
+        v-else-if="section.sectionType === 'clients'"
+        :section="section"
       />
     </div>
   </div>
@@ -121,9 +145,104 @@ const { data: page, pending, error } = useAsyncData(
           showOnMobile
         },
         servicesTitle,
-        servicesClassName,
-        servicesContent,
-        thumbnailAspectRatio
+        servicesTextarea,
+        textContent,
+        cardsDisableScrollDemo,
+        cards[] {
+          _key,
+          title,
+          description,
+          mediaType,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
+            }
+          },
+          video {
+            asset->
+          }
+        },
+        autoscrollGalleryAspectRatio,
+        autoscrollGalleryDuration,
+        autoscrollGalleryDirection,
+        autoscrollGalleryItems[] {
+          _key,
+          mediaType,
+          link,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
+            }
+          },
+          video {
+            asset-> {
+              _id,
+              url
+            }
+          }
+        },
+        thumbnailAspectRatio,
+        teamMembers[] {
+          _key,
+          name,
+          role,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
+            }
+          }
+        },
+        logoWallShuffle,
+        logoWallLogos[] {
+          _key,
+          alt,
+          asset-> {
+            _id,
+            url
+          }
+        },
+        clientsTitle,
+        clientsImages[] {
+          _key,
+          alt,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
+            }
+          }
+        }
       },
       "portfolioProjects": *[_type == "portfolio"] | order(orderRank) {
         _id,

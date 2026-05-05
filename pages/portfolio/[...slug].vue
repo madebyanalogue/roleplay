@@ -7,11 +7,11 @@
       <p>Error loading portfolio: {{ error.message }}</p>
     </div>
     <div v-else-if="project">
-      <div class="portfolio-layout portfolio-fade-in underline-links">
+      <div class="portfolio-layout portfolio-fade-in">
         <aside class="portfolio-layout__sidebar rounded-portfolio white pad-30">
           <div class="portfolio-sidebar-stack">
             <div class="portfolio-sidebar-stack__middle">
-              <div class="portfolio-sidebar-stack__body gap-20">
+              <div class="portfolio-sidebar-stack__body gap-30">
                 <h1 class="portfolio-title portfolio-title-full fluid-type" style="--desktop: 54; --mobile: 40;">
                   {{ project.title }}
                 </h1>
@@ -51,8 +51,8 @@
                     >
                       <div class="portfolio-accordion-panel-inner">
                         <div
-                          class="portfolio-accordion-panel fluid-type"
-                          style="--desktop: 24; --mobile: 18"
+                          class="portfolio-accordion-panel line-height-11 fluid-type"
+                          style="--desktop: 26; --mobile: 18"
                         >
                           <SanityBlocks :blocks="project.role" />
                         </div>
@@ -73,7 +73,7 @@
                       aria-controls="accordion-panel-play"
                       @click="onAccordionToggle('play')"
                     >
-                      <span class="subtitle subtitle--square orange-dot">Play</span>
+                      <span class="subtitle subtitle--square twisted orange-dot">Play</span>
                     </button>
                     <div
                       id="accordion-panel-play"
@@ -84,7 +84,7 @@
                     >
                       <div class="portfolio-accordion-panel-inner">
                         <div
-                          class="portfolio-accordion-panel fluid-type"
+                          class="portfolio-accordion-panel line-height-11 fluid-type"
                           style="--desktop: 24; --mobile: 18"
                         >
                           <SanityBlocks :blocks="project.play" />
@@ -124,7 +124,7 @@
                             v-if="project.results?.length"
                             :blocks="project.results"
                           />
-                          <PortfolioStats
+                          <PortfolioStatsProject
                             v-if="project.resultsStats?.length"
                             :stats="project.resultsStats"
                             root-class="portfolio-results-stats gap-20"
@@ -152,7 +152,7 @@
                   @click="clientVideoOpen = !clientVideoOpen"
                 >
                   <span class="subtitle subtitle--circle orange-dot">Hear from the client</span>
-                  <div class="orange-text pad-10 pad-left">
+                  <div class="orange-text pad-20 pad-left">
                     <svg
                       class="portfolio-hear-arrow"
                       xmlns="http://www.w3.org/2000/svg"
@@ -198,6 +198,7 @@
         </aside>
 
         <div class="portfolio-layout__main">
+          <div class="portfolio-layout__main-mask"></div>
           <div class="portfolio-content">
         <div
           v-for="(block, index) in project.contentBlocks"
@@ -224,39 +225,70 @@
         
         <div v-else-if="block._type === 'videoBlock' && videoBlockHasMedia(block)" class="portfolio-video-block rounded-portfolio">
           <div class="portfolio-image-container portfolio-video-block-inner">
+            <Transition name="portfolio-video-fade">
+              <button
+                v-if="!videoBlockIsActivated(block, index)"
+                type="button"
+                class="portfolio-video-cta"
+                @click="activateVideoBlock(block, index)"
+              >
+                <NuxtImg
+                  v-if="block.poster?.asset?.url"
+                  :src="block.poster.asset.url"
+                  :alt="`${project.title} video poster`"
+                  :width="block.poster.asset.metadata?.dimensions?.width"
+                  :height="block.poster.asset.metadata?.dimensions?.height"
+                  class="portfolio-video-poster"
+                  @load="onImageLoad"
+                />
+                <span class="portfolio-video-cta__play" aria-hidden="true">Play</span>
+                <span class="sr-only">Play video with sound</span>
+              </button>
+            </Transition>
             <PlyrPlayer
-              v-if="videoBlockVimeoId(block)"
+              v-if="videoBlockIsActivated(block, index) && videoBlockVimeoId(block)"
               :key="`block-vimeo-${block._key || index}-${videoBlockVimeoId(block)}`"
               type="vimeo"
               :vimeo-id="videoBlockVimeoId(block)"
+              :autoplay="true"
+              :muted="false"
             />
             <PlyrPlayer
-              v-else-if="block.video?.asset?.url"
+              v-else-if="videoBlockIsActivated(block, index) && block.video?.asset?.url"
               :key="`block-mp4-${block._key || index}-${block.video.asset.url}`"
               type="html5"
               :src="block.video.asset.url"
+              :autoplay="true"
+              :muted="false"
             />
           </div>
         </div>
         
-        <div v-else-if="block._type === 'testimonialBlock'" class="portfolio-testimonial-block rounded-portfolio cream pad-30">
+        <div v-else-if="block._type === 'testimonialBlock'" class="portfolio-testimonial-block rounded-portfolio beige grid gap-50 pad-30 pad-md-50">
+          <div class="subtitle subtitle--square white-dot portfolio-testimonial-subtitle">
+            {{ block.subtitle || 'Testimonial' }}
+          </div>
           <blockquote
             v-if="block.testimonial"
-            class="portfolio-testimonial-quote"
+            class="portfolio-testimonial-quote line-height-1 fluid-type pad-md-60 pad-right"
+            style="--desktop: 60; --mobile: 30;"
           >
           “{{ block.testimonial }}”
           </blockquote>
           <footer
             v-if="block.name || block.company"
-            class="portfolio-testimonial-attribution"
+            class="portfolio-testimonial-attribution fluid-type"
+            style="--desktop: 24; --mobile: 24;"
           >
-            <span v-if="block.name">{{ block.name }}</span>
-            <span v-if="block.name && block.company">, </span>
-            <span v-if="block.company">{{ block.company }}</span>
+            <div v-if="block.name">{{ block.name }}</div>
+            <div v-if="block.company">{{ block.company }}</div>
           </footer>
         </div>
 
-        <div v-else-if="block._type === 'servicesBlock' && block.body" class="portfolio-services-block rounded-portfolio cream pad-30">
+        <div v-else-if="block._type === 'servicesBlock' && block.body" class="portfolio-services-block rounded-portfolio beige pad-30">
+          <div class="subtitle subtitle--square white-dot portfolio-services-subtitle">
+            {{ block.title || 'Services' }}
+          </div>
           <div class="portfolio-services-columns">
             <div
               v-for="(line, li) in servicesLines(block.body)"
@@ -268,7 +300,52 @@
           </div>
         </div>
 
-        <div v-else-if="block._type === 'textBlock' && block.text" class="portfolio-text-block rounded-portfolio cream underline-links pad-30">
+        <div v-else-if="block._type === 'cardsBlock' && block.cards?.length" class="portfolio-cards-block">
+          <article
+            v-for="(card, cardIndex) in block.cards"
+            :key="card._key || cardIndex"
+            class="portfolio-cards-item rounded-portfolio"
+          >
+            <div class="portfolio-cards-item__grid">
+              <div class="portfolio-cards-item__text underline-links">
+                <h3 v-if="card.title" class="portfolio-cards-item__title">
+                  {{ card.title }}
+                </h3>
+                <SanityBlocks
+                  v-if="card.description?.length"
+                  :blocks="card.description"
+                />
+              </div>
+
+              <div class="portfolio-cards-item__media">
+                <video
+                  v-if="card.mediaType === 'video' && card.video?.asset?.url"
+                  autoplay
+                  muted
+                  loop
+                  playsinline
+                  class="portfolio-cards-item__video"
+                >
+                  <source
+                    :src="card.video.asset.url"
+                    :type="videoMimeTypeFromUrl(card.video.asset.url)"
+                  >
+                </video>
+                <NuxtImg
+                  v-else-if="card.image?.asset?.url"
+                  :src="card.image.asset.url"
+                  :alt="card.title || project.title"
+                  :width="card.image.asset.metadata?.dimensions?.width"
+                  :height="card.image.asset.metadata?.dimensions?.height"
+                  class="portfolio-cards-item__image"
+                  @load="onImageLoad"
+                />
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div v-else-if="block._type === 'textBlock' && block.text" class="portfolio-text-block rounded-portfolio beige underline-links pad-30">
           <SanityBlocks :blocks="block.text" />
         </div>
         
@@ -393,12 +470,43 @@
             </div>
           </div>
         </div>
+        </div>
+        <div
+          v-if="nextProject"
+          class="portfolio-next-project rounded-portfolio yellow pad-30 portfolio-fade-in"
+        >
+          <div class="portfolio-next-project__info">
+            <div class="subtitle">Next up:</div>
+            <NuxtLink
+              :to="`/portfolio/${nextProject.slug.current}`"
+              class="portfolio-next-project__title fluid-type"
+              style="--desktop: 72; --mobile: 40;"
+            >
+              {{ nextProject.title }}
+            </NuxtLink>
           </div>
+          <div class="portfolio-next-project__actions">
+            <NuxtLink
+              :to="`/portfolio/${nextProject.slug.current}`"
+              class="next--button fluid-type"
+              style="--desktop: 24; --mobile: 18;--background-color: var(--white);--color: var(--black);--border-color: var(--white);"
+            >
+              View project
+            </NuxtLink>
+            <NuxtLink
+              to="/portfolio"
+              class="next--button outline fluid-type"
+              style="--desktop: 24; --mobile: 18;--background-color: transparent;--color: var(--black);--border-color: var(--black);"
+            >
+              Back to all projects
+            </NuxtLink>
+          </div>
+        </div>
       </div>
       </div>
       </div>
-    </div>
-    <div v-else class="portfolio-not-found rounded-portfolio cream pad-30">
+      </div>
+    <div v-else class="portfolio-not-found rounded-portfolio beige pad-30">
       <p>Portfolio project not found</p>
     </div>
   </div>
@@ -465,6 +573,19 @@ const { data: project, pending, error } = useAsyncData(
         },
         videoSource,
         videoVimeo,
+        poster {
+          asset-> {
+            _id,
+            url,
+            metadata {
+              dimensions {
+                width,
+                height,
+                aspectRatio
+              }
+            }
+          }
+        },
         video {
           asset->
         },
@@ -538,10 +659,34 @@ const { data: project, pending, error } = useAsyncData(
           }
         },
         rightTiming,
+        subtitle,
         testimonial,
         name,
         company,
-        body
+        title,
+        body,
+        cards[] {
+          _key,
+          title,
+          description,
+          mediaType,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
+            }
+          },
+          video {
+            asset->
+          }
+        }
       }
     }`
     
@@ -564,6 +709,55 @@ const { data: project, pending, error } = useAsyncData(
   { watch: [slug] }
 )
 
+const { data: allProjects } = useAsyncData(
+  'portfolio-next-projects',
+  async () => {
+    const query = `*[_type == "portfolio"] | order(orderRank) {
+      _id,
+      title,
+      slug
+    }`
+
+    if (process.server) {
+      const config = useRuntimeConfig()
+      const projectId = config.public.sanity?.projectId || 'go8920y3'
+      const dataset = config.public.sanity?.dataset || 'production'
+
+      return await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      }).then(result => result?.result || []).catch(() => [])
+    }
+
+    return await $fetch('/api/sanity/query', {
+      method: 'POST',
+      body: { query },
+    }).then(result => result?.result || []).catch(() => [])
+  },
+  { watch: [] },
+)
+
+const nextProject = computed(() => {
+  const current = project.value
+  const orderedProjects = allProjects.value
+
+  if (!current?.slug?.current || !Array.isArray(orderedProjects) || orderedProjects.length === 0) {
+    return null
+  }
+
+  const currentIndex = orderedProjects.findIndex(
+    (item) => item?.slug?.current === current.slug.current,
+  )
+
+  if (currentIndex === -1) {
+    return orderedProjects[0] || null
+  }
+
+  const nextIndex = (currentIndex + 1) % orderedProjects.length
+  return orderedProjects[nextIndex] || null
+})
+
 const clientVimeoId = computed(() => {
   const p = project.value
   if (!p || p.clientVideoSource !== 'vimeo') return ''
@@ -576,22 +770,35 @@ const clientVideoLaunchRef = ref(null)
 /** Sidebar accordions: one open on desktop with height animation; mobile = all open, no toggle (CSS). */
 const ACCORDION_BREAKPOINT_MAX = 999
 
-const accordionOpenId = ref(null)
+function accordionHasBlocks(arr) {
+  return Array.isArray(arr) && arr.length > 0
+}
 
+/** First section in DOM order (Role → Play → Results) that has CMS content — stays open by default. */
 function defaultAccordionSectionId(p) {
   if (!p) return null
-  if (p.role?.length) return 'role'
-  if (p.play?.length) return 'play'
-  if (p.results?.length || p.resultsStats?.length) return 'results'
+  if (accordionHasBlocks(p.role)) return 'role'
+  if (accordionHasBlocks(p.play)) return 'play'
+  if (accordionHasBlocks(p.results) || accordionHasBlocks(p.resultsStats)) return 'results'
   return null
 }
 
+/**
+ * Keep SSR and client hydration deterministic:
+ * - default open section always derives from project data
+ * - local state is only used after explicit user interaction
+ */
+const accordionOpenId = ref(null)
+
+const effectiveAccordionOpenId = computed(() => {
+  return accordionOpenId.value ?? defaultAccordionSectionId(project.value ?? null)
+})
+
 watch(
-  () => project.value,
-  (p) => {
-    accordionOpenId.value = defaultAccordionSectionId(p)
+  () => project.value?._id,
+  () => {
+    accordionOpenId.value = null
   },
-  { immediate: true },
 )
 
 const isMobileAccordionViewport = ref(false)
@@ -604,17 +811,24 @@ function syncAccordionViewport() {
 }
 
 function accordionSectionOpen(id) {
-  return accordionOpenId.value === id
+  return effectiveAccordionOpenId.value === id
 }
 
 function accordionAriaExpanded(id) {
   if (isMobileAccordionViewport.value) return true
-  return accordionOpenId.value === id
+  return effectiveAccordionOpenId.value === id
 }
 
 function onAccordionToggle(id) {
   if (isMobileAccordionViewport.value) return
-  accordionOpenId.value = accordionOpenId.value === id ? null : id
+  const first = defaultAccordionSectionId(project.value ?? null)
+  const openId = effectiveAccordionOpenId.value
+  if (openId === id) {
+    /** Keep at least one panel open on desktop — snap back to first section instead of closing all. */
+    accordionOpenId.value = first ?? null
+    return
+  }
+  accordionOpenId.value = id
 }
 
 const hasClientVideo = computed(() => {
@@ -623,8 +837,28 @@ const hasClientVideo = computed(() => {
   return !!project.value.clientVideo?.asset?.url
 })
 
+const activatedVideoBlocks = ref({})
+
+function videoBlockActivationKey(block, index) {
+  return block?._key || `video-${index}`
+}
+
+function videoBlockIsActivated(block, index) {
+  const key = videoBlockActivationKey(block, index)
+  return !!activatedVideoBlocks.value[key]
+}
+
+function activateVideoBlock(block, index) {
+  const key = videoBlockActivationKey(block, index)
+  activatedVideoBlocks.value = {
+    ...activatedVideoBlocks.value,
+    [key]: true,
+  }
+}
+
 watch(slug, () => {
   clientVideoOpen.value = false
+  activatedVideoBlocks.value = {}
 })
 
 function onVideoPopoverDismiss(e) {
@@ -682,6 +916,14 @@ function videoBlockHasMedia(block) {
   if (!block || block._type !== 'videoBlock') return false
   if (videoBlockVimeoId(block)) return true
   return !!block.video?.asset?.url
+}
+
+function videoMimeTypeFromUrl(url) {
+  if (!url || typeof url !== 'string') return 'video/mp4'
+  const lower = url.toLowerCase()
+  if (lower.endsWith('.webm')) return 'video/webm'
+  if (lower.endsWith('.ogg') || lower.endsWith('.ogv')) return 'video/ogg'
+  return 'video/mp4'
 }
 
 /** Parses "16/9" or "1 / 1" → CSS aspect-ratio value; invalid or empty → null */
@@ -752,26 +994,57 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: var(--gutter);
-  margin-bottom: calc(var(--gutter) * 2);
   align-items: start;
+  position: relative;
 }
 
 .portfolio-layout__sidebar {
   grid-column: span 4;
   min-width: 0;
-  height: 100%;
+  background-size: 100%;
+}
+
+.portfolio-sidebar-stack__body .sanity-blocks p {
+  margin-bottom: calc(var(--gutter) / 1);
 }
 
 .portfolio-layout__main {
-  grid-column: span 8;
+  grid-column: span 12;
   min-width: 0;
 }
+
+@media all and (min-width: 1000px) {
+  .portfolio-layout__sidebar {
+    min-height: calc(100dvh - var(--header-height) - calc(var(--gutter) * 3));
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: calc(var(--header-height) + calc(var(--gutter) * 2));
+  }
+
+  .portfolio-layout__main {
+    grid-column: span 8;
+    min-width: 0;
+  }
+}
+
+
+.portfolio-layout__main-mask {
+  bottom:100%;
+  width:100%;
+  position:fixed;
+  left:0;
+  background:red;
+  height:400px;
+}
+
 
 .portfolio-sidebar-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--gutter);
-  min-height: min(100%, 60vh);
+  gap: calc(var(--gutter) * 2);
+  min-height: 100%;
+  flex:1;
 }
 
 .portfolio-sidebar-stack__middle {
@@ -806,6 +1079,8 @@ onUnmounted(() => {
 
 .portfolio-accordion {
   border: 0;
+  display: grid;
+  margin-top: calc(var(--gutter) / 2);
 }
 
 .portfolio-accordion-summary {
@@ -820,6 +1095,11 @@ onUnmounted(() => {
   text-align: inherit;
   cursor: pointer;
   user-select: none;
+}
+.portfolio-accordion-panel{
+  padding-top: calc(var(--gutter) / 1.5);
+
+  padding-bottom: calc(var(--gutter) / 1.5);
 }
 
 .portfolio-accordion-summary:focus-visible {
@@ -875,9 +1155,6 @@ onUnmounted(() => {
 
 
 
-.portfolio-results-stats {
-  margin-top: calc(var(--gutter) * 1);
-}
 
 .portfolio-video-launch {
   position: relative;
@@ -933,19 +1210,68 @@ onUnmounted(() => {
   aspect-ratio: 16 / 9;
 }
 
-/* TEMP: design-reference PNGs for testimonial / services styling — remove when done */
-.portfolio-testimonial-block {
-  padding: calc(var(--gutter) * 2);
-  background-color: #f2e8df;
-  background-image: url('/design-refs/testimonial-ref.png');
-  background-repeat: no-repeat;
-  background-position: center top;
-  background-size: contain;
-  min-height: min(85vw, 560px);
+.portfolio-video-cta {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  background: #000;
+  color: #fff;
+}
+
+.portfolio-video-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.portfolio-video-cta__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 6.5rem;
+  min-height: 3.25rem;
+  border-radius: 999px;
+  padding: 0.75rem 1.25rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.portfolio-video-fade-enter-active,
+.portfolio-video-fade-leave-active {
+  transition: opacity 0.35s ease;
+}
+
+.portfolio-video-fade-enter-from,
+.portfolio-video-fade-leave-to {
+  opacity: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .portfolio-services-block {
-  padding: calc(var(--gutter) * 2);
   background-color: #f2eae4;
   background-image: url('/design-refs/services-ref.png');
   background-repeat: no-repeat;
@@ -956,12 +1282,13 @@ onUnmounted(() => {
 
 .portfolio-testimonial-quote {
   margin: 0;
-  font-size: inherit;
   font-weight: normal;
 }
 
-.portfolio-testimonial-attribution {
-  margin-top: calc(var(--gutter) * 0.75);
+@media (min-width: 1000px) {
+  .portfolio-testimonial-block .subtitle {
+    font-size: 200%;
+  }
 }
 
 .portfolio-services-columns {
@@ -969,9 +1296,54 @@ onUnmounted(() => {
   column-gap: var(--gutter);
 }
 
+.portfolio-services-subtitle {
+  margin-bottom: calc(var(--gutter) * 0.5);
+}
+
 .portfolio-services-line {
   break-inside: avoid;
-  margin-bottom: calc(var(--gutter) * 0.5);
+}
+
+.portfolio-cards-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter);
+}
+
+.portfolio-cards-item {
+  width: 100%;
+}
+
+.portfolio-cards-item__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gutter);
+  align-items: start;
+}
+
+.portfolio-cards-item__text {
+  grid-column: span 4;
+  min-width: 0;
+}
+
+.portfolio-cards-item__title {
+  margin-top: 0;
+}
+
+.portfolio-cards-item__media {
+  grid-column: span 8;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  position: relative;
+}
+
+.portfolio-cards-item__image,
+.portfolio-cards-item__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .portfolio-fade-in {
@@ -988,6 +1360,37 @@ onUnmounted(() => {
   }
 }
 
+.portfolio-testimonial-attribution {
+  display: flex;
+  flex-direction: row;
+  row-gap: calc(var(--gutter) * 0.5);
+  column-gap: -1px;
+  align-items: center;
+  justify-content: start;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+}
+.portfolio-testimonial-attribution > * {
+  border: 1px solid currentColor;
+  padding: .9rem 2.6rem;
+  border-radius: 0.35rem;
+  color: currentColor;
+  background-color: transparent;
+  transition: background-color 0.3s ease;
+}
+.portfolio-testimonial-attribution > *:first-child {
+  border-radius:200px;
+}
+@media (min-width: 1000px) {
+  .portfolio-testimonial-attribution {
+    column-gap: -0.06em;
+  }
+  .portfolio-testimonial-attribution > * {
+    border-width:0.06em;
+  }
+}
+
+
 .portfolio-content {
   display: flex;
   flex-direction: column;
@@ -997,6 +1400,45 @@ onUnmounted(() => {
 
 .portfolio-text-block {
   padding-bottom: calc(var(--gutter) * 4);
+}
+
+.portfolio-next-project {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--gutter);
+  flex-wrap: wrap;
+}
+
+.portfolio-next-project__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.portfolio-next-project__title {
+  color: inherit;
+  text-decoration: none;
+  line-height: 1.05;
+}
+@media (max-width: 999px) {
+  .portfolio-next-project {
+    flex-direction: column;
+    align-items: start;
+  }
+}
+
+@media (max-width: 699px) {
+  .portfolio-next-project__title {
+    min-height: 2.1em;
+  }
+}
+
+.portfolio-next-project__actions {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--gutter) * 0.5);
+  flex-wrap: wrap;
 }
 
 .portfolio-image-container {
@@ -1099,6 +1541,15 @@ onUnmounted(() => {
   .portfolio-two-column-block,
   .portfolio-two-column-gallery-block {
     grid-template-columns: 1fr;
+  }
+
+  .portfolio-cards-item__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-cards-item__text,
+  .portfolio-cards-item__media {
+    grid-column: 1 / -1;
   }
 }
 </style>

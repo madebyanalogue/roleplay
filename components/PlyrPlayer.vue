@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import 'plyr/dist/plyr.css'
+import 'plyr/css'
 
 const props = defineProps({
   /** html5 = uploaded file / mp4 URL; vimeo = numeric embed id */
@@ -37,6 +37,14 @@ const props = defineProps({
   vimeoId: {
     type: String,
     default: '',
+  },
+  autoplay: {
+    type: Boolean,
+    default: false,
+  },
+  muted: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -75,6 +83,8 @@ async function setupPlyr() {
   player = new Plyr(el, {
     controls: plyrControls,
     ratio: '16:9',
+    autoplay: props.autoplay,
+    muted: props.muted,
     fullscreen: { enabled: true, iosNative: true },
     vimeo: {
       byline: false,
@@ -87,6 +97,13 @@ async function setupPlyr() {
 
   player.on('ready', () => {
     isReady.value = true
+    if (props.autoplay) {
+      player.muted = props.muted
+      if (!props.muted) {
+        player.volume = 1
+      }
+      player.play().catch(() => {})
+    }
     emit('ready')
   })
 }
@@ -98,7 +115,7 @@ function teardown() {
 }
 
 watch(
-  () => [props.type, props.src, props.vimeoId],
+  () => [props.type, props.src, props.vimeoId, props.autoplay, props.muted],
   () => {
     setupPlyr()
   },

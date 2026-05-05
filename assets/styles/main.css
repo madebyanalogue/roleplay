@@ -42,7 +42,7 @@ body.preloader-ready #app {
   --underline-width: 1px;
   
   /* Header height (will be set dynamically via inline styles) */
-  --header-height: 0px;
+  --header-height: 49px;
 
   --rounded-medium: 10px;
   --rounded-small: 8px;

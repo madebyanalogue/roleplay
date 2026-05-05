@@ -1,20 +1,27 @@
 /* Colour tokens — layout uses --text-color / --background-color from app.vue useHead. */
 :root {
   --orange: #FF5722;
-  --yellow: #FFD54F;
+  --yellow: #E2FE20;
   --green: #4CAF50;
   --blue: #2196F3;
   --lavender: #DBD2FE;
-  --purple: #9C27B0;
-  --pink: #E91E63;
+  --purple: #B8A5FE;
+  --pink: #FFA1D7;
   --brown: #795548;
   --gray: #9E9E9E;
   --black: #000000;
   --white: #ffffff;
   --light-grey: #F3F3F3;
-  --cream: #F0E5DD;
+  --beige: #F0E5DD;
   --background-color: var(--light-grey);
   --text-color: var(--black);
+
+
+  --purple-tint-1: color-mix(in srgb, var(--purple) 85%, white 15%);
+  --purple-tint-2: color-mix(in srgb, var(--purple) 70%, white 30%);
+  --purple-tint-3: color-mix(in srgb, var(--purple) 55%, white 45%);
+  --purple-tint-4: color-mix(in srgb, var(--purple) 40%, white 60%);
+
 }
 
 svg > * {
@@ -31,7 +38,7 @@ svg > * {
 .gray { background-color: var(--gray);}
 .black { background-color: var(--black);}
 .white { background-color: var(--white);}
-.cream { background-color: var(--cream);}
+.beige { background-color: var(--beige);}
 .lavender { background-color: var(--lavender);}
 
 .orange-text { color: var(--orange); }
@@ -44,7 +51,7 @@ svg > * {
 .gray-text { color: var(--gray); }
 .black-text { color: var(--black); }
 .white-text { color: var(--white); }
-.cream-text { color: var(--cream); }
+.beige-text { color: var(--beige); }
 .lavender-text { color: var(--lavender); }
 
 .orange-dot { --subtitle-dot-color: var(--orange); }
@@ -57,4 +64,5 @@ svg > * {
 .gray-dot { --subtitle-dot-color: var(--gray); }
 .black-dot { --subtitle-dot-color: var(--black); }
 .white-dot { --subtitle-dot-color: var(--white); }
+.beige-dot { --subtitle-dot-color: var(--beige); }
 .lavender-dot { --subtitle-dot-color: var(--lavender); }

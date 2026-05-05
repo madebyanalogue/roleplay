@@ -462,6 +462,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: calc(var(--gutter) * 0.75);
+  background:url('/images/_contact-pop.png') no-repeat center top;
+  background-size: 100%;
 }
 
 .header-menu-toggle {
@@ -547,7 +549,7 @@ onUnmounted(() => {
 
 .header.header-fixed {
   position: sticky;
-  top: 0;
+  top: var(--gutter);
 }
 
 .header.header-sticky {

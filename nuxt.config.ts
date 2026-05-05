@@ -107,7 +107,7 @@ export default defineNuxtConfig({
     resolve: {
       alias: {
         'react-compiler-runtime': join(__dirname, 'node_modules/react-compiler-runtime/dist/index.js'),
-        '@sanity/visual-editing': join(__dirname, 'node_modules/@sanity/visual-editing-stub/index.js'),
+        '@sanity/visual-editing': join(__dirname, 'stubs/sanity-visual-editing-stub.js'),
       },
     },
     plugins: [
@@ -118,7 +118,7 @@ export default defineNuxtConfig({
             return join(__dirname, 'node_modules/react-compiler-runtime/dist/index.js')
           }
           if (id.includes('@sanity/visual-editing') && !id.includes('stub')) {
-            return join(__dirname, 'node_modules/@sanity/visual-editing-stub/index.js')
+            return join(__dirname, 'stubs/sanity-visual-editing-stub.js')
           }
         },
       },
