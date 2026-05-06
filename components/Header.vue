@@ -548,8 +548,8 @@ onUnmounted(() => {
 }
 
 .header.header-fixed {
-  position: sticky;
-  top: var(--gutter);
+  /* position: sticky;
+  top: 0; */
 }
 
 .header.header-sticky {

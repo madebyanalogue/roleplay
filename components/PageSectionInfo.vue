@@ -98,8 +98,15 @@
               :key="item._id || index"
               class="info-news-item"
             >
-              <h3 v-if="item.title" class="info-news-title">{{ item.title }}</h3>
-              <p v-if="item.details" class="info-news-details">{{ item.details }}</p>
+              <NuxtImg
+                v-if="item.featuredImage?.asset?.url"
+                :src="item.featuredImage.asset.url"
+                :width="item.featuredImage.asset.metadata?.dimensions?.width"
+                :height="item.featuredImage.asset.metadata?.dimensions?.height"
+                alt=""
+                class="info-news-image"
+              />
+              <SanityBlocks v-if="item.content" :blocks="item.content" class="info-news-content" />
             </div>
           </div>
         </div>
@@ -158,8 +165,18 @@ onMounted(() => {
 const { data: newsItems } = useAsyncData('news-items', async () => {
   const query = `*[_type in ["news", "pressAward"]] | order(orderRank) {
     _id,
-    title,
-    details
+    content,
+    featuredImage{
+      asset->{
+        url,
+        metadata{
+          dimensions{
+            width,
+            height
+          }
+        }
+      }
+    }
   }`
 
   if (process.server) {
@@ -451,16 +468,17 @@ const shouldOpenInNewTab = (link, openInNewTab) => {
 .info-news-item {
   display: flex;
   flex-direction: column;
+  gap: calc(var(--gutter) / 2);
 }
 
-.info-news-title {
-  font-weight: normal;
-  margin-bottom: 0;
+.info-news-image {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-.info-news-details {
-  margin: 0;
-  white-space: pre-line;
+.info-news-content {
+  font-size: var(--font-size-body);
 }
 </style>
 

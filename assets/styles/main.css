@@ -16,6 +16,11 @@ body.preloader-ready #app {
   transition: opacity 0.2s ease-in;
 }
 
+html {
+  /* Horizontal clip without breaking position:sticky (avoid overflow:hidden on #app) */
+  overflow-x: clip;
+}
+
 :root {
   --mobile-breakpoint: 800;
 
@@ -46,7 +51,7 @@ body.preloader-ready #app {
 
   --rounded-medium: 10px;
   --rounded-small: 8px;
-  --rounded-button: 8px;
+  --rounded-button: 10px;
 
 }
 
@@ -58,6 +63,15 @@ body.preloader-ready #app {
   }
 }
 
+.rounded-medium {
+  border-radius: var(--rounded-medium);
+  overflow: hidden;
+}
+
+.rounded-small {
+  border-radius: var(--rounded-small);
+  overflow: hidden;
+}
 
 header .logo-svg svg {
   max-height: var(--logo-height);
@@ -230,4 +244,19 @@ a {
     display: none !important;
   }
 }
+@media (min-width: 1000px) {
+  .hide-md {
+    display: none !important;
+  }
+}
 
+
+.flickity-page-dot {
+  margin: 0 2px;
+  background-color: var(--white);
+  opacity: 0.5;
+}
+
+.flickity-page-dot.is-selected {
+  opacity: 1;
+}

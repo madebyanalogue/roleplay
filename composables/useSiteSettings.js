@@ -61,6 +61,17 @@ export const useSiteSettings = () => {
         title,
         url
       },
+      singlePortfolioNextProjectSettings {
+        enabled,
+        nextUpSubtitle,
+        viewProjectButtonTitle,
+        backLinkTitle,
+        backLinkPage-> {
+          slug {
+            current
+          }
+        }
+      },
       navigationContact {
         buttonTitle,
         contacts[] {
@@ -141,6 +152,25 @@ export const useSiteSettings = () => {
   const mobileMenuSocialLinks = computed(
     () => settings.value?.mobileMenuSocialLinks || [],
   )
+  const singlePortfolioNextProjectSettings = computed(() => {
+    const section = settings.value?.singlePortfolioNextProjectSettings || {}
+    const nextUpSubtitle = section?.nextUpSubtitle?.trim?.() || 'Next up:'
+    const viewProjectButtonTitle = section?.viewProjectButtonTitle?.trim?.() || 'View project'
+    const enabled = section?.enabled !== false
+
+    const backTitle = section?.backLinkTitle?.trim?.() || ''
+    const backSlug = section?.backLinkPage?.slug?.current
+    const backLink = backTitle && backSlug
+      ? { title: backTitle, path: backSlug === 'home' ? '/' : `/${backSlug}` }
+      : null
+
+    return {
+      enabled,
+      nextUpSubtitle,
+      viewProjectButtonTitle,
+      backLink,
+    }
+  })
   const navigationContact = computed(() => settings.value?.navigationContact || null)
   const footerColumns = computed(() => settings.value?.footerColumns || [])
   const footerCallToAction = computed(() => settings.value?.footerCallToAction || [])
@@ -165,6 +195,7 @@ export const useSiteSettings = () => {
     showMobileMenuSocialLinks,
     mobileMenuSocialLinksTitle,
     mobileMenuSocialLinks,
+    singlePortfolioNextProjectSettings,
     navigationContact,
     footerColumns,
     footerCallToAction,

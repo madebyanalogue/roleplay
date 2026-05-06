@@ -5,12 +5,19 @@ font-weight: normal;
 font-style: normal;
 font-display: swap;
 }
+@font-face {
+  font-family: 'Season Sans';
+  src: url('/fonts/SeasonSans-LightItalic.otf') format('opentype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+  }
 
 @font-face {
 font-family: 'Season Sans';
-src: url('/fonts/SeasonSans-Light.otf') format('opentype');
-font-weight: normal;
-font-style: italic;
+src: url('/fonts/SeasonSans-Medium.otf') format('opentype');
+font-weight: 500;
+font-style: normal;
 font-display: swap;
 }
 
@@ -54,6 +61,9 @@ font-display: swap;
 .mono {
     font-family: var(--font-mono);
     text-transform: uppercase;
+}
+.medium {
+    font-weight: 500;
 }
 .bold {
     font-weight: bold;
@@ -114,6 +124,11 @@ font-display: swap;
     font-family: var(--font-mono);
     letter-spacing: 0.01em;
 }
+@media (max-width: 699px) {
+  .subtitle.small {
+    font-size: 10px;
+  }
+}
 
 .subtitle--circle::before,
 .subtitle--square::before {
@@ -130,9 +145,11 @@ font-display: swap;
 
 .subtitle--square::before {
   border-radius: 0.1em;
+  width: .675em;
+  height: .675em;
 }
 .subtitle--square.twisted::before {
-  transform: rotate(15deg);
+  transform: rotate(30deg);
 }
 
 

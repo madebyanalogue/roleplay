@@ -1,62 +1,62 @@
 <template>
   <div class="page">
     <div v-if="error">
-    <p>Error loading page: {{ error.message }}</p>
-  </div>
-    <div v-else-if="page">
-    <div v-if="sections.length === 0" style="padding: var(--gutter);">
-      <p>No sections found for this page. Add sections in Sanity.</p>
+      <p>Error loading page: {{ error.message }}</p>
     </div>
-    <div v-for="section in sections" :key="section._id" class="page-section">
-      <PageSectionFeaturedProjects
-        v-if="section.sectionType === 'featuredProjects'"
-        :section="section"
-      />
-      <PageSectionInfo
-        v-else-if="section.sectionType === 'info'"
-        :section="section"
-      />
-      <PageSectionServices
-        v-else-if="section.sectionType === 'services'"
-        :section="section"
-      />
-      <PageSectionText
-        v-else-if="section.sectionType === 'text'"
-        :section="section"
-      />
-      <PageSectionCards
-        v-else-if="section.sectionType === 'cards'"
-        :section="section"
-      />
-      <PageSectionAutoscrollGallery
-        v-else-if="section.sectionType === 'autoscrollGallery'"
-        :section="section"
-      />
-      <PageSectionNews
-        v-else-if="section.sectionType === 'news' || section.sectionType === 'pressAwards'"
-        :section="section"
-      />
-      <PageSectionPortfolio
-        v-else-if="section.sectionType === 'portfolio'"
-        :section="section"
-        :projects="portfolioProjects"
-      />
-      <PageSectionTeam
-        v-else-if="section.sectionType === 'team'"
-        :section="section"
-      />
-      <PageSectionLogoWall
-        v-else-if="section.sectionType === 'logoWall'"
-        :section="section"
-      />
-      <PageSectionClients
-        v-else-if="section.sectionType === 'clients'"
-        :section="section"
-      />
+    <div class="page-content" v-else-if="page">
+      <div v-if="sections.length === 0" style="padding: var(--gutter);">
+        <p>No sections found for this page. Add sections in Sanity.</p>
+      </div>
+      <div v-for="section in sections" :key="section._id" class="page-section">
+        <PageSectionFeaturedProjects
+          v-if="section.sectionType === 'featuredProjects'"
+          :section="section"
+        />
+        <PageSectionInfo
+          v-else-if="section.sectionType === 'info'"
+          :section="section"
+        />
+        <PageSectionServices
+          v-else-if="section.sectionType === 'services'"
+          :section="section"
+        />
+        <PageSectionText
+          v-else-if="section.sectionType === 'text'"
+          :section="section"
+        />
+        <PageSectionCards
+          v-else-if="section.sectionType === 'cards'"
+          :section="section"
+        />
+        <PageSectionAutoscrollGallery
+          v-else-if="section.sectionType === 'autoscrollGallery'"
+          :section="section"
+        />
+        <PageSectionNews
+          v-else-if="section.sectionType === 'news' || section.sectionType === 'pressAwards'"
+          :section="section"
+        />
+        <PageSectionPortfolio
+          v-else-if="section.sectionType === 'portfolio'"
+          :section="section"
+          :projects="portfolioProjects"
+        />
+        <PageSectionTeam
+          v-else-if="section.sectionType === 'team'"
+          :section="section"
+        />
+        <PageSectionLogoWall
+          v-else-if="section.sectionType === 'logoWall'"
+          :section="section"
+        />
+        <PageSectionClients
+          v-else-if="section.sectionType === 'clients'"
+          :section="section"
+        />
+      </div>
     </div>
-  </div>
     <div v-else>
-    <p>Page not found</p>
+     <p>Page not found</p>
     </div>
   </div>
 </template>
@@ -171,7 +171,7 @@ const { data: page, pending, error } = useAsyncData(
           }
         },
         autoscrollGalleryAspectRatio,
-        autoscrollGalleryDuration,
+        autoscrollGallerySpeed,
         autoscrollGalleryDirection,
         autoscrollGalleryItems[] {
           _key,
@@ -301,8 +301,8 @@ useHead(() => {
       'data-page-dev-bg': 'true',
       style: [
         `background-image:url("${url}")`,
-        'background-size:100%',
-        'background-position:center 3px',
+        'background-size: 100%',
+        'background-position: left top',
         'background-repeat:no-repeat',
       ].join(';'),
     },
@@ -323,5 +323,22 @@ watch(pending, (isPending) => {
 .page-section:not(:last-child) {
   margin-bottom: var(--gutter);
 } */
+
+.page-content {
+  display: grid;
+  padding-top: calc(var(--gutter) * 1);
+  gap: calc(var(--gutter) * 1.5);
+  align-items: start;
+}
+@media (min-width: 800px) {
+  .page-content {
+    padding-top: calc(var(--gutter) * 2.5);
+    gap: calc(var(--gutter) * 3.5);
+  }
+}
+
+ .page-content > * {
+  border: 1px solid red;
+ }
 </style>
 

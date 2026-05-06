@@ -8,17 +8,308 @@
     </div>
     <div v-else-if="project">
       <div class="portfolio-layout portfolio-fade-in">
+
+
+        <div class="hide-md pad-30 pad-top-bottom">
+          <div class="grid gap-50">
+            <h1 class="portfolio-title portfolio-title-full fluid-type" style="--desktop: 54; --mobile: 40;">
+              {{ project.title }}
+            </h1>
+
+            <div
+              v-if="project.intro?.length"
+              class="portfolio-intro fluid-type" style="--desktop: 18; --mobile: 18;"
+            >
+              <SanityBlocks :blocks="project.intro" />
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="isMobileAccordionViewport && mobileFeaturedBlock"
+          class="portfolio-mobile-featured"
+        >
+          <div
+            class="portfolio-content-block"
+          >
+            <div v-if="mobileFeaturedBlock._type === 'imageBlock' && mobileFeaturedBlock.image?.asset" class="portfolio-image-block rounded-portfolio">
+              <div
+                data-click-zoom
+                class="portfolio-image-container"
+                :style="getImageAspectRatio(mobileFeaturedBlock.image.asset)"
+              >
+                <NuxtImg
+                  :src="mobileFeaturedBlock.image.asset.url || ''"
+                  :alt="project.title"
+                  :width="mobileFeaturedBlock.image.asset.metadata?.dimensions?.width"
+                  :height="mobileFeaturedBlock.image.asset.metadata?.dimensions?.height"
+                  class="portfolio-image"
+                  @load="onImageLoad"
+                />
+              </div>
+            </div>
+
+            <div v-else-if="mobileFeaturedBlock._type === 'videoBlock' && videoBlockHasMedia(mobileFeaturedBlock)" class="portfolio-video-block rounded-portfolio">
+              <div class="portfolio-image-container portfolio-video-block-inner">
+                <Transition name="portfolio-video-fade">
+                  <button
+                    v-if="!videoBlockIsActivated(mobileFeaturedBlock, 0)"
+                    type="button"
+                    class="portfolio-video-cta"
+                    @click="activateVideoBlock(mobileFeaturedBlock, 0)"
+                  >
+                    <NuxtImg
+                      v-if="mobileFeaturedBlock.poster?.asset?.url"
+                      :src="mobileFeaturedBlock.poster.asset.url"
+                      :alt="`${project.title} video poster`"
+                      :width="mobileFeaturedBlock.poster.asset.metadata?.dimensions?.width"
+                      :height="mobileFeaturedBlock.poster.asset.metadata?.dimensions?.height"
+                      class="portfolio-video-poster"
+                      @load="onImageLoad"
+                    />
+                    <span class="portfolio-video-cta__play" aria-hidden="true">Play</span>
+                    <span class="sr-only">Play video with sound</span>
+                  </button>
+                </Transition>
+                <PlyrPlayer
+                  v-if="videoBlockIsActivated(mobileFeaturedBlock, 0) && videoBlockVimeoId(mobileFeaturedBlock)"
+                  :key="`featured-vimeo-${mobileFeaturedBlock._key || 0}-${videoBlockVimeoId(mobileFeaturedBlock)}`"
+                  type="vimeo"
+                  :vimeo-id="videoBlockVimeoId(mobileFeaturedBlock)"
+                  :autoplay="true"
+                  :muted="false"
+                />
+                <PlyrPlayer
+                  v-else-if="videoBlockIsActivated(mobileFeaturedBlock, 0) && mobileFeaturedBlock.video?.asset?.url"
+                  :key="`featured-mp4-${mobileFeaturedBlock._key || 0}-${mobileFeaturedBlock.video.asset.url}`"
+                  type="html5"
+                  :src="mobileFeaturedBlock.video.asset.url"
+                  :autoplay="true"
+                  :muted="false"
+                />
+              </div>
+            </div>
+
+            <div v-else-if="mobileFeaturedBlock._type === 'testimonialBlock'" class="portfolio-testimonial-block rounded-portfolio beige grid gap-50 pad-30 pad-md-50">
+              <div class="subtitle subtitle--square white-dot portfolio-testimonial-subtitle">
+                {{ mobileFeaturedBlock.subtitle || 'Testimonial' }}
+              </div>
+              <blockquote
+                v-if="mobileFeaturedBlock.testimonial"
+                class="portfolio-testimonial-quote line-height-11 fluid-type pad-md-60 pad-right"
+                style="--desktop: 60; --mobile: 30;"
+              >
+                "{{ mobileFeaturedBlock.testimonial }}"
+              </blockquote>
+              <footer
+                v-if="mobileFeaturedBlock.name || mobileFeaturedBlock.company"
+                class="portfolio-testimonial-attribution fluid-type"
+                style="--desktop: 24; --mobile: 18;"
+              >
+                <div v-if="mobileFeaturedBlock.name">{{ mobileFeaturedBlock.name }}</div>
+                <div v-if="mobileFeaturedBlock.company">{{ mobileFeaturedBlock.company }}</div>
+              </footer>
+            </div>
+
+            <div v-else-if="mobileFeaturedBlock._type === 'servicesBlock' && mobileFeaturedBlock.body" class="portfolio-services-block rounded-portfolio beige grid gap-60 line-height-11 pad-30">
+              <div class="subtitle subtitle--circle orange-dot portfolio-services-subtitle">
+                {{ mobileFeaturedBlock.title || 'Services' }}
+              </div>
+              <div class="portfolio-services-columns fluid-type pad-40 pad-bottom" style="--desktop: 50; --mobile: 24;">
+                <div
+                  v-for="(line, li) in servicesLines(mobileFeaturedBlock.body)"
+                  :key="li"
+                  class="portfolio-services-line"
+                >
+                  {{ line }}
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="mobileFeaturedBlock._type === 'cardsBlock' && mobileFeaturedBlock.cards?.length" class="portfolio-cards-block">
+              <article
+                v-for="(card, cardIndex) in mobileFeaturedBlock.cards"
+                :key="card._key || cardIndex"
+                class="portfolio-cards-item rounded-portfolio"
+              >
+                <div class="portfolio-cards-item__grid">
+                  <div class="portfolio-cards-item__text underline-links">
+                    <h3 v-if="card.title" class="portfolio-cards-item__title">
+                      {{ card.title }}
+                    </h3>
+                    <SanityBlocks
+                      v-if="card.description?.length"
+                      :blocks="card.description"
+                    />
+                  </div>
+
+                  <div class="portfolio-cards-item__media">
+                    <video
+                      v-if="card.mediaType === 'video' && card.video?.asset?.url"
+                      autoplay
+                      muted
+                      loop
+                      playsinline
+                      class="portfolio-cards-item__video"
+                    >
+                      <source
+                        :src="card.video.asset.url"
+                        :type="videoMimeTypeFromUrl(card.video.asset.url)"
+                      >
+                    </video>
+                    <NuxtImg
+                      v-else-if="card.image?.asset?.url"
+                      :src="card.image.asset.url"
+                      :alt="card.title || project.title"
+                      :width="card.image.asset.metadata?.dimensions?.width"
+                      :height="card.image.asset.metadata?.dimensions?.height"
+                      class="portfolio-cards-item__image"
+                      @load="onImageLoad"
+                    />
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div v-else-if="mobileFeaturedBlock._type === 'textBlock' && mobileFeaturedBlock.text" class="portfolio-text-block rounded-portfolio beige underline-links pad-30">
+              <SanityBlocks :blocks="mobileFeaturedBlock.text" />
+            </div>
+
+            <div v-else-if="mobileFeaturedBlock._type === 'galleryBlock' && mobileFeaturedBlock.images && mobileFeaturedBlock.images.length > 0" class="portfolio-gallery-block rounded-portfolio">
+              <PortfolioGallery
+                :images="mobileFeaturedBlock.images"
+                :timing="mobileFeaturedBlock.timing || 1000"
+                :alt="project.title"
+              />
+            </div>
+
+            <div v-else-if="mobileFeaturedBlock._type === 'twoColumnBlock'" class="portfolio-two-column-block">
+              <div
+                class="portfolio-two-column-image rounded-portfolio"
+                :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
+                :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
+              >
+                <PortfolioGallery
+                  v-if="mobileFeaturedBlock.column1Type === 'gallery' && mobileFeaturedBlock.column1Images && mobileFeaturedBlock.column1Images.length > 0"
+                  :images="mobileFeaturedBlock.column1Images"
+                  :timing="mobileFeaturedBlock.column1Timing || 1000"
+                  :alt="project.title"
+                />
+                <div
+                  v-else-if="mobileFeaturedBlock.image1?.asset"
+                  data-click-zoom
+                  class="portfolio-image-container"
+                  :style="getImageAspectRatio(mobileFeaturedBlock.image1.asset)"
+                >
+                  <NuxtImg
+                    :src="mobileFeaturedBlock.image1.asset.url || ''"
+                    :alt="project.title"
+                    :width="mobileFeaturedBlock.image1.asset.metadata?.dimensions?.width"
+                    :height="mobileFeaturedBlock.image1.asset.metadata?.dimensions?.height"
+                    class="portfolio-image"
+                    @load="onImageLoad"
+                  />
+                </div>
+              </div>
+              <div
+                class="portfolio-two-column-image rounded-portfolio"
+                :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
+                :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
+              >
+                <PortfolioGallery
+                  v-if="mobileFeaturedBlock.column2Type === 'gallery' && mobileFeaturedBlock.column2Images && mobileFeaturedBlock.column2Images.length > 0"
+                  :images="mobileFeaturedBlock.column2Images"
+                  :timing="mobileFeaturedBlock.column2Timing || 1000"
+                  :alt="project.title"
+                />
+                <div
+                  v-else-if="mobileFeaturedBlock.image2?.asset"
+                  data-click-zoom
+                  class="portfolio-image-container"
+                  :style="getImageAspectRatio(mobileFeaturedBlock.image2.asset)"
+                >
+                  <NuxtImg
+                    :src="mobileFeaturedBlock.image2.asset.url || ''"
+                    :alt="project.title"
+                    :width="mobileFeaturedBlock.image2.asset.metadata?.dimensions?.width"
+                    :height="mobileFeaturedBlock.image2.asset.metadata?.dimensions?.height"
+                    class="portfolio-image"
+                    @load="onImageLoad"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="mobileFeaturedBlock._type === 'twoColumnGalleryBlock'" class="portfolio-two-column-gallery-block">
+              <div
+                class="portfolio-two-column-gallery-column rounded-portfolio"
+                :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
+                :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
+              >
+                <PortfolioGallery
+                  v-if="mobileFeaturedBlock.leftImages && mobileFeaturedBlock.leftImages.length > 1"
+                  :images="mobileFeaturedBlock.leftImages"
+                  :timing="mobileFeaturedBlock.leftTiming || 1000"
+                  :alt="project.title"
+                />
+                <div
+                  v-else-if="mobileFeaturedBlock.leftImages && mobileFeaturedBlock.leftImages.length === 1 && mobileFeaturedBlock.leftImages[0]?.asset"
+                  data-click-zoom
+                  class="portfolio-image-container"
+                  :style="getImageAspectRatio(mobileFeaturedBlock.leftImages[0].asset)"
+                >
+                  <NuxtImg
+                    :src="mobileFeaturedBlock.leftImages[0].asset.url || ''"
+                    :alt="project.title"
+                    :width="mobileFeaturedBlock.leftImages[0].asset.metadata?.dimensions?.width"
+                    :height="mobileFeaturedBlock.leftImages[0].asset.metadata?.dimensions?.height"
+                    class="portfolio-image"
+                    @load="onImageLoad"
+                  />
+                </div>
+              </div>
+              <div
+                class="portfolio-two-column-gallery-column rounded-portfolio"
+                :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
+                :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
+              >
+                <PortfolioGallery
+                  v-if="mobileFeaturedBlock.rightImages && mobileFeaturedBlock.rightImages.length > 1"
+                  :images="mobileFeaturedBlock.rightImages"
+                  :timing="mobileFeaturedBlock.rightTiming || 1000"
+                  :alt="project.title"
+                />
+                <div
+                  v-else-if="mobileFeaturedBlock.rightImages && mobileFeaturedBlock.rightImages.length === 1 && mobileFeaturedBlock.rightImages[0]?.asset"
+                  data-click-zoom
+                  class="portfolio-image-container"
+                  :style="getImageAspectRatio(mobileFeaturedBlock.rightImages[0].asset)"
+                >
+                  <NuxtImg
+                    :src="mobileFeaturedBlock.rightImages[0].asset.url || ''"
+                    :alt="project.title"
+                    :width="mobileFeaturedBlock.rightImages[0].asset.metadata?.dimensions?.width"
+                    :height="mobileFeaturedBlock.rightImages[0].asset.metadata?.dimensions?.height"
+                    class="portfolio-image"
+                    @load="onImageLoad"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <aside class="portfolio-layout__sidebar rounded-portfolio white pad-30">
           <div class="portfolio-sidebar-stack">
             <div class="portfolio-sidebar-stack__middle">
               <div class="portfolio-sidebar-stack__body gap-30">
-                <h1 class="portfolio-title portfolio-title-full fluid-type" style="--desktop: 54; --mobile: 40;">
+                <h1 class="portfolio-title portfolio-title-full fluid-type show-md" style="--desktop: 54; --mobile: 40;">
                   {{ project.title }}
                 </h1>
 
                 <div
                   v-if="project.intro?.length"
-                  class="portfolio-intro fluid-type" style="--desktop: 18; --mobile: 20;"
+                  class="portfolio-intro fluid-type show-md pad-md-30 pad-right" style="--desktop: 18; --mobile: 18;"
                 >
                   <SanityBlocks :blocks="project.intro" />
                 </div>
@@ -26,6 +317,7 @@
                 <div
                   v-if="project.role?.length || project.play?.length || project.results?.length || project.resultsStats?.length"
                   class="portfolio-accordions"
+                  :class="{ 'portfolio-accordions--no-transition': disableAccordionTransition }"
                 >
                   <div
                     v-if="project.role?.length"
@@ -117,7 +409,7 @@
                     >
                       <div class="portfolio-accordion-panel-inner">
                         <div
-                          class="portfolio-accordion-panel fluid-type"
+                          class="portfolio-accordion-panel pad-top fluid-type"
                           style="--desktop: 24; --mobile: 18"
                         >
                           <SanityBlocks
@@ -201,10 +493,11 @@
           <div class="portfolio-layout__main-mask"></div>
           <div class="portfolio-content">
         <div
-          v-for="(block, index) in project.contentBlocks"
+          v-for="(block, index) in mainContentBlocks"
           :key="block._key || index"
-          class="portfolio-content-block portfolio-fade-in"
-          :style="{ transitionDelay: `${(index + 1) * 0.1}s` }"
+          class="portfolio-content-block"
+          :class="{ 'portfolio-fade-in': shouldFadeMainBlock(index) }"
+          :style="{ transitionDelay: `${(mainContentStartIndex + index + 1) * 0.1}s` }"
         >
         <div v-if="block._type === 'imageBlock' && block.image?.asset" class="portfolio-image-block rounded-portfolio">
           <div
@@ -270,7 +563,7 @@
           </div>
           <blockquote
             v-if="block.testimonial"
-            class="portfolio-testimonial-quote line-height-1 fluid-type pad-md-60 pad-right"
+            class="portfolio-testimonial-quote line-height-11 fluid-type pad-md-60 pad-right"
             style="--desktop: 60; --mobile: 30;"
           >
           “{{ block.testimonial }}”
@@ -278,18 +571,18 @@
           <footer
             v-if="block.name || block.company"
             class="portfolio-testimonial-attribution fluid-type"
-            style="--desktop: 24; --mobile: 24;"
+            style="--desktop: 24; --mobile: 18;"
           >
             <div v-if="block.name">{{ block.name }}</div>
             <div v-if="block.company">{{ block.company }}</div>
           </footer>
         </div>
 
-        <div v-else-if="block._type === 'servicesBlock' && block.body" class="portfolio-services-block rounded-portfolio beige pad-30">
-          <div class="subtitle subtitle--square white-dot portfolio-services-subtitle">
+        <div v-else-if="block._type === 'servicesBlock' && block.body" class="portfolio-services-block rounded-portfolio beige grid gap-60 line-height-11 pad-30">
+          <div class="subtitle subtitle--circle orange-dot portfolio-services-subtitle">
             {{ block.title || 'Services' }}
           </div>
-          <div class="portfolio-services-columns">
+          <div class="portfolio-services-columns fluid-type pad-40 pad-bottom" style="--desktop: 50; --mobile: 24;">
             <div
               v-for="(line, li) in servicesLines(block.body)"
               :key="li"
@@ -472,11 +765,11 @@
         </div>
         </div>
         <div
-          v-if="nextProject"
+          v-if="showNextProjectSection"
           class="portfolio-next-project rounded-portfolio yellow pad-30 portfolio-fade-in"
         >
           <div class="portfolio-next-project__info">
-            <div class="subtitle">Next up:</div>
+            <div class="subtitle">{{ singlePortfolioNextProjectSettings.nextUpSubtitle }}</div>
             <NuxtLink
               :to="`/portfolio/${nextProject.slug.current}`"
               class="portfolio-next-project__title fluid-type"
@@ -491,14 +784,15 @@
               class="next--button fluid-type"
               style="--desktop: 24; --mobile: 18;--background-color: var(--white);--color: var(--black);--border-color: var(--white);"
             >
-              View project
+              {{ singlePortfolioNextProjectSettings.viewProjectButtonTitle }}
             </NuxtLink>
             <NuxtLink
-              to="/portfolio"
+              v-if="singlePortfolioNextProjectSettings.backLink"
+              :to="singlePortfolioNextProjectSettings.backLink.path"
               class="next--button outline fluid-type"
               style="--desktop: 24; --mobile: 18;--background-color: transparent;--color: var(--black);--border-color: var(--black);"
             >
-              Back to all projects
+              {{ singlePortfolioNextProjectSettings.backLink.title }}
             </NuxtLink>
           </div>
         </div>
@@ -517,6 +811,7 @@ import { injectPageLoading } from '~/composables/usePageLoading'
 
 const route = useRoute()
 const { setLoading } = injectPageLoading()
+const { singlePortfolioNextProjectSettings } = useSiteSettings()
 
 /** Accept Vimeo URL or numeric ID */
 function parseVimeoId(input) {
@@ -695,7 +990,7 @@ const { data: project, pending, error } = useAsyncData(
       const projectId = config.public.sanity?.projectId || 'go8920y3'
       const dataset = config.public.sanity?.dataset || 'production'
       
-      return await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
+      return await $fetch(`https://${projectId}.api.sanity.io/v2021-10-21/data/query/${dataset}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, params: { slug: slug.value } }),
@@ -723,7 +1018,7 @@ const { data: allProjects } = useAsyncData(
       const projectId = config.public.sanity?.projectId || 'go8920y3'
       const dataset = config.public.sanity?.dataset || 'production'
 
-      return await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
+      return await $fetch(`https://${projectId}.api.sanity.io/v2021-10-21/data/query/${dataset}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
@@ -756,6 +1051,10 @@ const nextProject = computed(() => {
 
   const nextIndex = (currentIndex + 1) % orderedProjects.length
   return orderedProjects[nextIndex] || null
+})
+
+const showNextProjectSection = computed(() => {
+  return !!nextProject.value && singlePortfolioNextProjectSettings.value?.enabled !== false
 })
 
 const clientVimeoId = computed(() => {
@@ -802,6 +1101,7 @@ watch(
 )
 
 const isMobileAccordionViewport = ref(false)
+const disableAccordionTransition = ref(false)
 
 function syncAccordionViewport() {
   if (!import.meta.client) return
@@ -836,6 +1136,22 @@ const hasClientVideo = computed(() => {
   if (clientVimeoId.value) return true
   return !!project.value.clientVideo?.asset?.url
 })
+
+const mobileFeaturedBlock = computed(() => {
+  if (!Array.isArray(project.value?.contentBlocks) || !project.value.contentBlocks.length) return null
+  return project.value.contentBlocks[0]
+})
+
+const mainContentStartIndex = computed(() => (isMobileAccordionViewport.value ? 1 : 0))
+
+const mainContentBlocks = computed(() => {
+  const blocks = Array.isArray(project.value?.contentBlocks) ? project.value.contentBlocks : []
+  return blocks.slice(mainContentStartIndex.value)
+})
+
+function shouldFadeMainBlock(index) {
+  return mainContentStartIndex.value + index !== 0
+}
 
 const activatedVideoBlocks = ref({})
 
@@ -952,8 +1268,13 @@ function columnMediaUsesDesktopAspect(block) {
 function onAccordionMqChange() {
   const wasMobile = isMobileAccordionViewport.value
   syncAccordionViewport()
-  if (wasMobile && !isMobileAccordionViewport.value && project.value) {
-    accordionOpenId.value = defaultAccordionSectionId(project.value)
+  if (wasMobile && !isMobileAccordionViewport.value) {
+    disableAccordionTransition.value = true
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        disableAccordionTransition.value = false
+      })
+    })
   }
 }
 
@@ -1013,13 +1334,16 @@ onUnmounted(() => {
   min-width: 0;
 }
 
+
 @media all and (min-width: 1000px) {
   .portfolio-layout__sidebar {
-    min-height: calc(100dvh - var(--header-height) - calc(var(--gutter) * 3));
+    /* rounded-portfolio sets overflow:hidden — that breaks position:sticky */
+    overflow: visible;
+    min-height: calc(100dvh - var(--header-height, 49px) - (var(--gutter) * 3));
     display: flex;
     flex-direction: column;
     position: sticky;
-    top: calc(var(--header-height) + calc(var(--gutter) * 2));
+    top: calc(var(--header-height, 49px) + (var(--gutter) * 2));
   }
 
   .portfolio-layout__main {
@@ -1080,7 +1404,11 @@ onUnmounted(() => {
 .portfolio-accordion {
   border: 0;
   display: grid;
-  margin-top: calc(var(--gutter) / 2);
+}
+@media all and (min-width: 1000px) {
+  .portfolio-accordion {
+    margin-top: calc(var(--gutter) / 2);
+  }
 }
 
 .portfolio-accordion-summary {
@@ -1132,6 +1460,12 @@ onUnmounted(() => {
   transition: opacity 0.65s ease 0.38s;
 }
 
+.portfolio-accordions--no-transition .portfolio-accordion-panel-outer,
+.portfolio-accordions--no-transition .portfolio-accordion-panel,
+.portfolio-accordions--no-transition .portfolio-accordion-panel-outer--open .portfolio-accordion-panel {
+  transition: none !important;
+}
+
 @media (max-width: 999px) {
   .portfolio-accordion-summary {
     cursor: default;
@@ -1160,6 +1494,20 @@ onUnmounted(() => {
   position: relative;
   display: inline-block;
   max-width: 100%;
+}
+
+
+
+@media all and (max-width: 999px) {
+  .portfolio-sidebar-stack__footer {
+  position: fixed;
+    bottom: var(--gutter);
+    right: var(--gutter);
+    z-index: 100;
+  }
+  .portfolio-video-launch .subtitle--circle::before {
+    display: none;
+  }
 }
 
 .portfolio-hear-btn {
@@ -1191,13 +1539,14 @@ onUnmounted(() => {
 .portfolio-video-pop {
   position: absolute;
   left: 0;
-  top: calc(100% + 0.5rem);
+  bottom: calc(100% + var(--gutter));
   z-index: 20;
-  width: 20vw;
+  width: 100%;
   min-width: min(200px, 100%);
   max-width: 100%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  background: var(--background-color, #fff);
+  box-shadow: none;
+  border-radius: var(--rounded-button);
+  overflow: hidden;
 }
 
 .portfolio-video-pop__inner {
@@ -1271,24 +1620,15 @@ onUnmounted(() => {
   border: 0;
 }
 
-.portfolio-services-block {
-  background-color: #f2eae4;
-  background-image: url('/design-refs/services-ref.png');
-  background-repeat: no-repeat;
-  background-position: center top;
-  background-size: contain;
-  min-height: min(75vw, 520px);
-}
-
 .portfolio-testimonial-quote {
   margin: 0;
   font-weight: normal;
 }
 
 @media (min-width: 1000px) {
-  .portfolio-testimonial-block .subtitle {
+  /* .portfolio-testimonial-block .subtitle {
     font-size: 200%;
-  }
+  } */
 }
 
 .portfolio-services-columns {
@@ -1296,9 +1636,6 @@ onUnmounted(() => {
   column-gap: var(--gutter);
 }
 
-.portfolio-services-subtitle {
-  margin-bottom: calc(var(--gutter) * 0.5);
-}
 
 .portfolio-services-line {
   break-inside: avoid;

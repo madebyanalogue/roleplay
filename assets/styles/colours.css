@@ -22,6 +22,11 @@
   --purple-tint-3: color-mix(in srgb, var(--purple) 55%, white 45%);
   --purple-tint-4: color-mix(in srgb, var(--purple) 40%, white 60%);
 
+  --pink-tint-1: color-mix(in srgb, var(--pink) 85%, white 15%);
+  --pink-tint-2: color-mix(in srgb, var(--pink) 70%, white 30%);
+  --pink-tint-3: color-mix(in srgb, var(--pink) 55%, white 45%);
+  --pink-tint-4: color-mix(in srgb, var(--pink) 40%, white 60%);
+
 }
 
 svg > * {
@@ -40,6 +45,11 @@ svg > * {
 .white { background-color: var(--white);}
 .beige { background-color: var(--beige);}
 .lavender { background-color: var(--lavender);}
+
+.pink-1 { background-color: var(--pink-1); }
+.pink-2 { background-color: var(--pink-2); }
+.pink-3 { background-color: var(--pink-3); }
+.pink-4 { background-color: var(--pink-4); }
 
 .orange-text { color: var(--orange); }
 .yellow-text { color: var(--yellow); }

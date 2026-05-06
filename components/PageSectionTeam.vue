@@ -1,45 +1,47 @@
 <template>
-  <section class="team-section" data-directional-hover data-type="y">
-    <div class="team-section__layout">
-      <div class="team-section__list-wrap">
-        <div class="team-section__header-row" aria-hidden="true">
-          <div class="team-section__col-name">Name</div>
-          <div class="team-section__col-role">Role</div>
-        </div>
+  <section ref="wrapRef" data-follower-wrap class="preview-container">
+    <div class="preview-item__row tablet--hide">
+      <div class="preview-item__col is--large"><span class="preview-container__label">Name</span></div>
+      <div class="preview-item__col is--medium"><span class="preview-container__label">Role</span></div>
+    </div>
 
-        <div class="team-section__list">
-          <button
-            v-for="(member, index) in members"
-            :key="member._key || index"
-            type="button"
-            class="team-section__item"
-            data-directional-hover-item
-            @mouseenter="onItemEnter($event, index)"
-            @mouseleave="onItemLeave($event, index)"
-            @focus="activeIndex = index"
-          >
-            <span class="team-section__hover-tile" :ref="(el) => setTileRef(el, index)" data-directional-hover-tile></span>
-            <span class="team-section__border team-section__border--item"></span>
-            <span class="team-section__cell team-section__col-name">{{ member.name }}</span>
-            <span class="team-section__cell team-section__col-role">{{ member.role }}</span>
-          </button>
+    <div data-follower-collection class="preview-collection">
+      <div class="preview-list">
+        <div v-for="(member, index) in members" :key="member._key || index" data-follower-item class="preview-item">
+          <div class="preview-item__inner">
+            <div class="preview-item__row">
+              <div class="preview-item__col is--large">
+                <h2 class="preview-item__heading">{{ member.name }}</h2>
+              </div>
+              <div class="preview-item__col is--medium">
+                <p class="preview-item__text">{{ member.role }}</p>
+              </div>
+            </div>
+            <div data-follower-visual class="preview-item__visual">
+              <NuxtImg
+                v-if="member?.image?.asset"
+                :src="getImageSrc(member.image.asset)"
+                :alt="member.name || ''"
+                class="preview-item__visual-img"
+              />
+            </div>
+          </div>
         </div>
-        <div class="team-section__border"></div>
       </div>
+    </div>
 
-      <div class="team-section__image-wrap">
-        <NuxtImg
-          v-if="activeMember?.image?.asset"
-          :src="getImageSrc(activeMember.image.asset)"
-          :alt="activeMember.name || ''"
-          class="team-section__image"
-        />
+    <div data-follower-cursor class="preview-follower">
+      <div data-follower-cursor-inner class="preview-follower__inner">
+        <div class="preview-follower__label">
+          <div class="preview-follower__label-span">View team</div>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
+import gsap from 'gsap'
 import { useSanityImage } from '~/composables/useSanityImage'
 
 const props = defineProps({
@@ -49,185 +51,339 @@ const props = defineProps({
   },
 })
 
+const wrapRef = ref(null)
 const { getImageSrc } = useSanityImage()
-
-const directionMap = {
-  top: 'translateY(-100%)',
-  bottom: 'translateY(100%)',
-  left: 'translateX(-100%)',
-  right: 'translateX(100%)',
-}
-
 const members = computed(() => props.section?.teamMembers || [])
-const activeIndex = ref(0)
-const tileRefs = ref([])
 
-const activeMember = computed(() => {
-  if (!members.value.length) return null
-  return members.value[activeIndex.value] || members.value[0]
-})
+let cleanupFn = null
 
-watch(
-  () => members.value.length,
-  (length) => {
-    if (!length) {
-      activeIndex.value = 0
-      tileRefs.value = []
-      return
-    }
-    if (activeIndex.value > length - 1) {
-      activeIndex.value = 0
-    }
-  },
-  { immediate: true },
-)
+function initPreviewFollower(wrap) {
+  const collection = wrap?.querySelector('[data-follower-collection]')
+  const items = wrap?.querySelectorAll('[data-follower-item]') || []
+  const follower = wrap?.querySelector('[data-follower-cursor]')
+  const followerInner = wrap?.querySelector('[data-follower-cursor-inner]')
 
-function setTileRef(el, index) {
-  if (!el) return
-  tileRefs.value[index] = el
-}
+  if (!collection || !items.length || !follower || !followerInner) return () => {}
 
-function getDirection(event, el, type = 'all') {
-  const { left, top, width, height } = el.getBoundingClientRect()
-  const x = event.clientX - left
-  const y = event.clientY - top
+  let prevIndex = null
+  let firstEntry = true
+  const offset = 100
+  const duration = 0.5
+  const ease = 'power2.inOut'
 
-  if (type === 'y') return y < height / 2 ? 'top' : 'bottom'
-  if (type === 'x') return x < width / 2 ? 'left' : 'right'
+  gsap.set(follower, { xPercent: -50, yPercent: -50 })
+  const xTo = gsap.quickTo(follower, 'x', { duration: 0.6, ease: 'power3' })
+  const yTo = gsap.quickTo(follower, 'y', { duration: 0.6, ease: 'power3' })
 
-  const distances = {
-    top: y,
-    right: width - x,
-    bottom: height - y,
-    left: x,
+  const onMouseMove = (event) => {
+    xTo(event.clientX)
+    yTo(event.clientY)
   }
 
-  return Object.entries(distances).reduce((a, b) => (a[1] < b[1] ? a : b))[0]
+  window.addEventListener('mousemove', onMouseMove)
+
+  const itemListeners = []
+
+  items.forEach((item, index) => {
+    const onEnter = () => {
+      const forward = prevIndex === null || index > prevIndex
+      prevIndex = index
+
+      follower.querySelectorAll('[data-follower-visual]').forEach((el) => {
+        gsap.killTweensOf(el)
+        gsap.to(el, {
+          yPercent: forward ? -offset : offset,
+          duration,
+          ease,
+          overwrite: 'auto',
+          onComplete: () => el.remove(),
+        })
+      })
+
+      const visual = item.querySelector('[data-follower-visual]')
+      if (!visual) return
+
+      const clone = visual.cloneNode(true)
+      followerInner.appendChild(clone)
+
+      if (!firstEntry) {
+        gsap.fromTo(
+          clone,
+          { yPercent: forward ? offset : -offset },
+          { yPercent: 0, duration, ease, overwrite: 'auto' },
+        )
+      } else {
+        firstEntry = false
+      }
+    }
+
+    const onLeave = () => {
+      const el = follower.querySelector('[data-follower-visual]')
+      if (!el) return
+      gsap.killTweensOf(el)
+      gsap.to(el, {
+        yPercent: -offset,
+        duration,
+        ease,
+        overwrite: 'auto',
+        onComplete: () => el.remove(),
+      })
+    }
+
+    item.addEventListener('mouseenter', onEnter)
+    item.addEventListener('mouseleave', onLeave)
+    itemListeners.push(() => {
+      item.removeEventListener('mouseenter', onEnter)
+      item.removeEventListener('mouseleave', onLeave)
+    })
+  })
+
+  const onCollectionLeave = () => {
+    follower.querySelectorAll('[data-follower-visual]').forEach((el) => {
+      gsap.killTweensOf(el)
+      gsap.delayedCall(duration, () => el.remove())
+    })
+    firstEntry = true
+    prevIndex = null
+  }
+
+  collection.addEventListener('mouseleave', onCollectionLeave)
+
+  return () => {
+    window.removeEventListener('mousemove', onMouseMove)
+    collection.removeEventListener('mouseleave', onCollectionLeave)
+    itemListeners.forEach((off) => off())
+  }
 }
 
-function onItemEnter(event, index) {
-  const item = event.currentTarget
-  const tile = tileRefs.value[index]
-  if (!item || !tile) return
+onMounted(() => {
+  cleanupFn = initPreviewFollower(wrapRef.value)
+})
 
-  const dir = getDirection(event, item, 'y')
-  tile.style.transition = 'none'
-  tile.style.transform = directionMap[dir] || 'translate(0, 0)'
-  void tile.offsetHeight
-  tile.style.transition = ''
-  tile.style.transform = 'translate(0%, 0%)'
-  activeIndex.value = index
-}
-
-function onItemLeave(event, index) {
-  const item = event.currentTarget
-  const tile = tileRefs.value[index]
-  if (!item || !tile) return
-
-  const dir = getDirection(event, item, 'y')
-  tile.style.transform = directionMap[dir] || 'translate(0, 0)'
-}
+onBeforeUnmount(() => {
+  if (cleanupFn) cleanupFn()
+})
 </script>
 
 <style scoped>
-.team-section {
+.preview-container {
   width: 100%;
 }
 
-.team-section__layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-  align-items: stretch;
-  gap: var(--gutter);
+.preview-collection {
+  width: 100%;
+  margin-top: 0.5em;
 }
 
-.team-section__list-wrap {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  position: relative;
-}
-
-.team-section__header-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 1em;
-}
-
-.team-section__list {
-  display: flex;
-  flex-direction: column;
-}
-
-.team-section__item {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+.preview-item__row {
+  flex-flow: wrap;
+  justify-content: flex-start;
   align-items: center;
-  gap: 1em;
   width: 100%;
-  margin-top: -1px;
-  color: inherit;
-  background: transparent;
-  border: 0;
-  text-align: left;
-  cursor: pointer;
-  overflow: hidden;
+  display: flex;
 }
 
-.team-section__cell {
+.preview-item__col {
+  flex: 1;
+}
+
+.preview-item__col.is--large {
+  max-width: 60%;
+}
+
+.preview-item__col.is--medium {
+  max-width: 40%;
+}
+
+.preview-container__label {
+  color: #0a0a0a80;
+  text-transform: uppercase;
+  font-size: 0.75em;
+}
+
+.preview-list {
+  flex-flow: column;
+  width: 100%;
+  display: flex;
   position: relative;
-  z-index: 1;
 }
 
-.team-section__border {
-  position: absolute;
-  left: 0;
+.preview-item {
   width: 100%;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.3;
+  transition: opacity 0.2s;
 }
 
-.team-section__border--item {
-  top: 0;
+.preview-item__heading {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 3.5em;
+  font-weight: 400;
+  line-height: 1;
 }
 
-.team-section__list-wrap > .team-section__border {
-  bottom: 0;
+.preview-item__text {
+  margin-bottom: 0;
+  font-size: 1.25em;
+  font-weight: 400;
+  line-height: 1.2;
 }
 
-.team-section__hover-tile {
+.preview-item__visual {
+  aspect-ratio: 1 / 1.25;
+  width: 20em;
+  display: none;
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--team-hover-bg, var(--orange));
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transform: translateY(-100%);
-  will-change: transform;
-}
-
-.team-section__image-wrap {
-  height: 100%;
-  aspect-ratio: 3 / 4;
   overflow: hidden;
 }
 
-.team-section__image {
+.preview-follower [data-follower-visual] {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  z-index: 0;
 }
 
-@media (max-width: 999px) {
-  .team-section__layout {
-    grid-template-columns: 1fr;
+.preview-item__inner {
+  border-top: 1px solid #00000040;
+  width: 100%;
+  padding-top: 2.5em;
+  padding-bottom: 2.5em;
+}
+
+.preview-item__visual-img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.preview-follower {
+  z-index: 100;
+  aspect-ratio: 1 / 1.25;
+  pointer-events: none;
+  border-radius: 0.75em;
+  justify-content: center;
+  align-items: center;
+  width: 20em;
+  display: flex;
+  position: fixed;
+  inset: 0 auto auto 0;
+  overflow: hidden;
+}
+
+.preview-follower__label {
+  z-index: 2;
+  position: absolute;
+  opacity: 0;
+  transform: translate(0, 100%);
+  transition: opacity 0.1s ease, transform 0.6s cubic-bezier(0.65, 0.1, 0, 1);
+}
+
+.preview-follower__label-span {
+  background-color: #fff;
+  border-radius: 0.25em;
+  padding: 0.75em 1.25em;
+  font-size: 1em;
+}
+
+.preview-follower__inner {
+  z-index: 2;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: relative;
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.1s ease, transform 0.6s cubic-bezier(0.65, 0.1, 0, 1);
+}
+
+@media screen and (min-width: 992px) {
+  .preview-item:last-of-type {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  }
+}
+
+@media (hover: hover) and (min-width: 992px) {
+  :global(body:has([data-follower-collection]:hover)) .preview-follower__inner {
+    opacity: 1;
+    transform: scale(1);
   }
 
-  .team-section__image-wrap {
-    aspect-ratio: 3 / 4;
+  :global(body:has([data-follower-collection]:hover)) .preview-follower__label {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+
+  :global(body:has(.preview-item:hover)) .preview-item:not(:hover) {
+    opacity: 0.5;
+  }
+}
+
+@media screen and (max-width: 991px) {
+  .preview-item__row {
+    grid-row-gap: 0.5em;
+  }
+
+  .preview-item__row.tablet--hide {
+    display: none;
+  }
+
+  .preview-item__col.is--large {
+    flex: none;
+    order: -1;
+    width: 100%;
+    max-width: none;
+  }
+
+  .preview-item__col.is--medium {
+    order: -1;
+    max-width: 100%;
+  }
+
+  .preview-list {
+    grid-column-gap: 1em;
+    grid-row-gap: 4em;
+    flex-flow: wrap;
+  }
+
+  .preview-item {
+    width: calc(50% - 0.5em);
+  }
+
+  .preview-item__heading {
+    font-size: 2em;
+  }
+
+  .preview-item__visual {
+    border-radius: 0.75em;
+    order: -1;
+    width: 100%;
+    margin-bottom: 1em;
+    display: block;
+    position: relative;
+  }
+
+  .preview-item__inner {
+    border: 1px #000;
+    flex-flow: column;
+    padding-top: 0;
+    padding-bottom: 0;
+    display: flex;
+  }
+
+  .preview-follower {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .preview-list {
+    grid-row-gap: 3em;
+  }
+
+  .preview-item {
+    width: 100%;
   }
 }
 </style>

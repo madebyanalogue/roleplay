@@ -44,28 +44,12 @@ const preloaderReady = ref(false)
 // Page loading state - track when pages are loading
 const { isLoading: isPageLoading } = providePageLoading()
 
-// Store header height to prevent useHead from resetting it
-// Initialize from sessionStorage if available, otherwise default to 0px
-const currentHeaderHeight = ref('0px')
-
-// Initialize from sessionStorage on client side
-if (process.client) {
-  const stored = sessionStorage.getItem('header-height')
-  if (stored) {
-    currentHeaderHeight.value = stored
-  }
-}
-
 // Preloader handlers
 const onPreloaderReady = () => {
   // Preloader is ready to start, show content
   preloaderReady.value = true
   if (process.client) {
     document.body.classList.add('preloader-ready')
-    // Update header height once header is rendered
-    nextTick(() => {
-      updateHeaderHeight()
-    })
   }
 }
 
@@ -73,10 +57,6 @@ const onPreloaderComplete = () => {
   // Preloader animation finished, site is ready
   if (process.client) {
     document.body.classList.add('preloader-complete')
-    // Ensure header height is updated after preloader completes
-    nextTick(() => {
-      updateHeaderHeight()
-    })
   }
 }
 
@@ -97,7 +77,6 @@ useHead(() => ({
     lang: 'en',
     class: headerType.value === 'static' ? 'header-static' : '',
     style: `
-      --header-height: ${currentHeaderHeight.value};
       --mobile-breakpoint: ${mobileBreakpoint.value};
     `,
   },
@@ -117,42 +96,10 @@ const isNavigating = ref(false)
 const route = useRoute()
 let previousPath = route.path
 
-// Store ResizeObserver for cleanup
-let headerResizeObserver = null
-
-onUnmounted(() => {
-  if (headerResizeObserver) {
-    headerResizeObserver.disconnect()
-    headerResizeObserver = null
-  }
-})
-
 const updateLayoutCssVars = () => {
   if (process.client) {
     document.documentElement.style.setProperty('--mobile-breakpoint', `${mobileBreakpoint.value}`)
   }
-}
-
-// Update header height CSS variable (only on window resize or initial load)
-const updateHeaderHeight = () => {
-  if (process.client) {
-    const header = document.querySelector('.header')
-    if (header) {
-      const height = header.offsetHeight
-      const heightValue = `${height}px`
-      // Only update if height actually changed
-      if (currentHeaderHeight.value !== heightValue) {
-        // Update the ref so useHead uses the correct value
-        currentHeaderHeight.value = heightValue
-        // Store in sessionStorage for persistence across navigations
-        sessionStorage.setItem('header-height', heightValue)
-        // Set on html element for global access
-        document.documentElement.style.setProperty('--header-height', heightValue)
-      }
-      return true // Return true if header was found and height was set
-    }
-  }
-  return false // Return false if header not found
 }
 
 onMounted(async () => {
@@ -171,55 +118,6 @@ onMounted(async () => {
   }
   updateHeaderTypeClass()
   
-  // Set up header height - only update on window resize
-  const setupHeaderHeight = () => {
-    const header = document.querySelector('.header')
-    if (header) {
-      // Set initial header height from stored value or calculate if not stored
-      const storedHeight = sessionStorage.getItem('header-height')
-      if (storedHeight) {
-        currentHeaderHeight.value = storedHeight
-        document.documentElement.style.setProperty('--header-height', storedHeight)
-      } else {
-        // Only calculate on initial load if not stored
-        updateHeaderHeight()
-      }
-      
-      // Update header height on window resize only
-      const handleResize = () => {
-        updateHeaderHeight()
-      }
-      window.addEventListener('resize', handleResize, { passive: true })
-      
-      // Also use ResizeObserver on header for more precise resize detection
-      headerResizeObserver = new ResizeObserver(() => {
-        updateHeaderHeight()
-      })
-      headerResizeObserver.observe(header)
-      
-      return true
-    }
-    return false
-  }
-  
-  // Try to set up header height management immediately, or wait for preloader if needed
-  if (preloaderReady.value || disablePreloader.value) {
-    // Header should be rendered, set up
-    await nextTick()
-    setupHeaderHeight()
-  } else {
-    // If header wasn't found, watch for preloaderReady and set up then
-    const unwatch = watch(preloaderReady, (ready) => {
-      if (ready) {
-        nextTick(() => {
-          if (setupHeaderHeight()) {
-            unwatch() // Stop watching once set up
-          }
-        })
-      }
-    }, { immediate: true })
-  }
-
   isInitialLoad.value = false
   previousPath = route.path
 })

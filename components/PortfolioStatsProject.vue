@@ -74,14 +74,14 @@ const rows = computed(() =>
 
 .portfolio-stats__table {
   border-collapse: separate;
-  border-spacing: 0 calc(var(--gutter) * 1);
+  border-spacing: 0 calc(var(--unit) * 15);
 }
 
 .portfolio-stats__dd {
   white-space: nowrap;
   vertical-align: middle;
   padding: 0;
-  padding-right: calc(var(--gutter) * 1);
+  padding-right: calc(var(--unit) * 22);
 }
 
 .portfolio-stats__lozenge {

@@ -1,31 +1,43 @@
 <template>
-  <section class="services-section">
-    <h2 v-if="section.servicesTitle || section.title" class="subtitle subtitle--square orange-dot">
-      {{ section.servicesTitle || section.title }}
-    </h2>
+  <section class="services-section grid gap-30">
 
-    <div class="services-section__desktop-grid">
-      <div
-        v-for="(line, index) in serviceLines"
-        :key="`service-desktop-${index}`"
-        class="services-section__item"
-      >
-        {{ line }}
-      </div>
+    <div class="show-md">
+      <h2 v-if="section.servicesTitle || section.title" class="subtitle subtitle--square twisted orange-dot">
+        {{ section.servicesTitle || section.title }}
+      </h2>
     </div>
 
-    <div ref="carouselRef" class="services-section__mobile-carousel">
-      <div
-        v-for="(group, groupIndex) in mobileGroups"
-        :key="`service-group-${groupIndex}`"
-        class="services-section__slide"
-      >
+    <div class="rounded-medium beige pad-50 pad-md-50 grid gap-30">
+
+      <div class="hide-md">
+        <h2 v-if="section.servicesTitle || section.title" class="subtitle small subtitle--square twisted white-dot">
+          {{ section.servicesTitle || section.title }}
+        </h2>
+      </div>
+
+      <div class="services-section__desktop-grid fluid-type pad-70 pad-top-bottom" style="--desktop: 54; --mobile: 28;">
         <div
-          v-for="(line, index) in group"
-          :key="`service-mobile-${groupIndex}-${index}`"
+          v-for="(line, index) in serviceLines"
+          :key="`service-desktop-${index}`"
           class="services-section__item"
         >
           {{ line }}
+        </div>
+      </div>
+
+      <div ref="carouselRef" class="services-section__mobile-carousel fluid-type" style="--desktop: 54; --mobile: 28;">
+        <div
+          v-for="(group, groupIndex) in mobileGroups"
+          :key="`service-group-${groupIndex}`"
+          class="services-section__slide"
+        >
+          <div
+            v-for="(line, index) in group"
+            :key="`service-mobile-${groupIndex}-${index}`"
+            class="services-section__item"
+          >
+            {{ line }}
+          </div>
         </div>
       </div>
     </div>
@@ -123,25 +135,23 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--gutter);
-  padding: 0 var(--gutter);
+  overflow: hidden;
 }
 
 .services-section__desktop-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: var(--gutter);
-  row-gap: calc(var(--gutter) * 0.4);
 }
 
 .services-section__item {
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
 .services-section__mobile-carousel {
   display: none;
 }
 
-@media (max-width: 999px) {
+@media (max-width: 699px) {
   .services-section__desktop-grid {
     display: none;
   }
@@ -154,16 +164,25 @@ onUnmounted(() => {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--gutter) * 0.4);
+    gap: 0.1em;
   }
 }
 
+.services-section__mobile-carousel {
+  width: calc(100% + calc(var(--unit) * 50));
+}
+
+.services-section__mobile-carousel :deep(.flickity-viewport),
+.services-section__mobile-carousel :deep(.flickity-slider) {
+  overflow: visible;
+}
 .services-section__mobile-carousel :deep(.flickity-page-dots) {
   position: static;
-  margin-top: calc(var(--gutter) * 0.7);
+  margin-top: 35px;
   display: flex;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 10px;
+  color: var(--white);
 }
 
 .services-section__mobile-carousel :deep(.flickity-page-dots .dot) {
@@ -176,6 +195,17 @@ onUnmounted(() => {
 }
 
 .services-section__mobile-carousel :deep(.flickity-page-dots .dot.is-selected) {
+  opacity: 1;
+}
+
+
+.services-section__mobile-carousel :deep(.flickity-page-dot) {
+  margin: 0 0px;
+  background-color: var(--white);
+  opacity: 0.4;
+}
+
+.services-section__mobile-carousel :deep(.flickity-page-dot.is-selected) {
   opacity: 1;
 }
 </style>

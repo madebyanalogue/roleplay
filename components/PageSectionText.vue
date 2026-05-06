@@ -1,9 +1,12 @@
 <template>
-  <div class="text-section underline-links">
-    <SanityBlocks
-      v-if="section.textContent?.length"
-      :blocks="section.textContent"
-    />
+  <div class="text-section underline-links  pad-top-bottom">
+    <div class="text-section__inner fluid-type pad-md-20" style="--desktop: 73; --mobile: 24;">
+      <SanityBlocks
+        v-if="section.textContent?.length"
+        :blocks="section.textContent"
+      >
+      </SanityBlocks>
+    </div>
   </div>
 </template>
 
@@ -18,6 +21,6 @@ defineProps({
 
 <style scoped>
 .text-section {
-  padding: 0 var(--gutter);
+  line-height: 1.15;
 }
 </style>
