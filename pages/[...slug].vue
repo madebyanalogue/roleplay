@@ -49,6 +49,10 @@
           v-else-if="section.sectionType === 'logoWall'"
           :section="section"
         />
+        <PageSectionLogoMarquee
+          v-else-if="section.sectionType === 'logoMarquee'"
+          :section="section"
+        />
         <PageSectionClients
           v-else-if="section.sectionType === 'clients'"
           :section="section"
@@ -223,6 +227,21 @@ const { data: page, pending, error } = useAsyncData(
           asset-> {
             _id,
             url
+          }
+        },
+        logoMarqueeLogos[] {
+          _key,
+          alt,
+          asset-> {
+            _id,
+            url,
+            metadata {
+              dimensions {
+                width,
+                height,
+                aspectRatio
+              }
+            }
           }
         },
         clientsTitle,
