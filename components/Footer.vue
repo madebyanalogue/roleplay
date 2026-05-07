@@ -10,7 +10,7 @@
 
     <div
       v-if="visibleFooterColumns.length > 0"
-      class="flex footer-nav-container column row-md between-xs gap-50 gap-md-30 fluid-type medium line-height-1"
+      class="flex footer-nav-container column row-md between-xs gap-50 gap-md-30 fluid-type bold line-height-1"
       style="--desktop:40;--tablet:26;--mobile:26;"
     >
       <div

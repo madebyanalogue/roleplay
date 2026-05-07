@@ -45,16 +45,16 @@
       </button>
       <div
         v-show="contactOpen"
-        class="header-contact-panel"
+        class="header-contact-panel white-text rounded-medium"
         role="region"
         :aria-label="navigationContact.buttonTitle"
       >
         <div
           v-for="row in navigationContact.contacts"
           :key="row._key"
-          class="header-contact-item"
+          class="header-contact-item pad-20"
         >
-          <div class="header-contact-item-title">
+          <div class="header-contact-item-title subtitle subtitle--circle white-dot">
             {{ row.title }}
           </div>
           <a
@@ -451,13 +451,12 @@ onUnmounted(() => {
 
 .header-contact-panel {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + var(--gutter));
   right: 0;
-  min-width: min(18rem, calc(100vw - var(--gutter) * 2));
+  width: 355px;
   padding: calc(var(--gutter) * 0.75);
-  background: var(--background-color);
-  color: var(--text-color);
-  border: 1px solid currentColor;
+  background: var(--orange);
+  color: var(--white);
   z-index: 1100;
   display: flex;
   flex-direction: column;

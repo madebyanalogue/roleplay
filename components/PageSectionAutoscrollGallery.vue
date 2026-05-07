@@ -1,4 +1,5 @@
 <template>
+
   <section class="autoscroll-gallery-section rounded-medium">
     <div
       ref="wrapperRef"
@@ -336,7 +337,7 @@ onBeforeUnmount(() => {
   width: var(--card-width);
   min-width: var(--card-width);
   max-width: var(--card-width);
-  aspect-ratio: var(--autoscroll-gallery-aspect-ratio, 3 / 5);
+  aspect-ratio: var(--autoscroll-gallery-aspect-ratio, 2/3);
   border-radius: var(--rounded-medium);
   overflow: hidden;
   display: block;

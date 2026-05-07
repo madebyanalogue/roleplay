@@ -345,19 +345,19 @@ watch(pending, (isPending) => {
 
 .page-content {
   display: grid;
-  padding-top: calc(var(--gutter) * 1);
+  /* padding-top: calc(var(--gutter) * 1); */
   gap: calc(var(--gutter) * 1.5);
   align-items: start;
 }
 @media (min-width: 800px) {
   .page-content {
-    padding-top: calc(var(--gutter) * 2.5);
+    /* padding-top: calc(var(--gutter) * 2.5); */
     gap: calc(var(--gutter) * 3.5);
   }
 }
 
  .page-content > * {
-  border: 1px solid red;
+  /* border: 1px solid red; */
  }
 </style>
 

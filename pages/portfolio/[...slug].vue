@@ -18,7 +18,7 @@
 
             <div
               v-if="project.intro?.length"
-              class="portfolio-intro fluid-type" style="--desktop: 18; --mobile: 18;"
+              class="portfolio-intro" style="--desktop: 18; --mobile: 18;"
             >
               <SanityBlocks :blocks="project.intro" />
             </div>
@@ -96,7 +96,7 @@
               </div>
               <blockquote
                 v-if="mobileFeaturedBlock.testimonial"
-                class="portfolio-testimonial-quote line-height-11 fluid-type pad-md-60 pad-right"
+                class="portfolio-testimonial-quote fluid-type pad-md-60 pad-right"
                 style="--desktop: 60; --mobile: 30;"
               >
                 "{{ mobileFeaturedBlock.testimonial }}"
@@ -111,7 +111,7 @@
               </footer>
             </div>
 
-            <div v-else-if="mobileFeaturedBlock._type === 'servicesBlock' && mobileFeaturedBlock.body" class="portfolio-services-block rounded-portfolio beige grid gap-60 line-height-11 pad-30">
+            <div v-else-if="mobileFeaturedBlock._type === 'servicesBlock' && mobileFeaturedBlock.body" class="portfolio-services-block rounded-portfolio beige grid gap-60  pad-30">
               <div class="subtitle subtitle--circle orange-dot portfolio-services-subtitle">
                 {{ mobileFeaturedBlock.title || 'Services' }}
               </div>
@@ -309,7 +309,7 @@
 
                 <div
                   v-if="project.intro?.length"
-                  class="portfolio-intro fluid-type show-md pad-md-30 pad-right" style="--desktop: 18; --mobile: 18;"
+                  class="portfolio-intro show-md pad-md-30 pad-right" style="--desktop: 18; --mobile: 18;"
                 >
                   <SanityBlocks :blocks="project.intro" />
                 </div>
@@ -343,7 +343,7 @@
                     >
                       <div class="portfolio-accordion-panel-inner">
                         <div
-                          class="portfolio-accordion-panel line-height-11 fluid-type"
+                          class="portfolio-accordion-panel  fluid-type"
                           style="--desktop: 26; --mobile: 18"
                         >
                           <SanityBlocks :blocks="project.role" />
@@ -376,7 +376,7 @@
                     >
                       <div class="portfolio-accordion-panel-inner">
                         <div
-                          class="portfolio-accordion-panel line-height-11 fluid-type"
+                          class="portfolio-accordion-panel  fluid-type"
                           style="--desktop: 24; --mobile: 18"
                         >
                           <SanityBlocks :blocks="project.play" />
@@ -563,7 +563,7 @@
           </div>
           <blockquote
             v-if="block.testimonial"
-            class="portfolio-testimonial-quote line-height-11 fluid-type pad-md-60 pad-right"
+            class="portfolio-testimonial-quote  fluid-type pad-md-60 pad-right"
             style="--desktop: 60; --mobile: 30;"
           >
           “{{ block.testimonial }}”
@@ -578,7 +578,7 @@
           </footer>
         </div>
 
-        <div v-else-if="block._type === 'servicesBlock' && block.body" class="portfolio-services-block rounded-portfolio beige grid gap-60 line-height-11 pad-30">
+        <div v-else-if="block._type === 'servicesBlock' && block.body" class="portfolio-services-block rounded-portfolio beige grid gap-60  pad-30">
           <div class="subtitle subtitle--circle orange-dot portfolio-services-subtitle">
             {{ block.title || 'Services' }}
           </div>
@@ -1317,6 +1317,10 @@ onUnmounted(() => {
   gap: var(--gutter);
   align-items: start;
   position: relative;
+}
+
+.portfolio-intro {
+  font-size: 18px;
 }
 
 .portfolio-layout__sidebar {

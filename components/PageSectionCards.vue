@@ -1,48 +1,61 @@
 <template>
   <section
     v-if="useGridMode"
-    class="cards-section cards-section--grid-mode"
+    class="cards-section grid gap-30"
   >
-    <article
-      v-for="(card, index) in section.cards || []"
-      :key="card._key || index"
-      class="cards-section__item"
-    >
-      <div class="cards-section__grid">
-        <div class="cards-section__text">
-          <h3 v-if="card.title" class="cards-section__title">{{ card.title }}</h3>
-          <SanityBlocks
-            v-if="card.description?.length"
-            :blocks="card.description"
-          />
-        </div>
 
-        <div class="cards-section__media">
-          <video
-            v-if="card.mediaType === 'video' && card.video?.asset?.url"
-            autoplay
-            muted
-            loop
-            playsinline
-            class="cards-section__video"
-          >
-            <source
-              :src="card.video.asset.url"
-              :type="videoMimeTypeFromUrl(card.video.asset.url)"
+    
+    <h2 v-if="section.title" class="subtitle subtitle--circle orange-dot">
+      {{ section.title }}
+    </h2>
+
+    <div class="cards-section--grid-mode">
+      <article
+        v-for="(card, index) in section.cards || []"
+        :key="card._key || index"
+        class="cards-section__item pad-25 rounded-medium"
+      >
+        <div class="cards-section__grid pad-20 pad-md-60 pad-bottom">
+
+
+          <div class="cards-section__media">
+            <video
+              v-if="card.mediaType === 'video' && card.video?.asset?.url"
+              autoplay
+              muted
+              loop
+              playsinline
+              class="cards-section__video"
             >
-          </video>
+              <source
+                :src="card.video.asset.url"
+                :type="videoMimeTypeFromUrl(card.video.asset.url)"
+              >
+            </video>
 
-          <NuxtImg
-            v-else-if="card.image?.asset?.url"
-            :src="card.image.asset.url"
-            :alt="card.title || ''"
-            :width="card.image.asset.metadata?.dimensions?.width"
-            :height="card.image.asset.metadata?.dimensions?.height"
-            class="cards-section__image"
-          />
+            <NuxtImg
+              v-else-if="card.image?.asset?.url"
+              :src="card.image.asset.url"
+              :alt="card.title || ''"
+              :width="card.image.asset.metadata?.dimensions?.width"
+              :height="card.image.asset.metadata?.dimensions?.height"
+              class="cards-section__image"
+            />
+          </div>
+          
+          <div class="cards-section__text">
+            <h3 v-if="card.title" class="cards-section__title fluid-type line-height-1 pad-60 pad-right" style="--desktop: 58; --mobile: 24;">{{ card.title }}</h3>
+            <div class="fluid-type" style="--desktop: 30; --mobile: 16;">
+              <SanityBlocks
+                v-if="card.description?.length"
+                :blocks="card.description"
+              />
+            </div>
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </div>
+
   </section>
 
   <template v-else>
@@ -345,12 +358,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.cards-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gutter);
-  padding: 0 var(--gutter);
-}
 
 .cards-section__item {
   background-color: var(--purple);
@@ -371,22 +378,28 @@ onUnmounted(() => {
 .cards-section--grid-mode {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gutter);
+  /* opacity: 0.7; */
 }
 
 .cards-section__grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--gutter);
+  gap: calc(var(--gutter) * 1.4);
   align-items: start;
 }
 
 .cards-section__text {
   grid-column: span 4;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter);
 }
 
 .cards-section__title {
   margin-top: 0;
+  letter-spacing: -0.021em;
 }
 
 .cards-section__media {
@@ -394,6 +407,24 @@ onUnmounted(() => {
   width: 100%;
   aspect-ratio: 4 / 3;
   overflow: hidden;
+}
+.cards-section--grid-mode .cards-section__media {
+  aspect-ratio: 1.4;
+}
+.cards-section--grid-mode .cards-section__item:nth-child(3n - 2) .cards-section__media {
+  border-radius: calc(var(--unit) * 50) calc(var(--unit) * 20) calc(var(--unit) * 20) calc(var(--unit) * 50);
+}
+.cards-section--grid-mode .cards-section__item:nth-child(3n - 1) .cards-section__media {
+  border-radius: calc(var(--unit) * 20) calc(var(--unit) * 20) calc(var(--unit) * 20) calc(var(--unit) * 20);
+}
+.cards-section--grid-mode .cards-section__item:nth-child(3n - 0) .cards-section__media {
+  border-radius: calc(var(--unit) * 20) calc(var(--unit) * 50) calc(var(--unit) * 50) calc(var(--unit) * 20);
+}
+
+@media all and (min-width: 1000px) {
+  .cards-section--grid-mode .cards-section__media{
+    aspect-ratio: .95;
+  }
 }
 
 .cards-section__image,
@@ -546,6 +577,7 @@ onUnmounted(() => {
 @media (max-width: 999px) {
   .cards-section--grid-mode {
     grid-template-columns: 1fr;
+  gap: var(--gutter);
   }
 
   .cards-section__grid {
@@ -556,5 +588,22 @@ onUnmounted(() => {
   .cards-section__media {
     grid-column: 1 / -1;
   }
+}
+
+
+.cards-section__item:nth-child(4n - 1) {
+  background-color: var(--purple);
+}
+
+.cards-section__item:nth-child(4n - 2) {
+  background-color: var(--purple-tint-2);
+}
+
+.cards-section__item:nth-child(4n - 3) {
+  background-color: var(--purple-tint-3);
+}
+
+.cards-section__item:nth-child(4n - 4) {
+  background-color: var(--purple-tint-4);
 }
 </style>
