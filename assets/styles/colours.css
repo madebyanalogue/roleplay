@@ -1,6 +1,7 @@
 /* Colour tokens — layout uses --text-color / --background-color from app.vue useHead. */
 :root {
   --orange: #FF5722;
+  --red: #FF3B30;
   --yellow: #E2FE20;
   --green: #4CAF50;
   --blue: #2196F3;
@@ -65,6 +66,7 @@ svg > * {
 .lavender-text { color: var(--lavender); }
 
 .orange-dot { --subtitle-dot-color: var(--orange); }
+.red-dot { --subtitle-dot-color: var(--red); }
 .yellow-dot { --subtitle-dot-color: var(--yellow); }
 .green-dot { --subtitle-dot-color: var(--green); }
 .blue-dot { --subtitle-dot-color: var(--blue); }

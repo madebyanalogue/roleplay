@@ -1,93 +1,106 @@
 <template>
-  <div class="news-section">
-    <div
-      v-for="(item, index) in newsItems"
-      :key="item._id || index"
-      class="news-item"
-    >
-      <NuxtImg
-        v-if="item.featuredImage?.asset?.url"
-        :src="item.featuredImage.asset.url"
-        :width="item.featuredImage.asset.metadata?.dimensions?.width"
-        :height="item.featuredImage.asset.metadata?.dimensions?.height"
-        alt=""
-        class="news-image"
-      />
-      <SanityBlocks v-if="item.content" :blocks="item.content" class="news-content" />
+  <section class="news-section">
+    <h2 v-if="section.newsTitle || section.title" class="subtitle subtitle--circle yellow-dot">
+      {{ section.newsTitle || section.title }}
+    </h2>
+
+    <div v-if="newsItems.length > 0" class="news-list">
+      <article
+        v-for="(item, index) in newsItems"
+        :key="item._id || item._key || index"
+        class="news-item flex gap-40"
+      >
+        <div class="news-thumbnail yellow pad-10">
+          <NuxtImg
+            v-if="item.featuredImage?.asset?.url"
+            :src="item.featuredImage.asset.url"
+            :width="item.featuredImage.asset.metadata?.dimensions?.width"
+            :height="item.featuredImage.asset.metadata?.dimensions?.height"
+            alt=""
+            class="news-image"
+          />
+        </div>
+        <SanityBlocks v-if="item.content" :blocks="item.content" class="news-content" />
+      </article>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
-// Query both types until existing documents are migrated (see roleplay-studio/scripts/migrate-press-to-news.mjs)
-const { data: newsItems } = useAsyncData('news-items', async () => {
-  const query = `*[_type in ["news", "pressAward"]] | order(orderRank) {
-    _id,
-    content,
-    featuredImage{
-      asset->{
-        url,
-        metadata{
-          dimensions{
-            width,
-            height
-          }
-        }
-      }
-    }
-  }`
+const props = defineProps({
+  section: {
+    type: Object,
+    required: true,
+  },
+})
 
-  if (process.server) {
-    const config = useRuntimeConfig()
-    const projectId = config.public.sanity?.projectId || 'go8920y3'
-    const dataset = config.public.sanity?.dataset || 'production'
-
-    try {
-      const result = await $fetch(`https://${projectId}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      })
-      return result?.result || []
-    } catch (err) {
-      console.error('[News] Error fetching:', err)
-      return []
-    }
-  }
-
-  try {
-    const result = await $fetch('/api/sanity/query', {
-      method: 'POST',
-      body: { query },
-    })
-    return result?.result || []
-  } catch (err) {
-    console.error('[News] Error fetching:', err)
-    return []
-  }
-}, { server: true })
+const newsItems = computed(() =>
+  (props.section?.newsItems || [])
+    .map((item) => item?.newsPost)
+    .filter(Boolean),
+)
 </script>
 
 <style scoped>
 .news-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter);
+}
+
+.news-list {
+  display: flex;
+  flex-direction: column;
   gap: var(--gutter);
 }
 
 .news-item {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--gutter) / 2);
+  align-items: flex-start;
+}
+
+.news-thumbnail {
+  flex: 0 0 auto;
+  border-radius: var(--rounded-small);
 }
 
 .news-image {
-  width: 100%;
-  height: auto;
+  width: 4vw;
+  height: 4vw;
+  min-width: 52px;
+  min-height: 52px;
+  object-fit: cover;
   display: block;
 }
 
 .news-content {
+  flex: 1;
+  min-width: 0;
   font-size: var(--font-size-body);
+}
+
+.news-content :deep(.sanity-block) {
+  margin-bottom: 0;
+}
+
+@media (max-width: 799px) {
+  .news-item {
+    gap: var(--gutter);
+  }
+
+  .news-image {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .news-section {
+    max-width: 1200px;
+  }
+}
+
+/* Keep compatibility with legacy markup classes if referenced elsewhere */
+.news-item {
+  display: flex;
 }
 </style>

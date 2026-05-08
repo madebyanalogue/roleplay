@@ -5,8 +5,8 @@
   >
 
     
-    <h2 v-if="section.title" class="subtitle subtitle--circle orange-dot">
-      {{ section.title }}
+    <h2 v-if="section.cardsTitle || section.title" class="subtitle subtitle--circle orange-dot">
+      {{ section.cardsTitle || section.title }}
     </h2>
 
     <div class="cards-section--grid-mode">

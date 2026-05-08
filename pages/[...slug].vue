@@ -12,6 +12,10 @@
           v-if="section.sectionType === 'featuredProjects'"
           :section="section"
         />
+        <PageSectionHeroCarousel
+          v-else-if="section.sectionType === 'heroCarousel'"
+          :section="section"
+        />
         <PageSectionInfo
           v-else-if="section.sectionType === 'info'"
           :section="section"
@@ -22,6 +26,10 @@
         />
         <PageSectionText
           v-else-if="section.sectionType === 'text'"
+          :section="section"
+        />
+        <PageSectionKineticTypography
+          v-else-if="section.sectionType === 'kineticTypography'"
           :section="section"
         />
         <PageSectionCards
@@ -55,6 +63,10 @@
         />
         <PageSectionClients
           v-else-if="section.sectionType === 'clients'"
+          :section="section"
+        />
+        <PageSectionSpotifyPlayer
+          v-else-if="section.sectionType === 'spotifyPlayer'"
           :section="section"
         />
       </div>
@@ -100,7 +112,27 @@ const { data: page, pending, error } = useAsyncData(
         _id,
         _type,
         title,
+        featuredProjectsTitle,
+        newsTitle,
         sectionType,
+        newsItems[] {
+          _key,
+          newsPost-> {
+            _id,
+            content,
+            featuredImage {
+              asset-> {
+                url,
+                metadata {
+                  dimensions {
+                    width,
+                    height
+                  }
+                }
+              }
+            }
+          }
+        },
         featuredProjects[] {
           project-> {
             _id,
@@ -112,8 +144,7 @@ const { data: page, pending, error } = useAsyncData(
             featuredImageMobile {
               asset->
             }
-          },
-          format
+          }
         },
         infoImage {
           asset-> {
@@ -149,8 +180,84 @@ const { data: page, pending, error } = useAsyncData(
           showOnMobile
         },
         servicesTitle,
+        spotifyTitle,
+        spotifyEmbedUrl,
         servicesTextarea,
+        heroCarouselLeftTiming,
+        heroCarouselEnableRight,
+        heroCarouselLoopAtSameTime,
+        heroCarouselRightTiming,
+        heroCarouselLeft[] {
+          _key,
+          mediaType,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
+            }
+          },
+          video {
+            asset-> {
+              _id,
+              url
+            }
+          }
+        },
+        heroCarouselRight[] {
+          _key,
+          mediaType,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
+            }
+          },
+          video {
+            asset-> {
+              _id,
+              url
+            }
+          }
+        },
+        heroCarouselMobile[] {
+          _key,
+          mediaType,
+          image {
+            asset-> {
+              _id,
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
+            }
+          },
+          video {
+            asset-> {
+              _id,
+              url
+            }
+          }
+        },
         textContent,
+        kineticTypographyText,
         cardsDisableScrollDemo,
         cards[] {
           _key,
@@ -244,6 +351,7 @@ const { data: page, pending, error } = useAsyncData(
             }
           }
         },
+        logoMarqueeTitle,
         clientsTitle,
         clientsImages[] {
           _key,

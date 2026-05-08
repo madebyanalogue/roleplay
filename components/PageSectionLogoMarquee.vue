@@ -1,29 +1,50 @@
 <template>
-  <section v-if="logos.length > 0" ref="sectionRef" class="logo-marquee-section">
+  <section v-if="logos.length > 0" class="logo-marquee-section grid gap-30">
+    <h2 v-if="props.section.logoMarqueeTitle || props.section.title" class="subtitle subtitle--circle yellow-dot">
+      {{ props.section.logoMarqueeTitle || props.section.title }}
+    </h2>
+
     <div
-      v-for="(marqueeLogos, marqueeIndex) in [marquee1Logos, marquee2Logos]"
-      :key="marqueeIndex"
-      :data-marquee-duplicate="2"
-      data-marquee-scroll-direction-target
-      :data-marquee-direction="marqueeIndex === 0 ? 'left' : 'right'"
-      data-marquee-status="normal"
-      data-marquee-speed="15"
-      data-marquee-scroll-speed="10"
-      class="logo-marquee"
+      ref="wrapperRef"
+      data-draggable-marquee-init=""
+      data-direction="left"
+      class="logo-draggable-marquee"
+      @dragstart.prevent
+      @selectstart.prevent
     >
-      <div data-marquee-scroll-target class="logo-marquee__scroll">
-        <div data-marquee-collection-target class="logo-marquee__collection">
+      <div data-draggable-marquee-collection="" class="logo-draggable-marquee__collection">
+        <div data-draggable-marquee-list="" class="logo-draggable-marquee__list">
           <div
-            v-for="(logo, index) in (marqueeIndex === 0 ? display1 : display2)"
-            :key="`${marqueeIndex}-${logo._key || index}`"
-            class="logo-marquee__item"
+            v-for="(logo, index) in logos"
+            :key="`${logo._key || index}-a`"
+            class="logo-draggable-marquee__item"
+            draggable="false"
           >
-            <img
-              :src="getImageSrc(logo?.asset || logo)"
-              alt=""
-              class="logo-marquee__img"
-              loading="lazy"
-            >
+            <NuxtImg
+              v-if="logo.asset?.url"
+              :src="logo.asset.url"
+              :alt="logo.alt || ''"
+              fit="contain"
+              class="logo-draggable-marquee__item-media"
+              draggable="false"
+            />
+          </div>
+        </div>
+        <div aria-hidden="true" class="logo-draggable-marquee__list logo-draggable-marquee__list--clone">
+          <div
+            v-for="(logo, index) in logos"
+            :key="`${logo._key || index}-b`"
+            class="logo-draggable-marquee__item"
+            draggable="false"
+          >
+            <NuxtImg
+              v-if="logo.asset?.url"
+              :src="logo.asset.url"
+              :alt="logo.alt || ''"
+              fit="contain"
+              class="logo-draggable-marquee__item-media"
+              draggable="false"
+            />
           </div>
         </div>
       </div>
@@ -32,10 +53,10 @@
 </template>
 
 <script setup>
-import { useSanityImage } from '~/composables/useSanityImage'
-import { initLogoMarquee } from '~/composables/useLogoMarquee'
+import gsap from 'gsap'
+import { Observer } from 'gsap/Observer'
 
-const sectionRef = ref(null)
+gsap.registerPlugin(Observer)
 
 const props = defineProps({
   section: {
@@ -44,85 +65,214 @@ const props = defineProps({
   },
 })
 
-const { getImageSrc: getSanityImageSrc } = useSanityImage()
+const wrapperRef = ref(null)
 
-function shuffleArray(arr) {
-  const a = arr.slice()
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
+const logos = computed(() => (props.section?.logoMarqueeLogos || []).filter(logo => logo?.asset?.url))
+const cleanupFns = []
+let layoutObserver = null
+
+function disconnectLayoutObserver() {
+  layoutObserver?.disconnect()
+  layoutObserver = null
 }
 
-const logos = computed(() => props.section?.logoMarqueeLogos || props.section?.logoGridLogos || [])
+function ensureLayoutObserver() {
+  const wrapper = wrapperRef.value
+  if (!wrapper || wrapper.getAttribute('data-draggable-marquee-init') === 'initialized')
+    return
+  if (layoutObserver)
+    return
 
-// Use stable order for SSR/hydration; shuffle only after mount to avoid hydration mismatch
-const marquee1Logos = ref([])
-const marquee2Logos = ref([])
-const display1 = computed(() => (marquee1Logos.value.length > 0 ? marquee1Logos.value : logos.value))
-const display2 = computed(() => (marquee2Logos.value.length > 0 ? marquee2Logos.value : logos.value))
+  layoutObserver = new ResizeObserver(() => {
+    initDraggableMarquee()
+    if (wrapperRef.value?.getAttribute('data-draggable-marquee-init') === 'initialized')
+      disconnectLayoutObserver()
+  })
+  layoutObserver.observe(wrapper)
+}
 
-const getImageSrc = (asset) => {
-  if (!asset) return ''
-  return getSanityImageSrc(asset)
+function scheduleMarqueeInit() {
+  nextTick(() => {
+    initDraggableMarquee()
+    ensureLayoutObserver()
+  })
+}
+
+function initDraggableMarquee() {
+  const wrapper = wrapperRef.value
+  if (!wrapper) return
+
+  if (wrapper.getAttribute('data-draggable-marquee-init') === 'initialized') return
+
+  const collection = wrapper.querySelector('[data-draggable-marquee-collection]')
+  const lists = collection?.querySelectorAll('.logo-draggable-marquee__list')
+  const primaryList = lists?.[0]
+  const cloneList = lists?.[1]
+  if (!collection || !primaryList || !cloneList || !logos.value.length) return
+
+  const firstItem = primaryList.querySelector('.logo-draggable-marquee__item')
+  const listStyles = getComputedStyle(primaryList)
+  const cardWidth = firstItem ? firstItem.getBoundingClientRect().width : 0
+  const gapWidth = Number.parseFloat(listStyles.columnGap || listStyles.gap || '0')
+  const seamDistanceFromFormula = Math.round((logos.value.length * cardWidth) + (logos.value.length * gapWidth))
+  const seamDistanceFromOffsets = cloneList.offsetLeft - primaryList.offsetLeft
+  const seamDistanceFromWidth = Math.round(primaryList.scrollWidth || primaryList.getBoundingClientRect().width)
+  const seamDistance = Math.round(seamDistanceFromFormula || seamDistanceFromOffsets || seamDistanceFromWidth)
+  if (!seamDistance) return
+
+  let total = 0
+  const pxPerMs = 0.04
+  const wrapX = gsap.utils.wrap(-seamDistance, 0)
+  const xTo = gsap.quickTo(collection, 'x', {
+    duration: 0.5,
+    ease: 'power3',
+    modifiers: {
+      x: (x) => `${Math.round(wrapX(Number.parseFloat(x) || 0))}px`,
+    },
+  })
+  xTo(total)
+
+  const marqueeObserver = Observer.create({
+    target: collection,
+    type: 'pointer,touch',
+    preventDefault: true,
+    debounce: false,
+    onPress: () => {
+      wrapper.setAttribute('data-dragging', 'true')
+    },
+    onDrag: (observerEvent) => {
+      total += observerEvent.deltaX
+      xTo(total)
+    },
+    onRelease: () => {
+      wrapper.setAttribute('data-dragging', 'false')
+    },
+    onStop: () => {
+      wrapper.setAttribute('data-dragging', 'false')
+    },
+  })
+
+  function tick(_, deltaTime) {
+    total -= deltaTime * pxPerMs
+    xTo(total)
+  }
+  gsap.ticker.add(tick)
+
+  wrapper.setAttribute('data-draggable-marquee-init', 'initialized')
+
+  cleanupFns.push(() => {
+    marqueeObserver.kill()
+    gsap.ticker.remove(tick)
+    gsap.killTweensOf(collection)
+    wrapper.setAttribute('data-draggable-marquee-init', '')
+    wrapper.setAttribute('data-dragging', 'false')
+    gsap.set(collection, { clearProps: 'transform' })
+  })
 }
 
 onMounted(() => {
-  if (import.meta.client && sectionRef.value) {
-    marquee1Logos.value = shuffleArray([...logos.value])
-    marquee2Logos.value = shuffleArray([...logos.value])
-    nextTick(() => {
-      initLogoMarquee(sectionRef.value)
-      setTimeout(() => initLogoMarquee(sectionRef.value), 500)
-    })
-  }
+  scheduleMarqueeInit()
+})
+
+watch(
+  () => logos.value.length,
+  () => {
+    cleanupFns.splice(0).forEach(fn => fn())
+    disconnectLayoutObserver()
+    scheduleMarqueeInit()
+  },
+)
+
+onBeforeUnmount(() => {
+  disconnectLayoutObserver()
+  cleanupFns.splice(0).forEach(fn => fn())
 })
 </script>
 
 <style scoped>
 .logo-marquee-section {
-  display: flex;
-  flex-flow: column;
-  justify-content: center;
-  align-items: center;
+  width: calc(100vw - calc(var(--gutter) * 2));
   overflow: hidden;
 }
 
-.logo-marquee {
-  width: 110vw;
-  position: relative;
-  overflow: hidden;
-  margin-left: -5vw;
-}
-
-.logo-marquee__scroll {
-  will-change: transform;
+.logo-draggable-marquee {
+  --card-width: 34vw;
+  display: block;
   width: 100%;
-  display: flex;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
   position: relative;
+  contain: layout paint;
 }
 
-.logo-marquee__collection {
-  will-change: transform;
-  display: flex;
-  position: relative;
-  flex-shrink: 0;
+@media (max-width: 999px) {
+  .logo-draggable-marquee {
+    --card-width: 45vw;
+  }
 }
 
-.logo-marquee__item {
-  flex-shrink: 0;
+.logo-draggable-marquee__collection {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  width: calc(100vw / 7);
-  height: calc(100vw / 12);
-  padding: 0px;
+  flex: none;
+  width: max-content;
+  max-width: none;
+  min-width: 0;
+  will-change: transform;
+  gap: 0;
+  cursor: grab;
+  overflow: hidden;
 }
 
-.logo-marquee__img {
+.logo-draggable-marquee__list {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.logo-draggable-marquee__list--clone {
+  padding-right: 0;
+}
+
+.logo-draggable-marquee__item {
+  flex: 0 0 var(--card-width);
+  width: var(--card-width);
+  min-width: var(--card-width);
+  max-width: var(--card-width);
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  background: transparent;
+}
+
+.logo-draggable-marquee[data-dragging='true'] .logo-draggable-marquee__collection {
+  cursor: grabbing;
+}
+
+.logo-draggable-marquee__item-media {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.logo-draggable-marquee__item-media:deep(img) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 </style>
