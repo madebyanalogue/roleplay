@@ -59,6 +59,30 @@
 .pad-85         { padding:calc(var(--unit) * 85); }
 .pad-90         { padding:calc(var(--unit) * 90); }
 
+
+@media (min-width: 800px) {
+  .pad-sm-0          { padding: 0; }
+  .pad-sm-5          { padding:calc(var(--unit) * 5); }
+  .pad-sm-10         { padding:calc(var(--unit) * 10); }
+  .pad-sm-15         { padding:calc(var(--unit) * 15); }
+  .pad-sm-20         { padding:calc(var(--unit) * 20); }
+  .pad-sm-25         { padding:calc(var(--unit) * 25); }
+  .pad-sm-30         { padding:calc(var(--unit) * 30); }
+  .pad-sm-35         { padding:calc(var(--unit) * 35); }
+  .pad-sm-40         { padding:calc(var(--unit) * 40); }
+  .pad-sm-45         { padding:calc(var(--unit) * 45); }
+  .pad-sm-50         { padding:calc(var(--unit) * 50); }
+  .pad-sm-55         { padding:calc(var(--unit) * 55); }
+  .pad-sm-60         { padding:calc(var(--unit) * 60); }
+  .pad-sm-65         { padding:calc(var(--unit) * 65); }
+  .pad-sm-70         { padding:calc(var(--unit) * 70); }
+  .pad-sm-75         { padding:calc(var(--unit) * 75); }
+  .pad-sm-80         { padding:calc(var(--unit) * 80); }
+  .pad-sm-85         { padding:calc(var(--unit) * 85); }
+  .pad-sm-90         { padding:calc(var(--unit) * 90); }
+}
+
+
 @media (min-width: 1000px) {
   .pad-md-0          { padding: 0; }
   .pad-md-5          { padding:calc(var(--unit) * 5); }
@@ -79,6 +103,7 @@
   .pad-md-80         { padding:calc(var(--unit) * 80); }
   .pad-md-85         { padding:calc(var(--unit) * 85); }
   .pad-md-90         { padding:calc(var(--unit) * 90); }
+  .pad-md-100        { padding:calc(var(--unit) * 100); }
 }
 
 .pad-lr-0       { padding-left: 0; padding-right: 0; }
@@ -124,6 +149,29 @@
 .gap-80         { gap:calc(var(--unit) * 80); }
 .gap-85         { gap:calc(var(--unit) * 85); }
 .gap-90         { gap:calc(var(--unit) * 90); }
+
+@media (min-width: 1000px) {
+  .gap-md-0          { gap: 0; }
+  .gap-md-5          { gap:calc(var(--unit) * 5); }
+  .gap-md-10         { gap:calc(var(--unit) * 10); }
+  .gap-md-15         { gap:calc(var(--unit) * 15); }
+  .gap-md-20         { gap:calc(var(--unit) * 20); }
+  .gap-md-25         { gap:calc(var(--unit) * 25); }
+  .gap-md-30         { gap:calc(var(--unit) * 30); }
+  .gap-md-35         { gap:calc(var(--unit) * 35); }
+  .gap-md-40         { gap:calc(var(--unit) * 40); }
+  .gap-md-45         { gap:calc(var(--unit) * 45); }
+  .gap-md-50         { gap:calc(var(--unit) * 50); }
+  .gap-md-55         { gap:calc(var(--unit) * 55); }
+  .gap-md-60         { gap:calc(var(--unit) * 60); }
+  .gap-md-65         { gap:calc(var(--unit) * 65); }
+  .gap-md-70         { gap:calc(var(--unit) * 70); }
+  .gap-md-75         { gap:calc(var(--unit) * 75); }
+  .gap-md-80         { gap:calc(var(--unit) * 80); }
+  .gap-md-85         { gap:calc(var(--unit) * 85); }
+  .gap-md-90         { gap:calc(var(--unit) * 90); }
+  .gap-md-100        { gap:calc(var(--unit) * 100); }
+}
 
 
 .gap-lr-0       { column-gap: 0;  }

@@ -116,6 +116,12 @@
   }
 }
 
+@media (min-width: 1000px) {
+  .page-section .subtitle {
+    padding-left: var(--gutter);
+  }
+}
+
 .subtitle--circle::before,
 .subtitle--square::before {
   content: '';

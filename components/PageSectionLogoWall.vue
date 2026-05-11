@@ -169,13 +169,12 @@ async function initLogoWallCycle(root) {
     const incoming = pool.shift()
     if (!incoming) return
 
-    gsap.set(incoming, { yPercent: 50, autoAlpha: 0 })
+    gsap.set(incoming, { yPercent: 50 })
     parent.appendChild(incoming)
 
     if (current) {
       gsap.to(current, {
         yPercent: -50,
-        autoAlpha: 0,
         duration,
         ease: 'expo.inOut',
         onComplete: () => {
@@ -187,7 +186,6 @@ async function initLogoWallCycle(root) {
 
     gsap.to(incoming, {
       yPercent: 0,
-      autoAlpha: 1,
       duration,
       delay: 0.1,
       ease: 'expo.inOut',

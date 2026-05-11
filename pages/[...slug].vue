@@ -138,6 +138,13 @@ const { data: page, pending, error } = useAsyncData(
             _id,
             title,
             slug,
+            thumbnailDescription,
+            thumbnailStats[] {
+              _key,
+              label,
+              value,
+              icon
+            },
             featuredImage {
               asset->
             },
@@ -183,6 +190,7 @@ const { data: page, pending, error } = useAsyncData(
         spotifyTitle,
         spotifyEmbedUrl,
         servicesTextarea,
+        cardsSectionTitle,
         heroCarouselLeftTiming,
         heroCarouselEnableRight,
         heroCarouselLoopAtSameTime,
@@ -331,7 +339,7 @@ const { data: page, pending, error } = useAsyncData(
         logoWallLogos[] {
           _key,
           alt,
-          asset-> {
+          "asset": asset.asset-> {
             _id,
             url
           }
@@ -339,7 +347,7 @@ const { data: page, pending, error } = useAsyncData(
         logoMarqueeLogos[] {
           _key,
           alt,
-          asset-> {
+          "asset": asset.asset-> {
             _id,
             url,
             metadata {

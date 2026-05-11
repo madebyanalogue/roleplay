@@ -1,5 +1,5 @@
 <template>
-  <section class="spotify-player-section grid gap-30">
+  <section class="spotify-player-section grid gap-30 pad-60 pad-top-bottom">
     <h2
       v-if="section.spotifyTitle || section.title"
       class="subtitle subtitle--circle red-dot"
@@ -55,7 +55,6 @@ const spotifyEmbedSrc = computed(() => {
 .spotify-player-wrapper {
   width: 100%;
   overflow: hidden;
-  background: var(--black);
 }
 
 .spotify-player-embed {

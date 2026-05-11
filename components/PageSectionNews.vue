@@ -1,5 +1,5 @@
 <template>
-  <section class="news-section">
+  <section class="news-section grid gap-30">
     <h2 v-if="section.newsTitle || section.title" class="subtitle subtitle--circle yellow-dot">
       {{ section.newsTitle || section.title }}
     </h2>
@@ -8,19 +8,19 @@
       <article
         v-for="(item, index) in newsItems"
         :key="item._id || item._key || index"
-        class="news-item flex gap-40"
+        class="news-item flex gap-md-100 yellow pad-25 rounded-medium underline-links"
       >
-        <div class="news-thumbnail yellow pad-10">
+        <div class="news-thumbnail">
           <NuxtImg
             v-if="item.featuredImage?.asset?.url"
             :src="item.featuredImage.asset.url"
             :width="item.featuredImage.asset.metadata?.dimensions?.width"
             :height="item.featuredImage.asset.metadata?.dimensions?.height"
             alt=""
-            class="news-image"
+            class="news-image rounded-medium"
           />
         </div>
-        <SanityBlocks v-if="item.content" :blocks="item.content" class="news-content" />
+        <SanityBlocks v-if="item.content" :blocks="item.content" class="news-content fluid-type" style="--desktop: 60; --mobile: 16;" />
       </article>
     </div>
   </section>
@@ -43,9 +43,7 @@ const newsItems = computed(() =>
 
 <style scoped>
 .news-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gutter);
+ --media-width: clamp(52px, 9vw, 200px);
 }
 
 .news-list {
@@ -55,7 +53,7 @@ const newsItems = computed(() =>
 }
 
 .news-item {
-  align-items: flex-start;
+  align-items: center;
 }
 
 .news-thumbnail {
@@ -64,8 +62,8 @@ const newsItems = computed(() =>
 }
 
 .news-image {
-  width: 4vw;
-  height: 4vw;
+  width: var(--media-width);
+  height: var(--media-width);
   min-width: 52px;
   min-height: 52px;
   object-fit: cover;
@@ -75,7 +73,8 @@ const newsItems = computed(() =>
 .news-content {
   flex: 1;
   min-width: 0;
-  font-size: var(--font-size-body);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
 
 .news-content :deep(.sanity-block) {
@@ -93,11 +92,6 @@ const newsItems = computed(() =>
   }
 }
 
-@media (min-width: 1000px) {
-  .news-section {
-    max-width: 1200px;
-  }
-}
 
 /* Keep compatibility with legacy markup classes if referenced elsewhere */
 .news-item {

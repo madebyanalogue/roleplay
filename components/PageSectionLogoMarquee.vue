@@ -1,5 +1,5 @@
 <template>
-  <section v-if="logos.length > 0" class="logo-marquee-section grid gap-30">
+  <section v-if="logos.length > 0" class="logo-marquee-section grid gap-40 pad-md-100 pad-top-bottom">
     <h2 v-if="props.section.logoMarqueeTitle || props.section.title" class="subtitle subtitle--circle yellow-dot">
       {{ props.section.logoMarqueeTitle || props.section.title }}
     </h2>
@@ -196,7 +196,7 @@ onBeforeUnmount(() => {
 }
 
 .logo-draggable-marquee {
-  --card-width: 34vw;
+  --card-width: 24vw;
   display: block;
   width: 100%;
   max-width: 100%;
@@ -210,9 +210,9 @@ onBeforeUnmount(() => {
   contain: layout paint;
 }
 
-@media (max-width: 999px) {
+@media (min-width: 1000px) {
   .logo-draggable-marquee {
-    --card-width: 45vw;
+    --card-width: 20vw;
   }
 }
 
@@ -227,7 +227,6 @@ onBeforeUnmount(() => {
   will-change: transform;
   gap: 0;
   cursor: grab;
-  overflow: hidden;
 }
 
 .logo-draggable-marquee__list {
@@ -247,12 +246,14 @@ onBeforeUnmount(() => {
   width: var(--card-width);
   min-width: var(--card-width);
   max-width: var(--card-width);
-  aspect-ratio: 2 / 1;
-  overflow: hidden;
+  aspect-ratio: 3 / 1;
   display: block;
   user-select: none;
   -webkit-user-drag: none;
   background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logo-draggable-marquee[data-dragging='true'] .logo-draggable-marquee__collection {
@@ -260,13 +261,14 @@ onBeforeUnmount(() => {
 }
 
 .logo-draggable-marquee__item-media {
-  width: 100%;
+  width: 70%;
   height: 100%;
   object-fit: contain;
   display: block;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
+  object-position: center center;
 }
 
 .logo-draggable-marquee__item-media:deep(img) {

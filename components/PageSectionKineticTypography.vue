@@ -1,9 +1,9 @@
 <template>
-  <section class="kinetic-typography pad-top-bottom">
+  <section class="kinetic-typography">
     <div
       v-if="section.kineticTypographyText?.length"
       class="kinetic-typography__text fluid-type"
-      style="--desktop: 72; --mobile: 28;"
+      style="--desktop: 108; --mobile: 40;"
     >
       <SanityBlocks :blocks="section.kineticTypographyText" />
     </div>
@@ -22,8 +22,14 @@ defineProps({
 <style scoped>
 .kinetic-typography {
   background: transparent;
-  padding-left: var(--gutter);
-  padding-right: var(--gutter);
+  padding: calc(var(--unit) * 310) calc(var(--unit) * 200) calc(var(--unit) * 200);
+  letter-spacing: -0.15em;
+  color: #555;
+}
+.kinetic-typography:deep(strong),
+.kinetic-typography b {
+  color: var(--orange);
+  font-weight: normal;
 }
 
 .kinetic-typography__text {
