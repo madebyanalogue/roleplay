@@ -33,46 +33,55 @@
       ref="contactRoot"
       class="header-contact show-md"
     >
-      <button
-        type="button"
-        class="header-contact-toggle header--styling"
-        :class="{ 'header-contact-toggle-open': contactOpen }"
-        :aria-expanded="contactOpen"
-        aria-haspopup="true"
-        @click="toggleContact"
+      <NuxtLink
+        v-if="contactButtonUrl"
+        :to="contactButtonUrl"
+        class="header-contact-toggle header-contact-link-button header--styling"
       >
         <div>{{ navigationContact.buttonTitle }}</div>
-      </button>
-      <div
-        v-show="contactOpen"
-        class="header-contact-panel white-text rounded-medium"
-        role="region"
-        :aria-label="navigationContact.buttonTitle"
-      >
-        <div
-          v-for="row in navigationContact.contacts"
-          :key="row._key"
-          class="header-contact-item pad-20"
+      </NuxtLink>
+      <template v-else>
+        <button
+          type="button"
+          class="header-contact-toggle header--styling"
+          :class="{ 'header-contact-toggle-open': contactOpen }"
+          :aria-expanded="contactOpen"
+          aria-haspopup="true"
+          @click="toggleContact"
         >
-          <div class="header-contact-item-title subtitle subtitle--circle white-dot">
-            {{ row.title }}
-          </div>
-          <a
-            v-if="contactLinkUsesNative(row.url)"
-            :href="row.url"
-            :target="isExternalHttp(row.url) ? '_blank' : undefined"
-            :rel="isExternalHttp(row.url) ? 'noopener' : undefined"
-            class="header-contact-link"
-          >{{ row.linkText }}</a>
-          <NuxtLink
-            v-else
-            :to="row.url"
-            class="header-contact-link"
+          <div>{{ navigationContact.buttonTitle }}</div>
+        </button>
+        <div
+          v-show="contactOpen"
+          class="header-contact-panel white-text rounded-medium"
+          role="region"
+          :aria-label="navigationContact.buttonTitle"
+        >
+          <div
+            v-for="row in navigationContact.contacts"
+            :key="row._key"
+            class="header-contact-item pad-20"
           >
-            {{ row.linkText }}
-          </NuxtLink>
+            <div class="header-contact-item-title subtitle subtitle--circle white-dot">
+              {{ row.title }}
+            </div>
+            <a
+              v-if="contactLinkUsesNative(getContactLinkUrl(row))"
+              :href="getContactLinkUrl(row)"
+              :target="isExternalHttp(getContactLinkUrl(row)) ? '_blank' : undefined"
+              :rel="isExternalHttp(getContactLinkUrl(row)) ? 'noopener' : undefined"
+              class="header-contact-link"
+            >{{ row.linkText }}</a>
+            <NuxtLink
+              v-else
+              :to="getContactLinkUrl(row)"
+              class="header-contact-link"
+            >
+              {{ row.linkText }}
+            </NuxtLink>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
 
 
@@ -163,14 +172,24 @@ const {
   mobileMenuSocialLinks,
 } = useSiteSettings()
 
+const { contactLinkUsesNative, isExternalHttp, getContactLinkUrl } = useContactLink()
+
 const headerMenuItems = computed(() => headerMenu.value?.items || [])
 const mobileMenuItems = computed(() => mobileMenu.value?.items || [])
+
+const contactButtonUrl = computed(() => {
+  const slug = navigationContact.value?.buttonPage?.slug?.current
+  if (!slug) return null
+  return slug === 'home' ? '/' : `/${slug}`
+})
 
 const showContactButton = computed(() => {
   const nc = navigationContact.value
   const title = nc?.buttonTitle?.trim()
+  if (!title) return false
+  if (contactButtonUrl.value) return true
   const contacts = nc?.contacts
-  return Boolean(title && Array.isArray(contacts) && contacts.length > 0)
+  return Boolean(Array.isArray(contacts) && contacts.length > 0)
 })
 
 const contactOpen = ref(false)
@@ -186,18 +205,6 @@ const contactMounted = ref(false)
 
 const toggleContact = () => {
   contactOpen.value = !contactOpen.value
-}
-
-const contactLinkUsesNative = (url) => {
-  if (!url) return true
-  if (url.startsWith('mailto:') || url.startsWith('tel:')) return true
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) return true
-  return false
-}
-
-const isExternalHttp = (url) => {
-  if (!url) return false
-  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')
 }
 
 const onDocumentPointerDown = (e) => {
@@ -447,6 +454,12 @@ onUnmounted(() => {
   cursor: pointer;
   font: inherit;
   font-weight: 600;
+}
+
+.header-contact-link-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .header-contact-panel {

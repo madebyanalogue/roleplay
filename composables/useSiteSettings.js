@@ -74,11 +74,25 @@ export const useSiteSettings = () => {
       },
       navigationContact {
         buttonTitle,
+        buttonPage-> {
+          slug {
+            current
+          }
+        },
         contacts[] {
           _key,
           title,
           linkText,
-          url
+          url,
+          link {
+            type,
+            page-> {
+              slug {
+                current
+              }
+            },
+            url
+          }
         }
       },
       footerColumns[] {

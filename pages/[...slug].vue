@@ -36,6 +36,10 @@
           v-else-if="section.sectionType === 'cards'"
           :section="section"
         />
+        <PageSectionStackingCards
+          v-else-if="section.sectionType === 'stackingCards'"
+          :section="section"
+        />
         <PageSectionAutoscrollGallery
           v-else-if="section.sectionType === 'autoscrollGallery'"
           :section="section"
@@ -63,6 +67,10 @@
         />
         <PageSectionClients
           v-else-if="section.sectionType === 'clients'"
+          :section="section"
+        />
+        <PageSectionContact
+          v-else-if="section.sectionType === 'contact'"
           :section="section"
         />
         <PageSectionSpotifyPlayer
@@ -265,6 +273,10 @@ const { data: page, pending, error } = useAsyncData(
           }
         },
         textContent,
+        kineticTypographyLine1,
+        kineticTypographyHighlightStart,
+        kineticTypographyHighlightConnector,
+        kineticTypographyHighlightEnd,
         kineticTypographyText,
         cardsDisableScrollDemo,
         cards[] {
@@ -377,7 +389,35 @@ const { data: page, pending, error } = useAsyncData(
               }
             }
           }
-        }
+        },
+        contactTitle,
+        contactVideoSubtitle,
+        contactVideo {
+          asset-> {
+            _id,
+            url
+          }
+        },
+        contactVideoAspectRatio,
+        contactRightTitle,
+        contactInformation[] {
+          _key,
+          title,
+          linkText,
+          url,
+          link {
+            type,
+            page-> {
+              slug {
+                current
+              }
+            },
+            url
+          }
+        },
+        contactLeftBackgroundColour,
+        contactRightBackgroundColour,
+        contactDotColour
       },
       "portfolioProjects": *[_type == "portfolio"] | order(orderRank) {
         _id,
@@ -460,20 +500,14 @@ watch(pending, (isPending) => {
 } */
 
 .page-content {
-  display: grid;
-  /* padding-top: calc(var(--gutter) * 1); */
+  display: flex;
   gap: calc(var(--gutter) * 1.5);
-  align-items: start;
 }
 @media (min-width: 800px) {
   .page-content {
-    /* padding-top: calc(var(--gutter) * 2.5); */
     gap: calc(var(--gutter) * 3.5);
   }
 }
 
- .page-content > * {
-  /* border: 1px solid red; */
- }
 </style>
 

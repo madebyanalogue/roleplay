@@ -263,9 +263,6 @@ body.preloader-ready #app {
 }
 
 /* Page wrapper to ensure stable DOM structure during transitions */
-.page-wrapper {
-  min-height: 1px; /* Ensure wrapper has height */
-}
 
 /* Page transitions */
 .page-enter-active,

@@ -191,8 +191,10 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .logo-marquee-section {
-  width: calc(100vw - calc(var(--gutter) * 2));
-  overflow: hidden;
+  width: calc(100% + calc(var(--gutter) * 2));
+  overflow: visible;
+  margin-left: calc(var(--gutter) * -1);
+  margin-right: calc(var(--gutter) * -1);
 }
 
 .logo-draggable-marquee {

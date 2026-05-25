@@ -43,7 +43,7 @@ html {
   --max-width: 1800px;
 
   /* Underline offset */
-  --underline-offset: 12%;
+  --underline-offset: -15%;
   --underline-width: 1px;
   
   /* Header height (will be set dynamically via inline styles) */
