@@ -501,6 +501,7 @@ watch(pending, (isPending) => {
 
 .page-content {
   display: flex;
+  flex-direction: column;
   gap: calc(var(--gutter) * 1.5);
 }
 @media (min-width: 800px) {
