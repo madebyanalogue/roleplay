@@ -86,10 +86,15 @@ const props = defineProps({
 
 const sectionRef = ref(null)
 const nuxtApp = useNuxtApp()
-const isTransitioning = useState('pageTransitioning', () => false)
+const { isLoading: isPageLoading } = injectPageLoading()
 let mmContext = null
 let initTimer = null
+let followUpTimer = null
 let removePageFinishHook = () => {}
+let removeFeaturedProjectsReadyListener = () => {}
+
+const MAX_INIT_ATTEMPTS = 10
+let initAttempts = 0
 
 const hasCards = computed(() => (props.section?.cards || []).length > 0)
 
@@ -155,15 +160,28 @@ async function initStickyCards() {
 
     const setup = async () => {
       const section = sectionRef.value
-      if (cancelled || !section) return
+      if (cancelled || !section) {
+        if (initAttempts < MAX_INIT_ATTEMPTS) {
+          initAttempts += 1
+          scheduleInitStickyCards(150)
+        }
+        return
+      }
 
       const cardEls = section.querySelectorAll('.sticky-cards__card')
       const totalCards = cardEls.length
-      if (totalCards < 1) return
+      if (totalCards < 1 || section.offsetHeight === 0) {
+        if (initAttempts < MAX_INIT_ATTEMPTS) {
+          initAttempts += 1
+          scheduleInitStickyCards(150)
+        }
+        return
+      }
 
       await waitForMedia(section)
       if (cancelled) return
 
+      await new Promise((resolve) => requestAnimationFrame(resolve))
       await new Promise((resolve) => requestAnimationFrame(resolve))
       if (cancelled) return
 
@@ -249,7 +267,8 @@ async function initStickyCards() {
 
       constrainPinSpacerWidth(scrollTrigger, section)
       updateCards(scrollTrigger.progress)
-      scheduleScrollTriggerRefresh()
+      initAttempts = 0
+      scheduleScrollTriggerRefresh(hasFeaturedProjectsSection() ? 500 : 120)
     }
 
     setup()
@@ -259,16 +278,38 @@ async function initStickyCards() {
       window.removeEventListener('resize', onResize)
       scrollTrigger?.kill()
       scrollTrigger = null
-      gsap.set(sectionRef.value?.querySelectorAll('.sticky-cards__card') || [], {
-        clearProps: 'all',
-      })
+      const cards = sectionRef.value?.querySelectorAll('.sticky-cards__card')
+      if (cards?.length) {
+        gsap.set(cards, { clearProps: 'all' })
+      }
     }
   })
 }
 
+function hasFeaturedProjectsSection() {
+  return !!document.querySelector('[data-featured-projects-scroll]')
+}
+
+function isFeaturedProjectsReady() {
+  return !!document.querySelector(
+    '[data-featured-projects-scroll][data-featured-projects-ready]',
+  )
+}
+
 function getInitDelay() {
   if (!import.meta.client) return 0
-  return document.querySelector('[data-featured-projects-scroll]') ? 300 : 0
+  // Allow layout/fonts to settle in production builds.
+  return hasFeaturedProjectsSection() ? 450 : 150
+}
+
+function scheduleFollowUpInit() {
+  if (!hasFeaturedProjectsSection()) return
+  if (followUpTimer) clearTimeout(followUpTimer)
+  followUpTimer = setTimeout(() => {
+    followUpTimer = null
+    initAttempts = 0
+    scheduleInitStickyCards(TRANSITION_SETTLE_MS)
+  }, 750)
 }
 
 function scheduleInitStickyCards(delay = 0) {
@@ -279,6 +320,40 @@ function scheduleInitStickyCards(delay = 0) {
     await nextTick()
     initStickyCards()
   }, delay + getInitDelay())
+}
+
+function scheduleInitWhenDependenciesReady(extraDelay = 0) {
+  const startInit = (delay = 0) => {
+    scheduleInitStickyCards(delay + extraDelay)
+    scheduleFollowUpInit()
+  }
+
+  if (!hasFeaturedProjectsSection() || isFeaturedProjectsReady()) {
+    startInit()
+    return
+  }
+
+  const onFeaturedProjectsReady = () => {
+    removeFeaturedProjectsReadyListener()
+    initAttempts = 0
+    startInit(TRANSITION_SETTLE_MS)
+  }
+
+  removeFeaturedProjectsReadyListener()
+  document.addEventListener(
+    'featured-projects-scroll-ready',
+    onFeaturedProjectsReady,
+    { once: true },
+  )
+  removeFeaturedProjectsReadyListener = () => {
+    document.removeEventListener(
+      'featured-projects-scroll-ready',
+      onFeaturedProjectsReady,
+    )
+  }
+
+  // Fallback if featured projects never initializes (e.g. fewer than 2 projects).
+  startInit(TRANSITION_SETTLE_MS)
 }
 
 function runWhenPreloaderReady(callback) {
@@ -303,32 +378,38 @@ watch(
       )
       .join('|'),
   async () => {
-    scheduleInitStickyCards(TRANSITION_SETTLE_MS)
+    scheduleInitWhenDependenciesReady(TRANSITION_SETTLE_MS)
   },
 )
+
+watch(isPageLoading, (loading) => {
+  if (loading) return
+  scheduleInitWhenDependenciesReady(TRANSITION_SETTLE_MS)
+})
 
 onMounted(async () => {
   await nextTick()
 
   removePageFinishHook = nuxtApp.hook('page:finish', () => {
-    scheduleInitStickyCards(TRANSITION_SETTLE_MS)
+    scheduleInitWhenDependenciesReady(TRANSITION_SETTLE_MS)
   })
 
-  if (isTransitioning.value) return
-
   runWhenPreloaderReady(() => {
-    scheduleInitStickyCards()
+    scheduleInitWhenDependenciesReady()
   })
 })
 
 onActivated(() => {
-  scheduleInitStickyCards(TRANSITION_SETTLE_MS)
+  scheduleInitWhenDependenciesReady(TRANSITION_SETTLE_MS)
 })
 
 onUnmounted(() => {
   if (initTimer) clearTimeout(initTimer)
   initTimer = null
+  if (followUpTimer) clearTimeout(followUpTimer)
+  followUpTimer = null
   removePageFinishHook()
+  removeFeaturedProjectsReadyListener()
   mmContext?.revert()
   mmContext = null
 })

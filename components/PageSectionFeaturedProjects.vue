@@ -214,6 +214,9 @@ async function initInsideScroll() {
 
       constrainPinSpacer(scrollTrigger)
       scheduleScrollTriggerRefresh()
+
+      section.dataset.featuredProjectsReady = 'true'
+      document.dispatchEvent(new CustomEvent('featured-projects-scroll-ready'))
     }
 
     setup()
@@ -293,6 +296,9 @@ onUnmounted(() => {
   if (initTimer) clearTimeout(initTimer)
   initTimer = null
   removePageFinishHook()
+  if (sectionRef.value) {
+    delete sectionRef.value.dataset.featuredProjectsReady
+  }
   mmContext?.revert()
   mmContext = null
 })

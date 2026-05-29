@@ -1,5 +1,5 @@
 import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { defineComponent, shallowRef, h, resolveComponent, computed, toValue, getCurrentInstance, onServerPrefetch, hasInjectionContext, inject, useAttrs, ref, mergeProps, unref, toRef, nextTick, createElementBlock, provide, cloneVNode, Suspense, Fragment, useSSRContext, createApp, withCtx, createVNode, toDisplayString, createTextVNode, shallowReactive, onErrorCaptured, resolveDynamicComponent, reactive, effectScope, isReadonly, isRef, isShallow, isReactive, toRaw, defineAsyncComponent, watch, getCurrentScope } from 'vue';
-import { l as parseQuery, m as hasProtocol, n as joinURL, w as withQuery, o as withTrailingSlash, q as withoutTrailingSlash, t as isScriptProtocol, v as sanitizeStatusCode, x as getContext, c as createError$1, y as defu, z as withLeadingSlash, A as parseURL, $ as $fetch$1, B as baseURL, C as createHooks, D as executeAsync, E as encodeParam, F as encodePath, G as toRouteMatcher, H as createRouter$1 } from '../nitro/nitro.mjs';
+import { l as parseQuery, m as hasProtocol, n as joinURL, w as withQuery, o as withTrailingSlash, q as withoutTrailingSlash, t as isScriptProtocol, v as getContext, x as sanitizeStatusCode, c as createError$1, y as defu, z as withLeadingSlash, A as parseURL, $ as $fetch$1, B as baseURL, C as createHooks, D as executeAsync, E as encodeParam, F as encodePath, G as toRouteMatcher, H as createRouter$1 } from '../nitro/nitro.mjs';
 import { RouterView, createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 import { ssrRenderAttrs, ssrRenderSlot, ssrRenderList, ssrRenderComponent, ssrInterpolate, ssrRenderClass, ssrRenderAttr, ssrRenderStyle, ssrRenderSuspense, ssrRenderVNode, ssrRenderTeleport } from 'vue/server-renderer';
 import { debounce } from 'perfect-debounce';
@@ -387,17 +387,17 @@ const _routes = [
   {
     name: "slug",
     path: "/:slug(.*)*",
-    component: () => import('./_...slug_-D5ZbZKXL.mjs')
+    component: () => import('./_...slug_-BAJ7ja6T.mjs')
   },
   {
     name: "portfolio",
     path: "/portfolio",
-    component: () => import('./index-B2xTW0Gz.mjs')
+    component: () => import('./index-CVwYZTX3.mjs')
   },
   {
     name: "portfolio-slug",
     path: "/portfolio/:slug(.*)*",
-    component: () => import('./_...slug_-PqdJyee4.mjs')
+    component: () => import('./_...slug_-OS085HHy.mjs')
   }
 ];
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g;
@@ -1443,11 +1443,25 @@ const useSiteSettings = () => {
       },
       navigationContact {
         buttonTitle,
+        buttonPage-> {
+          slug {
+            current
+          }
+        },
         contacts[] {
           _key,
           title,
           linkText,
-          url
+          url,
+          link {
+            type,
+            page-> {
+              slug {
+                current
+              }
+            },
+            url
+          }
         }
       },
       footerColumns[] {
@@ -1590,6 +1604,34 @@ _sfc_main$8.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/Logo.vue");
   return _sfc_setup$8 ? _sfc_setup$8(props, ctx) : void 0;
 };
+function useContactLink() {
+  const getContactLinkUrl = (row) => {
+    if (!row) return "";
+    if (row.url && !row.link) return row.url;
+    const link = row.link;
+    if (!link) return "";
+    if (link.type === "page" && link.page?.slug?.current) {
+      const slug = link.page.slug.current;
+      return slug === "home" ? "/" : `/${slug}`;
+    }
+    return link.url || "";
+  };
+  const contactLinkUsesNative = (url) => {
+    if (!url) return true;
+    if (url.startsWith("mailto:") || url.startsWith("tel:")) return true;
+    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//")) return true;
+    return false;
+  };
+  const isExternalHttp = (url) => {
+    if (!url) return false;
+    return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//");
+  };
+  return {
+    getContactLinkUrl,
+    contactLinkUsesNative,
+    isExternalHttp
+  };
+}
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -1611,29 +1653,27 @@ const _sfc_main$7 = {
       mobileMenuSocialLinksTitle,
       mobileMenuSocialLinks
     } = useSiteSettings();
+    const { contactLinkUsesNative, isExternalHttp, getContactLinkUrl } = useContactLink();
     const headerMenuItems = computed(() => headerMenu.value?.items || []);
     const mobileMenuItems = computed(() => mobileMenu.value?.items || []);
+    const contactButtonUrl = computed(() => {
+      const slug = navigationContact.value?.buttonPage?.slug?.current;
+      if (!slug) return null;
+      return slug === "home" ? "/" : `/${slug}`;
+    });
     const showContactButton = computed(() => {
       const nc = navigationContact.value;
       const title = nc?.buttonTitle?.trim();
+      if (!title) return false;
+      if (contactButtonUrl.value) return true;
       const contacts = nc?.contacts;
-      return Boolean(title && Array.isArray(contacts) && contacts.length > 0);
+      return Boolean(Array.isArray(contacts) && contacts.length > 0);
     });
     const contactOpen = ref(false);
     ref(null);
     const mobileMenuOpen = ref(false);
     ref(null);
     const contactMounted = ref(false);
-    const contactLinkUsesNative = (url) => {
-      if (!url) return true;
-      if (url.startsWith("mailto:") || url.startsWith("tel:")) return true;
-      if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//")) return true;
-      return false;
-    };
-    const isExternalHttp = (url) => {
-      if (!url) return false;
-      return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//");
-    };
     const isExternalUrl = (url) => {
       if (!url) return false;
       if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//")) return true;
@@ -1672,7 +1712,7 @@ const _sfc_main$7 = {
           "header-hidden": unref(headerType) === "responsive" && unref(isScrollingDown),
           "header-transition": unref(headerType) === "responsive" && unref(shouldAddTransition)
         }]
-      }, _attrs))} data-v-2760c840><div class="header-bar header--styling" data-v-2760c840><div class="header-logo" data-v-2760c840>`);
+      }, _attrs))} data-v-59ff3d60><div class="header-bar header--styling" data-v-59ff3d60><div class="header-logo" data-v-59ff3d60>`);
       _push(ssrRenderComponent(_component_NuxtLink, { to: "/" }, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
@@ -1685,7 +1725,7 @@ const _sfc_main$7 = {
         }),
         _: 1
       }, _parent));
-      _push(`</div><nav class="header-nav" aria-label="Main" data-v-2760c840><!--[-->`);
+      _push(`</div><nav class="header-nav" aria-label="Main" data-v-59ff3d60><!--[-->`);
       ssrRenderList(unref(headerMenuItems), (item) => {
         _push(ssrRenderComponent(_component_NuxtLink, {
           key: item._key || item.text,
@@ -1696,7 +1736,7 @@ const _sfc_main$7 = {
         }, {
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<span class="header-link-text" data-v-2760c840${_scopeId}>${ssrInterpolate(item.text)}</span>`);
+              _push2(`<span class="header-link-text" data-v-59ff3d60${_scopeId}>${ssrInterpolate(item.text)}</span>`);
             } else {
               return [
                 createVNode("span", { class: "header-link-text" }, toDisplayString(item.text), 1)
@@ -1708,35 +1748,55 @@ const _sfc_main$7 = {
       });
       _push(`<!--]--></nav></div>`);
       if (unref(showContactButton) && unref(contactMounted)) {
-        _push(`<div class="header-contact show-md" data-v-2760c840><button type="button" class="${ssrRenderClass([{ "header-contact-toggle-open": unref(contactOpen) }, "header-contact-toggle header--styling"])}"${ssrRenderAttr("aria-expanded", unref(contactOpen))} aria-haspopup="true" data-v-2760c840><div data-v-2760c840>${ssrInterpolate(unref(navigationContact).buttonTitle)}</div></button><div class="header-contact-panel" role="region"${ssrRenderAttr("aria-label", unref(navigationContact).buttonTitle)} style="${ssrRenderStyle(unref(contactOpen) ? null : { display: "none" })}" data-v-2760c840><!--[-->`);
-        ssrRenderList(unref(navigationContact).contacts, (row) => {
-          _push(`<div class="header-contact-item" data-v-2760c840><div class="header-contact-item-title" data-v-2760c840>${ssrInterpolate(row.title)}</div>`);
-          if (contactLinkUsesNative(row.url)) {
-            _push(`<a${ssrRenderAttr("href", row.url)}${ssrRenderAttr("target", isExternalHttp(row.url) ? "_blank" : void 0)}${ssrRenderAttr("rel", isExternalHttp(row.url) ? "noopener" : void 0)} class="header-contact-link" data-v-2760c840>${ssrInterpolate(row.linkText)}</a>`);
-          } else {
-            _push(ssrRenderComponent(_component_NuxtLink, {
-              to: row.url,
-              class: "header-contact-link"
-            }, {
-              default: withCtx((_, _push2, _parent2, _scopeId) => {
-                if (_push2) {
-                  _push2(`${ssrInterpolate(row.linkText)}`);
-                } else {
-                  return [
-                    createTextVNode(toDisplayString(row.linkText), 1)
-                  ];
-                }
-              }),
-              _: 2
-            }, _parent));
-          }
-          _push(`</div>`);
-        });
-        _push(`<!--]--></div></div>`);
+        _push(`<div class="header-contact show-md" data-v-59ff3d60>`);
+        if (unref(contactButtonUrl)) {
+          _push(ssrRenderComponent(_component_NuxtLink, {
+            to: unref(contactButtonUrl),
+            class: "header-contact-toggle header-contact-link-button header--styling"
+          }, {
+            default: withCtx((_, _push2, _parent2, _scopeId) => {
+              if (_push2) {
+                _push2(`<div data-v-59ff3d60${_scopeId}>${ssrInterpolate(unref(navigationContact).buttonTitle)}</div>`);
+              } else {
+                return [
+                  createVNode("div", null, toDisplayString(unref(navigationContact).buttonTitle), 1)
+                ];
+              }
+            }),
+            _: 1
+          }, _parent));
+        } else {
+          _push(`<!--[--><button type="button" class="${ssrRenderClass([{ "header-contact-toggle-open": unref(contactOpen) }, "header-contact-toggle header--styling"])}"${ssrRenderAttr("aria-expanded", unref(contactOpen))} aria-haspopup="true" data-v-59ff3d60><div data-v-59ff3d60>${ssrInterpolate(unref(navigationContact).buttonTitle)}</div></button><div class="header-contact-panel white-text rounded-medium" role="region"${ssrRenderAttr("aria-label", unref(navigationContact).buttonTitle)} style="${ssrRenderStyle(unref(contactOpen) ? null : { display: "none" })}" data-v-59ff3d60><!--[-->`);
+          ssrRenderList(unref(navigationContact).contacts, (row) => {
+            _push(`<div class="header-contact-item pad-20" data-v-59ff3d60><div class="header-contact-item-title subtitle subtitle--circle white-dot" data-v-59ff3d60>${ssrInterpolate(row.title)}</div>`);
+            if (unref(contactLinkUsesNative)(unref(getContactLinkUrl)(row))) {
+              _push(`<a${ssrRenderAttr("href", unref(getContactLinkUrl)(row))}${ssrRenderAttr("target", unref(isExternalHttp)(unref(getContactLinkUrl)(row)) ? "_blank" : void 0)}${ssrRenderAttr("rel", unref(isExternalHttp)(unref(getContactLinkUrl)(row)) ? "noopener" : void 0)} class="header-contact-link" data-v-59ff3d60>${ssrInterpolate(row.linkText)}</a>`);
+            } else {
+              _push(ssrRenderComponent(_component_NuxtLink, {
+                to: unref(getContactLinkUrl)(row),
+                class: "header-contact-link"
+              }, {
+                default: withCtx((_, _push2, _parent2, _scopeId) => {
+                  if (_push2) {
+                    _push2(`${ssrInterpolate(row.linkText)}`);
+                  } else {
+                    return [
+                      createTextVNode(toDisplayString(row.linkText), 1)
+                    ];
+                  }
+                }),
+                _: 2
+              }, _parent));
+            }
+            _push(`</div>`);
+          });
+          _push(`<!--]--></div><!--]-->`);
+        }
+        _push(`</div>`);
       } else {
         _push(`<!---->`);
       }
-      _push(`<div class="header-mobile header--styling" data-v-2760c840><button type="button" class="${ssrRenderClass([{ "header-menu-toggle-open": unref(mobileMenuOpen) }, "header-menu-toggle"])}"${ssrRenderAttr("aria-expanded", unref(mobileMenuOpen))} aria-controls="header-mobile-nav" data-v-2760c840> Menu </button><div id="header-mobile-nav" class="header-mobile-panel header-mobile-panel--fullscreen underline-links" role="navigation" aria-label="Main" style="${ssrRenderStyle(unref(mobileMenuOpen) ? null : { display: "none" })}" data-v-2760c840><div class="header-mobile-panel-main" data-v-2760c840><!--[-->`);
+      _push(`<div class="header-mobile header--styling" data-v-59ff3d60><button type="button" class="${ssrRenderClass([{ "header-menu-toggle-open": unref(mobileMenuOpen) }, "header-menu-toggle"])}"${ssrRenderAttr("aria-expanded", unref(mobileMenuOpen))} aria-controls="header-mobile-nav" data-v-59ff3d60> Menu </button><div id="header-mobile-nav" class="header-mobile-panel header-mobile-panel--fullscreen underline-links" role="navigation" aria-label="Main" style="${ssrRenderStyle(unref(mobileMenuOpen) ? null : { display: "none" })}" data-v-59ff3d60><div class="header-mobile-panel-main" data-v-59ff3d60><!--[-->`);
       ssrRenderList(unref(mobileMenuItems), (item) => {
         _push(ssrRenderComponent(_component_NuxtLink, {
           key: item._key || item.text,
@@ -1748,7 +1808,7 @@ const _sfc_main$7 = {
         }, {
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<span class="header-link-text" data-v-2760c840${_scopeId}>${ssrInterpolate(item.text)}</span>`);
+              _push2(`<span class="header-link-text" data-v-59ff3d60${_scopeId}>${ssrInterpolate(item.text)}</span>`);
             } else {
               return [
                 createVNode("span", { class: "header-link-text" }, toDisplayString(item.text), 1)
@@ -1760,17 +1820,17 @@ const _sfc_main$7 = {
       });
       _push(`<!--]--></div>`);
       if (unref(showMobileMenuSocialLinks)) {
-        _push(`<div class="header-mobile-social" data-v-2760c840>`);
+        _push(`<div class="header-mobile-social" data-v-59ff3d60>`);
         if (unref(mobileMenuSocialLinksTitle).trim()) {
-          _push(`<p class="header-mobile-social-title" data-v-2760c840>${ssrInterpolate(unref(mobileMenuSocialLinksTitle))}</p>`);
+          _push(`<p class="header-mobile-social-title" data-v-59ff3d60>${ssrInterpolate(unref(mobileMenuSocialLinksTitle))}</p>`);
         } else {
           _push(`<!---->`);
         }
-        _push(`<div class="header-mobile-social-links" data-v-2760c840><!--[-->`);
+        _push(`<div class="header-mobile-social-links" data-v-59ff3d60><!--[-->`);
         ssrRenderList(unref(mobileMenuSocialLinks), (row) => {
           _push(`<!--[-->`);
-          if (contactLinkUsesNative(row.url)) {
-            _push(`<a${ssrRenderAttr("href", row.url)}${ssrRenderAttr("target", isExternalHttp(row.url) ? "_blank" : void 0)}${ssrRenderAttr("rel", isExternalHttp(row.url) ? "noopener" : void 0)} class="header-mobile-social-link" data-v-2760c840>${ssrInterpolate(row.title)}</a>`);
+          if (unref(contactLinkUsesNative)(row.url)) {
+            _push(`<a${ssrRenderAttr("href", row.url)}${ssrRenderAttr("target", unref(isExternalHttp)(row.url) ? "_blank" : void 0)}${ssrRenderAttr("rel", unref(isExternalHttp)(row.url) ? "noopener" : void 0)} class="header-mobile-social-link" data-v-59ff3d60>${ssrInterpolate(row.title)}</a>`);
           } else {
             _push(ssrRenderComponent(_component_NuxtLink, {
               to: row.url,
@@ -1795,7 +1855,13 @@ const _sfc_main$7 = {
       } else {
         _push(`<!---->`);
       }
-      _push(`</div></div></header>`);
+      _push(`</div></div>`);
+      if (unref(headerType) === "fixed") {
+        _push(`<!--[--><div class="header-corner-fill" aria-hidden="true" data-v-59ff3d60></div><div class="header-corner-fill right" aria-hidden="true" data-v-59ff3d60></div><!--]-->`);
+      } else {
+        _push(`<!---->`);
+      }
+      _push(`</header>`);
     };
   }
 };
@@ -1805,7 +1871,7 @@ _sfc_main$7.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/Header.vue");
   return _sfc_setup$7 ? _sfc_setup$7(props, ctx) : void 0;
 };
-const __nuxt_component_1$1 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main$7, [["__scopeId", "data-v-2760c840"]]), { __name: "Header" });
+const __nuxt_component_1$1 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main$7, [["__scopeId", "data-v-59ff3d60"]]), { __name: "Header" });
 const defineRouteProvider = (name = "RouteProvider") => defineComponent({
   name,
   props: {
@@ -2682,13 +2748,13 @@ const _sfc_main$3 = {
     );
     return (_ctx, _push, _parent, _attrs) => {
       const _component_Logo = _sfc_main$8;
-      _push(`<footer${ssrRenderAttrs(mergeProps({ class: "footer orange white-text rounded-medium pad-50 grid grid-1 gap-65" }, _attrs))} data-v-a6ae7984><div data-v-a6ae7984>`);
+      _push(`<footer${ssrRenderAttrs(mergeProps({ class: "footer orange white-text rounded-medium pad-50 grid grid-1 gap-65" }, _attrs))} data-v-34b70a9f><div data-v-34b70a9f>`);
       _push(ssrRenderComponent(_component_Logo, null, null, _parent));
-      _push(`</div><div class="show-sm" data-v-a6ae7984></div>`);
+      _push(`</div><div class="show-sm" data-v-34b70a9f></div>`);
       if (visibleFooterColumns.value.length > 0) {
-        _push(`<div class="flex footer-nav-container column row-md between-xs gap-50 gap-md-30 fluid-type medium line-height-1" style="${ssrRenderStyle({ "--desktop": "40", "--tablet": "26", "--mobile": "26" })}" data-v-a6ae7984><!--[-->`);
+        _push(`<div class="flex footer-nav-container column row-md between-xs gap-50 gap-md-30 fluid-type bold line-height-1" style="${ssrRenderStyle({ "--desktop": "40", "--tablet": "26", "--mobile": "26" })}" data-v-34b70a9f><!--[-->`);
         ssrRenderList(visibleFooterColumns.value, (col) => {
-          _push(`<div class="footer-column underline-links" data-v-a6ae7984>`);
+          _push(`<div class="footer-column underline-links" data-v-34b70a9f>`);
           _push(ssrRenderComponent(__nuxt_component_0, {
             blocks: col.content
           }, null, _parent));
@@ -2698,15 +2764,15 @@ const _sfc_main$3 = {
       } else {
         _push(`<!---->`);
       }
-      _push(`<div class="show-sm" data-v-a6ae7984></div><div class="show-md" data-v-a6ae7984></div><div class="flex between-xs bottom-xs reverse-md gap-60" data-v-a6ae7984>`);
+      _push(`<div class="show-sm" data-v-34b70a9f></div><div class="show-md" data-v-34b70a9f></div><div class="flex between-xs bottom-xs reverse-md gap-60" data-v-34b70a9f>`);
       if (unref(footerCallToAction).length > 0) {
-        _push(`<div class="fluid-type underline-links footer-cta" style="${ssrRenderStyle({ "--desktop": "40", "--mobile": "26" })}" data-v-a6ae7984>`);
+        _push(`<div class="fluid-type underline-links footer-cta" style="${ssrRenderStyle({ "--desktop": "40", "--mobile": "26" })}" data-v-34b70a9f>`);
         _push(ssrRenderComponent(__nuxt_component_0, { blocks: unref(footerCallToAction) }, null, _parent));
         _push(`</div>`);
       } else {
         _push(`<!---->`);
       }
-      _push(`<div class="fluid-type" style="${ssrRenderStyle({ "--desktop": "40", "--mobile": "16" })}" data-v-a6ae7984>${ssrInterpolate(unref(copyright))}</div></div></footer>`);
+      _push(`<div class="fluid-type" style="${ssrRenderStyle({ "--desktop": "40", "--mobile": "16" })}" data-v-34b70a9f>${ssrInterpolate(unref(copyright))}</div></div></footer>`);
     };
   }
 };
@@ -2716,7 +2782,7 @@ _sfc_main$3.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/Footer.vue");
   return _sfc_setup$3 ? _sfc_setup$3(props, ctx) : void 0;
 };
-const __nuxt_component_3 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main$3, [["__scopeId", "data-v-a6ae7984"]]), { __name: "Footer" });
+const __nuxt_component_3 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main$3, [["__scopeId", "data-v-34b70a9f"]]), { __name: "Footer" });
 const pageLoadingKey = /* @__PURE__ */ Symbol("pageLoading");
 const usePageLoading = () => {
   const isLoading = ref(false);
@@ -2767,6 +2833,9 @@ const _sfc_main$2 = {
         style: `
       --mobile-breakpoint: ${mobileBreakpoint.value};
     `
+      },
+      bodyAttrs: {
+        class: headerType.value === "fixed" ? "header--is--fixed" : ""
       }
     }));
     const appStyles = computed(() => {
@@ -3001,5 +3070,5 @@ let entry;
 }
 const entry_default = (ssrContext) => entry(ssrContext);
 
-export { _export_sfc as _, __nuxt_component_0$2 as a, __nuxt_component_1 as b, useAsyncData as c, useRuntimeConfig as d, entry_default as default, __nuxt_component_0 as e, useRoute as f, useSiteSettings as g, injectPageLoading as i, useHead as u };
+export { _export_sfc as _, __nuxt_component_0$2 as a, useNuxtApp as b, __nuxt_component_1 as c, useAsyncData as d, entry_default as default, useRuntimeConfig as e, __nuxt_component_0 as f, useContactLink as g, useRoute as h, injectPageLoading as i, useSiteSettings as j, useHead as u };
 //# sourceMappingURL=server.mjs.map
