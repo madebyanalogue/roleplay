@@ -17,15 +17,33 @@ interface _GlobalComponents {
   'Footer': typeof import("../../components/Footer.vue").default
   'Header': typeof import("../../components/Header.vue").default
   'Logo': typeof import("../../components/Logo.vue").default
+  'PageSectionAutoscrollGallery': typeof import("../../components/PageSectionAutoscrollGallery.vue").default
+  'PageSectionCards': typeof import("../../components/PageSectionCards.vue").default
+  'PageSectionClients': typeof import("../../components/PageSectionClients.vue").default
+  'PageSectionContact': typeof import("../../components/PageSectionContact.vue").default
   'PageSectionFeaturedProjects': typeof import("../../components/PageSectionFeaturedProjects.vue").default
+  'PageSectionHeroCarousel': typeof import("../../components/PageSectionHeroCarousel.vue").default
   'PageSectionInfo': typeof import("../../components/PageSectionInfo.vue").default
+  'PageSectionKineticTypography': typeof import("../../components/PageSectionKineticTypography.vue").default
+  'PageSectionLogoMarquee': typeof import("../../components/PageSectionLogoMarquee.vue").default
+  'PageSectionLogoWall': typeof import("../../components/PageSectionLogoWall.vue").default
+  'PageSectionNews': typeof import("../../components/PageSectionNews.vue").default
   'PageSectionPortfolio': typeof import("../../components/PageSectionPortfolio.vue").default
-  'PageSectionPressAwards': typeof import("../../components/PageSectionPressAwards.vue").default
   'PageSectionServices': typeof import("../../components/PageSectionServices.vue").default
+  'PageSectionSpotifyPlayer': typeof import("../../components/PageSectionSpotifyPlayer.vue").default
+  'PageSectionStackingCards': typeof import("../../components/PageSectionStackingCards.vue").default
+  'PageSectionTeam': typeof import("../../components/PageSectionTeam.vue").default
+  'PageSectionText': typeof import("../../components/PageSectionText.vue").default
+  'PlyrPlayer': typeof import("../../components/PlyrPlayer.vue").default
   'PortfolioGallery': typeof import("../../components/PortfolioGallery.vue").default
+  'PortfolioStats': typeof import("../../components/PortfolioStats.vue").default
+  'PortfolioStatsProject': typeof import("../../components/PortfolioStatsProject.vue").default
+  'PortfolioTwoColumnCell': typeof import("../../components/PortfolioTwoColumnCell.vue").default
+  'PortfolioVideoBlock': typeof import("../../components/PortfolioVideoBlock.vue").default
   'Preloader': typeof import("../../components/Preloader.vue").default
   'SanityBlock': typeof import("../../components/SanityBlock.vue").default
   'SanityBlocks': typeof import("../../components/SanityBlocks.vue").default
+  'SectionIntroText': typeof import("../../components/SectionIntroText.vue").default
   'SanityContent': typeof import("../../node_modules/@nuxtjs/sanity/dist/runtime/components/sanity-content").default
   'SanityFile': typeof import("../../node_modules/@nuxtjs/sanity/dist/runtime/components/sanity-file").default
   'SanityImage': typeof import("../../node_modules/@nuxtjs/sanity/dist/runtime/components/sanity-image").default
@@ -55,15 +73,33 @@ interface _GlobalComponents {
   'LazyFooter': LazyComponent<typeof import("../../components/Footer.vue").default>
   'LazyHeader': LazyComponent<typeof import("../../components/Header.vue").default>
   'LazyLogo': LazyComponent<typeof import("../../components/Logo.vue").default>
+  'LazyPageSectionAutoscrollGallery': LazyComponent<typeof import("../../components/PageSectionAutoscrollGallery.vue").default>
+  'LazyPageSectionCards': LazyComponent<typeof import("../../components/PageSectionCards.vue").default>
+  'LazyPageSectionClients': LazyComponent<typeof import("../../components/PageSectionClients.vue").default>
+  'LazyPageSectionContact': LazyComponent<typeof import("../../components/PageSectionContact.vue").default>
   'LazyPageSectionFeaturedProjects': LazyComponent<typeof import("../../components/PageSectionFeaturedProjects.vue").default>
+  'LazyPageSectionHeroCarousel': LazyComponent<typeof import("../../components/PageSectionHeroCarousel.vue").default>
   'LazyPageSectionInfo': LazyComponent<typeof import("../../components/PageSectionInfo.vue").default>
+  'LazyPageSectionKineticTypography': LazyComponent<typeof import("../../components/PageSectionKineticTypography.vue").default>
+  'LazyPageSectionLogoMarquee': LazyComponent<typeof import("../../components/PageSectionLogoMarquee.vue").default>
+  'LazyPageSectionLogoWall': LazyComponent<typeof import("../../components/PageSectionLogoWall.vue").default>
+  'LazyPageSectionNews': LazyComponent<typeof import("../../components/PageSectionNews.vue").default>
   'LazyPageSectionPortfolio': LazyComponent<typeof import("../../components/PageSectionPortfolio.vue").default>
-  'LazyPageSectionPressAwards': LazyComponent<typeof import("../../components/PageSectionPressAwards.vue").default>
   'LazyPageSectionServices': LazyComponent<typeof import("../../components/PageSectionServices.vue").default>
+  'LazyPageSectionSpotifyPlayer': LazyComponent<typeof import("../../components/PageSectionSpotifyPlayer.vue").default>
+  'LazyPageSectionStackingCards': LazyComponent<typeof import("../../components/PageSectionStackingCards.vue").default>
+  'LazyPageSectionTeam': LazyComponent<typeof import("../../components/PageSectionTeam.vue").default>
+  'LazyPageSectionText': LazyComponent<typeof import("../../components/PageSectionText.vue").default>
+  'LazyPlyrPlayer': LazyComponent<typeof import("../../components/PlyrPlayer.vue").default>
   'LazyPortfolioGallery': LazyComponent<typeof import("../../components/PortfolioGallery.vue").default>
+  'LazyPortfolioStats': LazyComponent<typeof import("../../components/PortfolioStats.vue").default>
+  'LazyPortfolioStatsProject': LazyComponent<typeof import("../../components/PortfolioStatsProject.vue").default>
+  'LazyPortfolioTwoColumnCell': LazyComponent<typeof import("../../components/PortfolioTwoColumnCell.vue").default>
+  'LazyPortfolioVideoBlock': LazyComponent<typeof import("../../components/PortfolioVideoBlock.vue").default>
   'LazyPreloader': LazyComponent<typeof import("../../components/Preloader.vue").default>
   'LazySanityBlock': LazyComponent<typeof import("../../components/SanityBlock.vue").default>
   'LazySanityBlocks': LazyComponent<typeof import("../../components/SanityBlocks.vue").default>
+  'LazySectionIntroText': LazyComponent<typeof import("../../components/SectionIntroText.vue").default>
   'LazySanityContent': LazyComponent<typeof import("../../node_modules/@nuxtjs/sanity/dist/runtime/components/sanity-content").default>
   'LazySanityFile': LazyComponent<typeof import("../../node_modules/@nuxtjs/sanity/dist/runtime/components/sanity-file").default>
   'LazySanityImage': LazyComponent<typeof import("../../node_modules/@nuxtjs/sanity/dist/runtime/components/sanity-image").default>

@@ -30,8 +30,12 @@ export { requestIdleCallback, cancelIdleCallback } from '#app/compat/idle-callba
 export { setInterval } from '#app/compat/interval';
 export { definePageMeta } from '../node_modules/nuxt/dist/pages/runtime/composables';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
+export { useContactLink } from '../composables/useContactLink';
+export { loadGsapScrollTrigger, scheduleScrollTriggerRefresh, constrainPinSpacerWidth } from '../composables/useGsapScrollTrigger';
+export { useLineRevealAnimation } from '../composables/useLineRevealAnimation';
+export { initLogoMarquee } from '../composables/useLogoMarquee';
 export { usePageLoading, providePageLoading, injectPageLoading } from '../composables/usePageLoading';
-export { usePageSettings } from '../composables/usePageSettings';
+export { usePageTransition } from '../composables/usePageTransition';
 export { useSanityImage } from '../composables/useSanityImage';
 export { useSiteSettings } from '../composables/useSiteSettings';
 export { useSanity, useSanityQuery, useLazySanityQuery, useSanityConfig, useSanityPerspective, useSanityVisualEditingState, useIsSanityLivePreview, useIsSanityPresentationTool, useSanityPreviewPerspective, useSanityPreviewEnvironment, useSanityLiveMode, useSanityVisualEditing } from '../node_modules/@nuxtjs/sanity/dist/runtime/composables/index';

@@ -1,1 +1,1 @@
-export { default } from "file:///Users/joshwatts/Downloads/_NUXT/jfdesignoffice/jfdesignoffice-nuxt/node_modules/@nuxt/vite-builder/dist/runtime/client.manifest.mjs"
+export { default } from "file:///Users/joshwatts/Downloads/_NUXT/roleplay/roleplay-nuxt/node_modules/@nuxt/vite-builder/dist/runtime/client.manifest.mjs"

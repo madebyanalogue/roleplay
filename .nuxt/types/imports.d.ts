@@ -9,6 +9,7 @@ declare global {
   const clearNuxtData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').clearNuxtData
   const clearNuxtState: typeof import('../../node_modules/nuxt/dist/app/composables/state').clearNuxtState
   const computed: typeof import('../../node_modules/vue').computed
+  const constrainPinSpacerWidth: typeof import('../../composables/useGsapScrollTrigger').constrainPinSpacerWidth
   const createError: typeof import('../../node_modules/nuxt/dist/app/composables/error').createError
   const createSanityClient: typeof import('../sanity-client').createClient
   const createSanityDataAttribute: typeof import('../../node_modules/@sanity/visual-editing').createDataAttribute
@@ -34,6 +35,7 @@ declare global {
   const groq: typeof import('../../node_modules/@nuxtjs/sanity/dist/runtime/groq').groq
   const h: typeof import('../../node_modules/vue').h
   const hasInjectionContext: typeof import('../../node_modules/vue').hasInjectionContext
+  const initLogoMarquee: typeof import('../../composables/useLogoMarquee').initLogoMarquee
   const inject: typeof import('../../node_modules/vue').inject
   const injectHead: typeof import('../../node_modules/nuxt/dist/app/composables/head').injectHead
   const injectPageLoading: typeof import('../../composables/usePageLoading').injectPageLoading
@@ -46,6 +48,7 @@ declare global {
   const isShallow: typeof import('../../node_modules/vue').isShallow
   const isVue2: typeof import('../../node_modules/nuxt/dist/app/compat/vue-demi').isVue2
   const isVue3: typeof import('../../node_modules/nuxt/dist/app/compat/vue-demi').isVue3
+  const loadGsapScrollTrigger: typeof import('../../composables/useGsapScrollTrigger').loadGsapScrollTrigger
   const loadPayload: typeof import('../../node_modules/nuxt/dist/app/composables/payload').loadPayload
   const markRaw: typeof import('../../node_modules/vue').markRaw
   const navigateTo: typeof import('../../node_modules/nuxt/dist/app/composables/router').navigateTo
@@ -85,6 +88,7 @@ declare global {
   const requestIdleCallback: typeof import('../../node_modules/nuxt/dist/app/compat/idle-callback').requestIdleCallback
   const resolveComponent: typeof import('../../node_modules/vue').resolveComponent
   const sanityVisualEditingRefresh: typeof import('../sanity-visual-editing-refresh.mjs').sanityVisualEditingRefresh
+  const scheduleScrollTriggerRefresh: typeof import('../../composables/useGsapScrollTrigger').scheduleScrollTriggerRefresh
   const setInterval: typeof import('../../node_modules/nuxt/dist/app/compat/interval').setInterval
   const setPageLayout: typeof import('../../node_modules/nuxt/dist/app/composables/router').setPageLayout
   const setResponseStatus: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').setResponseStatus
@@ -103,6 +107,7 @@ declare global {
   const useAppConfig: typeof import('../../node_modules/nuxt/dist/app/config').useAppConfig
   const useAsyncData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useAsyncData
   const useAttrs: typeof import('../../node_modules/vue').useAttrs
+  const useContactLink: typeof import('../../composables/useContactLink').useContactLink
   const useCookie: typeof import('../../node_modules/nuxt/dist/app/composables/cookie').useCookie
   const useCssModule: typeof import('../../node_modules/vue').useCssModule
   const useCssVars: typeof import('../../node_modules/vue').useCssVars
@@ -118,6 +123,7 @@ declare global {
   const useLazyAsyncData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useLazyAsyncData
   const useLazyFetch: typeof import('../../node_modules/nuxt/dist/app/composables/fetch').useLazyFetch
   const useLazySanityQuery: typeof import('../../node_modules/@nuxtjs/sanity/dist/runtime/composables/index').useLazySanityQuery
+  const useLineRevealAnimation: typeof import('../../composables/useLineRevealAnimation').useLineRevealAnimation
   const useLink: typeof import('../../node_modules/vue-router').useLink
   const useLoadingIndicator: typeof import('../../node_modules/nuxt/dist/app/composables/loading-indicator').useLoadingIndicator
   const useModel: typeof import('../../node_modules/vue').useModel
@@ -125,7 +131,7 @@ declare global {
   const useNuxtData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useNuxtData
   const useNuxtDevTools: typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools').useNuxtDevTools
   const usePageLoading: typeof import('../../composables/usePageLoading').usePageLoading
-  const usePageSettings: typeof import('../../composables/usePageSettings').usePageSettings
+  const usePageTransition: typeof import('../../composables/usePageTransition').usePageTransition
   const usePreviewMode: typeof import('../../node_modules/nuxt/dist/app/composables/preview').usePreviewMode
   const useRequestEvent: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestEvent
   const useRequestFetch: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestFetch
@@ -217,6 +223,7 @@ declare module 'vue' {
     readonly clearNuxtData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['clearNuxtData']>
     readonly clearNuxtState: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/state')['clearNuxtState']>
     readonly computed: UnwrapRef<typeof import('../../node_modules/vue')['computed']>
+    readonly constrainPinSpacerWidth: UnwrapRef<typeof import('../../composables/useGsapScrollTrigger')['constrainPinSpacerWidth']>
     readonly createError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['createError']>
     readonly createSanityClient: UnwrapRef<typeof import('../sanity-client')['createClient']>
     readonly createSanityDataAttribute: UnwrapRef<typeof import('../../node_modules/@sanity/visual-editing')['createDataAttribute']>
@@ -242,6 +249,7 @@ declare module 'vue' {
     readonly groq: UnwrapRef<typeof import('../../node_modules/@nuxtjs/sanity/dist/runtime/groq')['groq']>
     readonly h: UnwrapRef<typeof import('../../node_modules/vue')['h']>
     readonly hasInjectionContext: UnwrapRef<typeof import('../../node_modules/vue')['hasInjectionContext']>
+    readonly initLogoMarquee: UnwrapRef<typeof import('../../composables/useLogoMarquee')['initLogoMarquee']>
     readonly inject: UnwrapRef<typeof import('../../node_modules/vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['injectHead']>
     readonly injectPageLoading: UnwrapRef<typeof import('../../composables/usePageLoading')['injectPageLoading']>
@@ -254,6 +262,7 @@ declare module 'vue' {
     readonly isShallow: UnwrapRef<typeof import('../../node_modules/vue')['isShallow']>
     readonly isVue2: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/vue-demi')['isVue2']>
     readonly isVue3: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/vue-demi')['isVue3']>
+    readonly loadGsapScrollTrigger: UnwrapRef<typeof import('../../composables/useGsapScrollTrigger')['loadGsapScrollTrigger']>
     readonly loadPayload: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/payload')['loadPayload']>
     readonly markRaw: UnwrapRef<typeof import('../../node_modules/vue')['markRaw']>
     readonly navigateTo: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['navigateTo']>
@@ -293,6 +302,7 @@ declare module 'vue' {
     readonly requestIdleCallback: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/idle-callback')['requestIdleCallback']>
     readonly resolveComponent: UnwrapRef<typeof import('../../node_modules/vue')['resolveComponent']>
     readonly sanityVisualEditingRefresh: UnwrapRef<typeof import('../sanity-visual-editing-refresh.mjs')['sanityVisualEditingRefresh']>
+    readonly scheduleScrollTriggerRefresh: UnwrapRef<typeof import('../../composables/useGsapScrollTrigger')['scheduleScrollTriggerRefresh']>
     readonly setInterval: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/interval')['setInterval']>
     readonly setPageLayout: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['setPageLayout']>
     readonly setResponseStatus: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['setResponseStatus']>
@@ -311,6 +321,7 @@ declare module 'vue' {
     readonly useAppConfig: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/config')['useAppConfig']>
     readonly useAsyncData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useAsyncData']>
     readonly useAttrs: UnwrapRef<typeof import('../../node_modules/vue')['useAttrs']>
+    readonly useContactLink: UnwrapRef<typeof import('../../composables/useContactLink')['useContactLink']>
     readonly useCookie: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/cookie')['useCookie']>
     readonly useCssModule: UnwrapRef<typeof import('../../node_modules/vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('../../node_modules/vue')['useCssVars']>
@@ -326,6 +337,7 @@ declare module 'vue' {
     readonly useLazyAsyncData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useLazyAsyncData']>
     readonly useLazyFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/fetch')['useLazyFetch']>
     readonly useLazySanityQuery: UnwrapRef<typeof import('../../node_modules/@nuxtjs/sanity/dist/runtime/composables/index')['useLazySanityQuery']>
+    readonly useLineRevealAnimation: UnwrapRef<typeof import('../../composables/useLineRevealAnimation')['useLineRevealAnimation']>
     readonly useLink: UnwrapRef<typeof import('../../node_modules/vue-router')['useLink']>
     readonly useLoadingIndicator: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/loading-indicator')['useLoadingIndicator']>
     readonly useModel: UnwrapRef<typeof import('../../node_modules/vue')['useModel']>
@@ -333,7 +345,7 @@ declare module 'vue' {
     readonly useNuxtData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useNuxtData']>
     readonly useNuxtDevTools: UnwrapRef<typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools')['useNuxtDevTools']>
     readonly usePageLoading: UnwrapRef<typeof import('../../composables/usePageLoading')['usePageLoading']>
-    readonly usePageSettings: UnwrapRef<typeof import('../../composables/usePageSettings')['usePageSettings']>
+    readonly usePageTransition: UnwrapRef<typeof import('../../composables/usePageTransition')['usePageTransition']>
     readonly usePreviewMode: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/preview')['usePreviewMode']>
     readonly useRequestEvent: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestEvent']>
     readonly useRequestFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestFetch']>

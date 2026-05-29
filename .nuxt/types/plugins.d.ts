@@ -21,8 +21,12 @@ type NuxtAppInjections =
   InjectionType<typeof import("../../node_modules/@nuxt/devtools/dist/runtime/plugins/devtools.client.js")> &
   InjectionType<typeof import("../../node_modules/nuxt/dist/app/plugins/warn.dev.server.js")> &
   InjectionType<typeof import("../../node_modules/nuxt/dist/app/plugins/check-if-layout-used.js")> &
+  InjectionType<typeof import("../../plugins/click-zoom.client.js")> &
   InjectionType<typeof import("../../plugins/favicon.client.js")> &
+  InjectionType<typeof import("../../plugins/footer-parallax.client.js")> &
   InjectionType<typeof import("../../plugins/google-analytics.client.js")> &
+  InjectionType<typeof import("../../plugins/logo-marquee.client.js")> &
+  InjectionType<typeof import("../../plugins/page-transition.client.js")> &
   InjectionType<typeof import("../../plugins/preloader-gated-animations.client.js")> &
   InjectionType<typeof import("../../plugins/prevent-fouc.client.js")>
 
