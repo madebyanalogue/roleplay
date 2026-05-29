@@ -28,13 +28,24 @@
 #app {
     padding: var(--gutter);
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr auto;
     grid-template-areas:
     "header"
     "main"
     "footer";
     gap: var(--gutter);
+}
+
+.page-wrapper {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* Fixed header is out of flow; reserve header bar + top/bottom gutters (+ grid gap). */
+body.header--is--fixed #app {
+  padding-top: calc(var(--header-height) + calc(var(--gutter) * 2));
 }
 
 /* @media (min-width: 1000px) {

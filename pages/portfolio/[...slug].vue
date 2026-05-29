@@ -50,44 +50,11 @@
             </div>
 
             <div v-else-if="mobileFeaturedBlock._type === 'videoBlock' && videoBlockHasMedia(mobileFeaturedBlock)" class="portfolio-video-block rounded-portfolio">
-              <div class="portfolio-image-container portfolio-video-block-inner">
-                <Transition name="portfolio-video-fade">
-                  <button
-                    v-if="!videoBlockIsActivated(mobileFeaturedBlock, 0)"
-                    type="button"
-                    class="portfolio-video-cta"
-                    @click="activateVideoBlock(mobileFeaturedBlock, 0)"
-                  >
-                    <NuxtImg
-                      v-if="mobileFeaturedBlock.poster?.asset?.url"
-                      :src="mobileFeaturedBlock.poster.asset.url"
-                      :alt="`${project.title} video poster`"
-                      :width="mobileFeaturedBlock.poster.asset.metadata?.dimensions?.width"
-                      :height="mobileFeaturedBlock.poster.asset.metadata?.dimensions?.height"
-                      class="portfolio-video-poster"
-                      @load="onImageLoad"
-                    />
-                    <span class="portfolio-video-cta__play" aria-hidden="true">Play</span>
-                    <span class="sr-only">Play video with sound</span>
-                  </button>
-                </Transition>
-                <PlyrPlayer
-                  v-if="videoBlockIsActivated(mobileFeaturedBlock, 0) && videoBlockVimeoId(mobileFeaturedBlock)"
-                  :key="`featured-vimeo-${mobileFeaturedBlock._key || 0}-${videoBlockVimeoId(mobileFeaturedBlock)}`"
-                  type="vimeo"
-                  :vimeo-id="videoBlockVimeoId(mobileFeaturedBlock)"
-                  :autoplay="true"
-                  :muted="false"
-                />
-                <PlyrPlayer
-                  v-else-if="videoBlockIsActivated(mobileFeaturedBlock, 0) && mobileFeaturedBlock.video?.asset?.url"
-                  :key="`featured-mp4-${mobileFeaturedBlock._key || 0}-${mobileFeaturedBlock.video.asset.url}`"
-                  type="html5"
-                  :src="mobileFeaturedBlock.video.asset.url"
-                  :autoplay="true"
-                  :muted="false"
-                />
-              </div>
+              <PortfolioVideoBlock
+                :block="mobileFeaturedBlock"
+                :alt="project.title"
+                @image-load="onImageLoad"
+              />
             </div>
 
             <div v-else-if="mobileFeaturedBlock._type === 'testimonialBlock'" class="portfolio-testimonial-block rounded-portfolio beige grid gap-50 pad-30 pad-md-50">
@@ -189,54 +156,36 @@
                 :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
                 :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
               >
-                <PortfolioGallery
-                  v-if="mobileFeaturedBlock.column1Type === 'gallery' && mobileFeaturedBlock.column1Images && mobileFeaturedBlock.column1Images.length > 0"
+                <PortfolioTwoColumnCell
+                  :column-type="mobileFeaturedBlock.column1Type"
+                  :image="mobileFeaturedBlock.image1"
                   :images="mobileFeaturedBlock.column1Images"
-                  :timing="mobileFeaturedBlock.column1Timing || 1000"
+                  :timing="mobileFeaturedBlock.column1Timing"
+                  :video-source="mobileFeaturedBlock.column1VideoSource"
+                  :video="mobileFeaturedBlock.column1Video"
+                  :video-vimeo="mobileFeaturedBlock.column1VideoVimeo"
                   :alt="project.title"
+                  :get-image-aspect-ratio="getImageAspectRatio"
+                  @image-load="onImageLoad"
                 />
-                <div
-                  v-else-if="mobileFeaturedBlock.image1?.asset"
-                  data-click-zoom
-                  class="portfolio-image-container"
-                  :style="getImageAspectRatio(mobileFeaturedBlock.image1.asset)"
-                >
-                  <NuxtImg
-                    :src="mobileFeaturedBlock.image1.asset.url || ''"
-                    :alt="project.title"
-                    :width="mobileFeaturedBlock.image1.asset.metadata?.dimensions?.width"
-                    :height="mobileFeaturedBlock.image1.asset.metadata?.dimensions?.height"
-                    class="portfolio-image"
-                    @load="onImageLoad"
-                  />
-                </div>
               </div>
               <div
                 class="portfolio-two-column-image rounded-portfolio"
                 :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
                 :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
               >
-                <PortfolioGallery
-                  v-if="mobileFeaturedBlock.column2Type === 'gallery' && mobileFeaturedBlock.column2Images && mobileFeaturedBlock.column2Images.length > 0"
+                <PortfolioTwoColumnCell
+                  :column-type="mobileFeaturedBlock.column2Type"
+                  :image="mobileFeaturedBlock.image2"
                   :images="mobileFeaturedBlock.column2Images"
-                  :timing="mobileFeaturedBlock.column2Timing || 1000"
+                  :timing="mobileFeaturedBlock.column2Timing"
+                  :video-source="mobileFeaturedBlock.column2VideoSource"
+                  :video="mobileFeaturedBlock.column2Video"
+                  :video-vimeo="mobileFeaturedBlock.column2VideoVimeo"
                   :alt="project.title"
+                  :get-image-aspect-ratio="getImageAspectRatio"
+                  @image-load="onImageLoad"
                 />
-                <div
-                  v-else-if="mobileFeaturedBlock.image2?.asset"
-                  data-click-zoom
-                  class="portfolio-image-container"
-                  :style="getImageAspectRatio(mobileFeaturedBlock.image2.asset)"
-                >
-                  <NuxtImg
-                    :src="mobileFeaturedBlock.image2.asset.url || ''"
-                    :alt="project.title"
-                    :width="mobileFeaturedBlock.image2.asset.metadata?.dimensions?.width"
-                    :height="mobileFeaturedBlock.image2.asset.metadata?.dimensions?.height"
-                    class="portfolio-image"
-                    @load="onImageLoad"
-                  />
-                </div>
               </div>
             </div>
 
@@ -437,7 +386,7 @@
               <div class="portfolio-video-launch">
                 <button
                   type="button"
-                  class="portfolio-hear-btn fluid-type mono lavender"
+                  class="portfolio-hear-btn gap-bounce-hover fluid-type mono lavender"
                   style="--desktop: 18; --mobile: 14;"
                   :aria-expanded="clientVideoOpen"
                   aria-controls="portfolio-client-video-pop"
@@ -517,44 +466,11 @@
         </div>
         
         <div v-else-if="block._type === 'videoBlock' && videoBlockHasMedia(block)" class="portfolio-video-block rounded-portfolio">
-          <div class="portfolio-image-container portfolio-video-block-inner">
-            <Transition name="portfolio-video-fade">
-              <button
-                v-if="!videoBlockIsActivated(block, index)"
-                type="button"
-                class="portfolio-video-cta"
-                @click="activateVideoBlock(block, index)"
-              >
-                <NuxtImg
-                  v-if="block.poster?.asset?.url"
-                  :src="block.poster.asset.url"
-                  :alt="`${project.title} video poster`"
-                  :width="block.poster.asset.metadata?.dimensions?.width"
-                  :height="block.poster.asset.metadata?.dimensions?.height"
-                  class="portfolio-video-poster"
-                  @load="onImageLoad"
-                />
-                <span class="portfolio-video-cta__play" aria-hidden="true">Play</span>
-                <span class="sr-only">Play video with sound</span>
-              </button>
-            </Transition>
-            <PlyrPlayer
-              v-if="videoBlockIsActivated(block, index) && videoBlockVimeoId(block)"
-              :key="`block-vimeo-${block._key || index}-${videoBlockVimeoId(block)}`"
-              type="vimeo"
-              :vimeo-id="videoBlockVimeoId(block)"
-              :autoplay="true"
-              :muted="false"
-            />
-            <PlyrPlayer
-              v-else-if="videoBlockIsActivated(block, index) && block.video?.asset?.url"
-              :key="`block-mp4-${block._key || index}-${block.video.asset.url}`"
-              type="html5"
-              :src="block.video.asset.url"
-              :autoplay="true"
-              :muted="false"
-            />
-          </div>
+          <PortfolioVideoBlock
+            :block="block"
+            :alt="project.title"
+            @image-load="onImageLoad"
+          />
         </div>
         
         <div v-else-if="block._type === 'testimonialBlock'" class="portfolio-testimonial-block rounded-portfolio beige grid gap-50 pad-30 pad-md-50">
@@ -656,54 +572,36 @@
             :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(block) }"
             :style="columnMediaDesktopAspectStyle(block)"
           >
-            <PortfolioGallery
-              v-if="block.column1Type === 'gallery' && block.column1Images && block.column1Images.length > 0"
+            <PortfolioTwoColumnCell
+              :column-type="block.column1Type"
+              :image="block.image1"
               :images="block.column1Images"
-              :timing="block.column1Timing || 1000"
+              :timing="block.column1Timing"
+              :video-source="block.column1VideoSource"
+              :video="block.column1Video"
+              :video-vimeo="block.column1VideoVimeo"
               :alt="project.title"
+              :get-image-aspect-ratio="getImageAspectRatio"
+              @image-load="onImageLoad"
             />
-            <div
-              v-else-if="block.image1?.asset"
-              data-click-zoom
-              class="portfolio-image-container"
-              :style="getImageAspectRatio(block.image1.asset)"
-            >
-              <NuxtImg
-                :src="block.image1.asset.url || ''"
-                :alt="project.title"
-                :width="block.image1.asset.metadata?.dimensions?.width"
-                :height="block.image1.asset.metadata?.dimensions?.height"
-                class="portfolio-image"
-                @load="onImageLoad"
-              />
-            </div>
           </div>
           <div
             class="portfolio-two-column-image rounded-portfolio"
             :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(block) }"
             :style="columnMediaDesktopAspectStyle(block)"
           >
-            <PortfolioGallery
-              v-if="block.column2Type === 'gallery' && block.column2Images && block.column2Images.length > 0"
+            <PortfolioTwoColumnCell
+              :column-type="block.column2Type"
+              :image="block.image2"
               :images="block.column2Images"
-              :timing="block.column2Timing || 1000"
+              :timing="block.column2Timing"
+              :video-source="block.column2VideoSource"
+              :video="block.column2Video"
+              :video-vimeo="block.column2VideoVimeo"
               :alt="project.title"
+              :get-image-aspect-ratio="getImageAspectRatio"
+              @image-load="onImageLoad"
             />
-            <div
-              v-else-if="block.image2?.asset"
-              data-click-zoom
-              class="portfolio-image-container"
-              :style="getImageAspectRatio(block.image2.asset)"
-            >
-              <NuxtImg
-                :src="block.image2.asset.url || ''"
-                :alt="project.title"
-                :width="block.image2.asset.metadata?.dimensions?.width"
-                :height="block.image2.asset.metadata?.dimensions?.height"
-                class="portfolio-image"
-                @load="onImageLoad"
-              />
-            </div>
           </div>
         </div>
         
@@ -867,6 +765,7 @@ const { data: project, pending, error } = useAsyncData(
           }
         },
         videoSource,
+        playbackMode,
         videoVimeo,
         poster {
           asset-> {
@@ -916,11 +815,21 @@ const { data: project, pending, error } = useAsyncData(
           asset->
         },
         column1Timing,
+        column1VideoSource,
+        column1VideoVimeo,
+        column1Video {
+          asset->
+        },
         column2Type,
         column2Images[] {
           asset->
         },
         column2Timing,
+        column2VideoSource,
+        column2VideoVimeo,
+        column2Video {
+          asset->
+        },
         columnAspectRatio,
         timing,
         images[] {
@@ -1066,6 +975,10 @@ const clientVimeoId = computed(() => {
 const clientVideoOpen = ref(false)
 const clientVideoLaunchRef = ref(null)
 
+watch(slug, () => {
+  clientVideoOpen.value = false
+})
+
 /** Sidebar accordions: one open on desktop with height animation; mobile = all open, no toggle (CSS). */
 const ACCORDION_BREAKPOINT_MAX = 999
 
@@ -1152,30 +1065,6 @@ const mainContentBlocks = computed(() => {
 function shouldFadeMainBlock(index) {
   return mainContentStartIndex.value + index !== 0
 }
-
-const activatedVideoBlocks = ref({})
-
-function videoBlockActivationKey(block, index) {
-  return block?._key || `video-${index}`
-}
-
-function videoBlockIsActivated(block, index) {
-  const key = videoBlockActivationKey(block, index)
-  return !!activatedVideoBlocks.value[key]
-}
-
-function activateVideoBlock(block, index) {
-  const key = videoBlockActivationKey(block, index)
-  activatedVideoBlocks.value = {
-    ...activatedVideoBlocks.value,
-    [key]: true,
-  }
-}
-
-watch(slug, () => {
-  clientVideoOpen.value = false
-  activatedVideoBlocks.value = {}
-})
 
 function onVideoPopoverDismiss(e) {
   if (!clientVideoOpen.value || !clientVideoLaunchRef.value) return
@@ -1514,27 +1403,6 @@ onUnmounted(() => {
   }
 }
 
-.portfolio-hear-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  padding: 0;
-  border: 0;
-  background: var(--lavender);
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  text-transform: inherit;
-  padding: 1.1em 1.5em;
-  border-radius: var(--rounded-button);
-}
-
-.portfolio-hear-btn:focus-visible {
-  outline: 2px solid var(--orange);
-  outline-offset: 2px;
-}
-
 .portfolio-hear-arrow {
   flex-shrink: 0;
   display: block;
@@ -1820,6 +1688,15 @@ onUnmounted(() => {
   width: 100%;
 }
 
+.portfolio-two-column-image {
+  height: 100%;
+}
+
+.portfolio-two-column-image > .portfolio-image-container {
+  min-height: 100%;
+  height: 100%;
+}
+
 @media (min-width: 1000px) {
   .portfolio-column-media--desktop-aspect {
     position: relative;
@@ -1830,7 +1707,7 @@ onUnmounted(() => {
 
   .portfolio-column-media--desktop-aspect > .portfolio-image-container {
     height: 100%;
-    min-height: 0;
+    min-height: 100%;
     aspect-ratio: unset !important;
   }
 

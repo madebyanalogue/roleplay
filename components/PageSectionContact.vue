@@ -31,6 +31,7 @@
               <PlyrPlayer
                 type="html5"
                 :src="videoUrl"
+                variant="contact"
               />
             </div>
           </div>
@@ -150,7 +151,8 @@ const { contactLinkUsesNative, isExternalHttp, getContactLinkUrl } = useContactL
   aspect-ratio:auto;
   overflow: hidden;
   background-color: var(--black);
-max-height: 100cqw;
+  max-height: 100cqw;
+  cursor: pointer;
 }
 .contact-section__video.landscape {
   aspect-ratio: 16 / 9;
@@ -175,42 +177,6 @@ max-height: 100cqw;
 .contact-information-item {
   display: flex;
   flex-direction: column;
-}
-
-.contact-information-link {
-  position: relative;
-  display: inline-block;
-  color: inherit;
-  text-decoration: none;
-}
-
-.contact-information-link::before,
-.contact-information-link::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: var(--underline-offset);
-  width: 100%;
-  height: var(--underline-width);
-  background-color: currentColor;
-  transform-origin: left center;
-  pointer-events: none;
-}
-
-.contact-information-link::before {
-  opacity: 0.2;
-  transform: scaleX(1);
-}
-
-.contact-information-link::after {
-  opacity: 1;
-  transform: scaleX(0);
-  transition: transform 0.32s ease;
-}
-
-.contact-information-link:hover::after,
-.contact-information-link:focus-visible::after {
-  transform: scaleX(1);
 }
 
 .subtitle {

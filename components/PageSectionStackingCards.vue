@@ -75,6 +75,7 @@
 
 <script setup>
 const DESKTOP_MQ = '(min-width: 1000px)'
+const TRANSITION_SETTLE_MS = 650
 
 const props = defineProps({
   section: {
@@ -84,7 +85,11 @@ const props = defineProps({
 })
 
 const sectionRef = ref(null)
+const nuxtApp = useNuxtApp()
+const isTransitioning = useState('pageTransitioning', () => false)
 let mmContext = null
+let initTimer = null
+let removePageFinishHook = () => {}
 
 const hasCards = computed(() => (props.section?.cards || []).length > 0)
 
@@ -133,18 +138,20 @@ async function initStickyCards() {
 
   if (!import.meta.client || !hasCards.value) return
 
-  const [{ gsap }, { ScrollTrigger }] = await Promise.all([
-    import('gsap'),
-    import('gsap/ScrollTrigger'),
-  ])
-
-  gsap.registerPlugin(ScrollTrigger)
+  const { gsap, ScrollTrigger } = await loadGsapScrollTrigger()
+  if (!gsap || !ScrollTrigger) return
 
   mmContext = gsap.matchMedia()
 
   mmContext.add(DESKTOP_MQ, () => {
     let scrollTrigger = null
     let cancelled = false
+
+    const onResize = () => {
+      scheduleScrollTriggerRefresh()
+    }
+
+    window.addEventListener('resize', onResize, { passive: true })
 
     const setup = async () => {
       const section = sectionRef.value
@@ -220,22 +227,36 @@ async function initStickyCards() {
         pin: section,
         pinSpacing: true,
         scrub: 1,
+        anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate(self) {
           updateCards(self.progress)
+        },
+        onRefresh(self) {
+          constrainPinSpacerWidth(self, section)
+          updateCards(self.progress)
+        },
+        onEnter(self) {
+          constrainPinSpacerWidth(self, section)
+        },
+        onEnterBack(self) {
+          constrainPinSpacerWidth(self, section)
         },
         onLeave() {
           updateCards(1)
         },
       })
 
-      ScrollTrigger.refresh()
+      constrainPinSpacerWidth(scrollTrigger, section)
+      updateCards(scrollTrigger.progress)
+      scheduleScrollTriggerRefresh()
     }
 
     setup()
 
     return () => {
       cancelled = true
+      window.removeEventListener('resize', onResize)
       scrollTrigger?.kill()
       scrollTrigger = null
       gsap.set(sectionRef.value?.querySelectorAll('.sticky-cards__card') || [], {
@@ -243,6 +264,29 @@ async function initStickyCards() {
       })
     }
   })
+}
+
+function getInitDelay() {
+  if (!import.meta.client) return 0
+  return document.querySelector('[data-featured-projects-scroll]') ? 300 : 0
+}
+
+function scheduleInitStickyCards(delay = 0) {
+  if (!import.meta.client) return
+  if (initTimer) clearTimeout(initTimer)
+  initTimer = setTimeout(async () => {
+    initTimer = null
+    await nextTick()
+    initStickyCards()
+  }, delay + getInitDelay())
+}
+
+function runWhenPreloaderReady(callback) {
+  if (document.body.classList.contains('preloader-complete')) {
+    callback()
+    return
+  }
+  document.addEventListener('preloader-complete', callback, { once: true })
 }
 
 watch(
@@ -259,17 +303,32 @@ watch(
       )
       .join('|'),
   async () => {
-    await nextTick()
-    initStickyCards()
+    scheduleInitStickyCards(TRANSITION_SETTLE_MS)
   },
 )
 
 onMounted(async () => {
   await nextTick()
-  initStickyCards()
+
+  removePageFinishHook = nuxtApp.hook('page:finish', () => {
+    scheduleInitStickyCards(TRANSITION_SETTLE_MS)
+  })
+
+  if (isTransitioning.value) return
+
+  runWhenPreloaderReady(() => {
+    scheduleInitStickyCards()
+  })
+})
+
+onActivated(() => {
+  scheduleInitStickyCards(TRANSITION_SETTLE_MS)
 })
 
 onUnmounted(() => {
+  if (initTimer) clearTimeout(initTimer)
+  initTimer = null
+  removePageFinishHook()
   mmContext?.revert()
   mmContext = null
 })
@@ -297,6 +356,8 @@ onUnmounted(() => {
 .sticky-cards {
   position: relative;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   height: 100svh;
   overflow: hidden;
   perspective: 1000px;

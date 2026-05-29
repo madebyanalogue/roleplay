@@ -8,7 +8,7 @@
       <article
         v-for="(item, index) in newsItems"
         :key="item._id || item._key || index"
-        class="news-item flex gap-md-100 yellow pad-25 rounded-medium underline-links"
+        class="news-item flex gap-md-100 yellow pad-25 rounded-medium"
       >
         <div class="news-thumbnail">
           <NuxtImg

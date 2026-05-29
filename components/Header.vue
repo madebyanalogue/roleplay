@@ -155,6 +155,11 @@
         </div>
       </div>
     </div>
+
+    <template v-if="headerType === 'fixed'">
+      <div class="header-corner-fill" aria-hidden="true"/>
+      <div class="header-corner-fill right" aria-hidden="true"/>
+    </template>
   </header>
 </template>
 
@@ -550,19 +555,64 @@ onUnmounted(() => {
 .header-mobile-link {
   display: block;
 }
-</style>
-
-<style>
-
 
 .header.header-static {
   position: relative;
 }
 
-.header.header-fixed {
-  /* position: sticky;
-  top: 0; */
+body.header--is--fixed {
+  padding-top: calc(var(--header-height) + calc(var(--gutter) * 2));
 }
+
+.header.header-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: var(--gutter);
+  background: var(--background-color);
+  width: 100%;
+}
+
+.header-corner-fill {
+  position: absolute;
+  top: 100%;
+  left: var(--gutter);
+  width: var(--rounded-medium);
+  height: var(--rounded-medium);
+  pointer-events: none;
+  background: var(--background-color);
+  z-index: 1;
+  -webkit-mask-image: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.header-corner-fill.right {
+  right: var(--gutter);
+  left: unset;
+  -webkit-mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+}
+
 
 .header.header-sticky {
   position: sticky;

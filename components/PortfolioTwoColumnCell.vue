@@ -1,0 +1,146 @@
+<template>
+  <PortfolioGallery
+    v-if="columnType === 'gallery' && images && images.length > 0"
+    :images="images"
+    :timing="timing || 1000"
+    :alt="alt"
+  />
+  <div
+    v-else-if="columnType === 'image' && image?.asset"
+    data-click-zoom
+    class="portfolio-image-container"
+    :style="getImageAspectRatio(image.asset)"
+  >
+    <NuxtImg
+      :src="image.asset.url || ''"
+      :alt="alt"
+      :width="image.asset.metadata?.dimensions?.width"
+      :height="image.asset.metadata?.dimensions?.height"
+      class="portfolio-image"
+      @load="emit('image-load')"
+    />
+  </div>
+  <div
+    v-else-if="columnType === 'video' && hasVideo"
+    class="portfolio-image-container portfolio-two-column-video-container"
+  >
+    <iframe
+      v-if="vimeoId"
+      :src="vimeoBackgroundUrl"
+      class="portfolio-two-column-vimeo"
+      :title="`${alt} background video`"
+      allow="autoplay; fullscreen; picture-in-picture"
+      loading="lazy"
+    />
+    <video
+      v-else-if="video?.asset?.url"
+      autoplay
+      muted
+      loop
+      playsinline
+      class="portfolio-two-column-video"
+    >
+      <source
+        :src="video.asset.url"
+        :type="videoMimeTypeFromUrl(video.asset.url)"
+      >
+    </video>
+  </div>
+</template>
+
+<script setup>
+const props = defineProps({
+  columnType: {
+    type: String,
+    default: 'image',
+  },
+  image: {
+    type: Object,
+    default: null,
+  },
+  images: {
+    type: Array,
+    default: () => [],
+  },
+  timing: {
+    type: Number,
+    default: 1000,
+  },
+  videoSource: {
+    type: String,
+    default: 'file',
+  },
+  video: {
+    type: Object,
+    default: null,
+  },
+  videoVimeo: {
+    type: String,
+    default: '',
+  },
+  alt: {
+    type: String,
+    default: '',
+  },
+  getImageAspectRatio: {
+    type: Function,
+    required: true,
+  },
+})
+
+const emit = defineEmits(['image-load'])
+
+function parseVimeoId(value) {
+  const s = String(value || '').trim()
+  if (!s) return null
+  if (/^\d+$/.test(s)) return s
+  let match = s.match(/vimeo\.com\/(?:video\/)?(\d+)/i)
+  if (match) return match[1]
+  match = s.match(/player\.vimeo\.com\/video\/(\d+)/i)
+  return match ? match[1] : null
+}
+
+function videoMimeTypeFromUrl(url) {
+  if (!url || typeof url !== 'string') return 'video/mp4'
+  const lower = url.toLowerCase()
+  if (lower.endsWith('.webm')) return 'video/webm'
+  if (lower.endsWith('.ogg') || lower.endsWith('.ogv')) return 'video/ogg'
+  return 'video/mp4'
+}
+
+const vimeoId = computed(() => {
+  if (props.columnType !== 'video' || props.videoSource !== 'vimeo') return ''
+  return parseVimeoId(props.videoVimeo) || ''
+})
+
+const vimeoBackgroundUrl = computed(() => {
+  if (!vimeoId.value) return ''
+  return `https://player.vimeo.com/video/${vimeoId.value}?background=1&autoplay=1&muted=1&loop=1`
+})
+
+const hasVideo = computed(() => {
+  if (props.columnType !== 'video') return false
+  if (vimeoId.value) return true
+  return !!props.video?.asset?.url
+})
+</script>
+
+<style scoped>
+.portfolio-two-column-video-container {
+  min-height: 100%;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.portfolio-two-column-video,
+.portfolio-two-column-vimeo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border: 0;
+  pointer-events: none;
+}
+</style>

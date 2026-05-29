@@ -503,6 +503,18 @@ watch(pending, (isPending) => {
   display: flex;
   flex-direction: column;
   gap: calc(var(--gutter) * 1.5);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.page {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.page-section {
+  min-width: 0;
+  max-width: 100%;
 }
 @media (min-width: 800px) {
   .page-content {

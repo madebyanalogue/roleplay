@@ -174,8 +174,10 @@ onBeforeUnmount(() => {
 
 .team-member {
   width: 100%;
-  transition: opacity 0.2s;
   cursor: pointer;
+}
+.team-member__row {
+  transition: opacity 0.2s;
 }
 
 .team-member__heading {
@@ -271,7 +273,7 @@ onBeforeUnmount(() => {
     transform: translate(0, 0);
   }
 
-  .preview-container:has(.team-member:hover) .team-member:not(:hover) {
+  .preview-container:has(.team-member:hover) .team-member:not(:hover) .team-member__row {
     opacity: 0.3;
   }
 }

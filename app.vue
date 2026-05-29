@@ -80,6 +80,9 @@ useHead(() => ({
       --mobile-breakpoint: ${mobileBreakpoint.value};
     `,
   },
+  bodyAttrs: {
+    class: headerType.value === 'fixed' ? 'header--is--fixed' : '',
+  },
 }))
 
 const appStyles = computed(() => {

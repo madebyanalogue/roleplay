@@ -221,6 +221,16 @@ function gridStyleForIndex(index, total) {
   height: var(--portfolio-thumb-height);
 }
 
+/* .portfolio-item-overlay,
+.portfolio-item-overlay-bg,
+.portfolio-item-overlay-inner,
+.portfolio-item-link:hover .portfolio-item-overlay-bg,
+.portfolio-item-link:focus-visible .portfolio-item-overlay-bg,
+.portfolio-item-link:hover .portfolio-item-overlay-inner,
+.portfolio-item-link:focus-visible .portfolio-item-overlay-inner {
+  transition:none;
+} */
+
 
 
 
