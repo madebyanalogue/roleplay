@@ -22,7 +22,10 @@
           v-for="(card, index) in section.cards"
           :key="card._key || `card-${index}`"
           class="sticky-cards__card rounded-medium pad-20 pad-sm-50"
-          :style="{ zIndex: section.cards.length - index }"
+          :style="{
+            zIndex: section.cards.length - index,
+            '--card-index': index,
+          }"
         >
         <div class="sticky-cards__grid">
           <div class="sticky-cards__media">
@@ -212,12 +215,14 @@ async function initStickyCards() {
         cardEls.forEach((card, index) => {
           if (index < activeIndex) {
             gsap.set(card, {
+              xPercent: -50,
               yPercent: -250,
               rotationX: 35,
               scale: 1,
             })
           } else if (index === activeIndex) {
             gsap.set(card, {
+              xPercent: -50,
               yPercent: gsap.utils.interpolate(-50, -200, segProgress),
               rotationX: gsap.utils.interpolate(0, 35, segProgress),
               scale: 1,
@@ -229,6 +234,7 @@ async function initStickyCards() {
               1 - (behindIndex - segProgress) * cardScaleStep
 
             gsap.set(card, {
+              xPercent: -50,
               yPercent: -50 + currentYOffset,
               rotationX: 0,
               scale: currentScale,
@@ -256,12 +262,17 @@ async function initStickyCards() {
         },
         onEnter(self) {
           constrainPinSpacerWidth(self, section)
+          updateCards(self.progress)
         },
         onEnterBack(self) {
           constrainPinSpacerWidth(self, section)
+          updateCards(self.progress)
         },
         onLeave() {
           updateCards(1)
+        },
+        onLeaveBack() {
+          updateCards(0)
         },
       })
 
@@ -470,6 +481,14 @@ onUnmounted(() => {
   color: var(--black);
   transform-origin: center bottom;
   will-change: transform;
+}
+
+@media (min-width: 1000px) {
+  /* Match GSAP progress 0 before ScrollTrigger inits. */
+  .sticky-cards__card {
+    transform: translate(-50%, calc(-50% + var(--card-index, 0) * 5%))
+      scale(calc(1 - var(--card-index, 0) * 0.075));
+  }
 }
 
 .sticky-cards__card:nth-child(4n - 1) {

@@ -12,7 +12,7 @@
     >
       <NuxtLink
         v-if="project.slug?.current"
-        :to="`/portfolio/${project.slug.current}`"
+        :to="portfolioProjectPath(project.slug)"
         class="portfolio-item-link"
       >
         <div class="portfolio-item-media rounded-medium">
@@ -71,6 +71,8 @@ const props = defineProps({
     default: () => [],
   },
 })
+
+const { portfolioProjectPath } = useSiteSettings()
 
 /** Desktop mosaic: [4,8], [7,5], [5,7] repeating every 6 items */
 const SPAN_CYCLE = [4, 8, 7, 5, 5, 7]

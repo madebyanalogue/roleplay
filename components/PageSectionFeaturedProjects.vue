@@ -18,7 +18,7 @@
           >
             <NuxtLink
               v-if="item.project?.slug?.current"
-              :to="`/portfolio/${item.project.slug.current}`"
+              :to="portfolioProjectPath(item.project.slug)"
               class="featured-project-link"
             >
               <div class="featured-project-image-container rounded-medium">
@@ -82,6 +82,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const { portfolioProjectPath } = useSiteSettings()
 
 const sectionRef = ref(null)
 const scrollRef = ref(null)
@@ -465,6 +467,7 @@ onUnmounted(() => {
 
   .featured-projects__viewport {
     overflow: hidden;
+    border-radius: var(--rounded-medium);
   }
 }
 

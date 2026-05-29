@@ -49,7 +49,7 @@
           :section="section"
         />
         <PageSectionPortfolio
-          v-else-if="section.sectionType === 'portfolio'"
+          v-else-if="section.sectionType === 'work' || section.sectionType === 'portfolio'"
           :section="section"
           :projects="portfolioProjects"
         />

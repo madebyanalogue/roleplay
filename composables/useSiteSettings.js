@@ -61,6 +61,11 @@ export const useSiteSettings = () => {
         title,
         url
       },
+      portfolioPage-> {
+        slug {
+          current
+        }
+      },
       singlePortfolioNextProjectSettings {
         enabled,
         nextUpSubtitle,
@@ -166,6 +171,17 @@ export const useSiteSettings = () => {
   const mobileMenuSocialLinks = computed(
     () => settings.value?.mobileMenuSocialLinks || [],
   )
+  const portfolioBasePath = computed(() => {
+    const slug = settings.value?.portfolioPage?.slug?.current
+    return slug && slug !== 'home' ? slug : 'work'
+  })
+
+  const portfolioProjectPath = (projectSlug) => {
+    const slug = typeof projectSlug === 'string' ? projectSlug.trim() : projectSlug?.current
+    if (!slug) return null
+    return `/${portfolioBasePath.value}/${slug}`
+  }
+
   const singlePortfolioNextProjectSettings = computed(() => {
     const section = settings.value?.singlePortfolioNextProjectSettings || {}
     const nextUpSubtitle = section?.nextUpSubtitle?.trim?.() || 'Next up:'
@@ -209,6 +225,8 @@ export const useSiteSettings = () => {
     showMobileMenuSocialLinks,
     mobileMenuSocialLinksTitle,
     mobileMenuSocialLinks,
+    portfolioBasePath,
+    portfolioProjectPath,
     singlePortfolioNextProjectSettings,
     navigationContact,
     footerColumns,
