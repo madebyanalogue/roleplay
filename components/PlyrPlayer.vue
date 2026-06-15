@@ -74,6 +74,10 @@ const props = defineProps({
     default: 'default',
     validator: (v) => v === 'default' || v === 'contact',
   },
+  fill: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['ready'])
@@ -131,7 +135,7 @@ async function setupPlyr() {
 
   player = new Plyr(el, {
     controls: getControls(),
-    ratio: props.variant === 'contact' ? null : '16:9',
+    ratio: props.fill || props.variant === 'contact' ? null : '16:9',
     autoplay: props.autoplay,
     muted: props.muted,
     hideControls: props.variant === 'contact' ? false : true,
@@ -172,7 +176,7 @@ function teardown() {
 }
 
 watch(
-  () => [props.type, props.src, props.vimeoId, props.autoplay, props.muted, props.variant],
+  () => [props.type, props.src, props.vimeoId, props.autoplay, props.muted, props.variant, props.fill],
   () => {
     setupPlyr()
   },

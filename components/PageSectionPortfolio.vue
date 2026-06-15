@@ -16,22 +16,9 @@
         class="portfolio-item-link"
       >
         <div class="portfolio-item-media rounded-medium">
-          <NuxtImg
-            v-if="project.featuredImage?.asset"
-            :src="project.featuredImage.asset.url || ''"
-            alt=""
-            fit="cover"
-            :class="[
-              'portfolio-item-image rounded-medium',
-              project.featuredImageMobile?.asset ? 'is-desktop-archive-img' : '',
-            ]"
-          />
-          <NuxtImg
-            v-if="project.featuredImageMobile?.asset"
-            :src="project.featuredImageMobile.asset.url || ''"
-            alt=""
-            fit="cover"
-            class="portfolio-item-image rounded-medium is-mobile-archive-img"
+          <PortfolioThumbnailMedia
+            :project="project"
+            image-class="portfolio-item-image rounded-medium"
           />
           <div class="portfolio-item-overlay pad-40">
             <div
@@ -140,11 +127,16 @@ function gridStyleForIndex(index, total) {
 }
 
 .portfolio-item-media {
-  max-width: 100%;
   overflow: hidden;
   position: relative;
-  width: 100%;
 }
+.portfolio-item-media > * {
+  width: 100%;
+  position: absolute;
+  height: 100%;
+  object-fit: cover;
+}
+
 
 .portfolio-item-image {
   display: block;
@@ -156,7 +148,7 @@ function gridStyleForIndex(index, total) {
   display: flex;
   color: var(--white, #fff);
   opacity: 1;
-  transition: opacity 0.28s ease;
+  transition: opacity 0.18s ease;
   pointer-events: none;
   flex-direction: column;
 }
@@ -201,7 +193,7 @@ function gridStyleForIndex(index, total) {
 }
 .portfolio-item-overlay-inner {
   opacity: 0;
-  transition: opacity 0.2s ease 0s;
+  transition: opacity 0.4s ease 0s;
 }
 
 .portfolio-item-link:hover .portfolio-item-overlay-bg,
@@ -212,7 +204,7 @@ function gridStyleForIndex(index, total) {
 .portfolio-item-link:hover .portfolio-item-overlay-inner,
 .portfolio-item-link:focus-visible .portfolio-item-overlay-inner {
   opacity: 1;
-  transition: opacity 0.4s ease .15s;
+  transition: opacity 0.6s ease .3s;
 }
 
 .portfolio-item {
@@ -269,7 +261,8 @@ function gridStyleForIndex(index, total) {
   }
 
 
-  .portfolio-item-media img  {
+  .portfolio-item-media img,
+  .portfolio-item-media video {
     height: 100%;
     position: absolute;
     aspect-ratio: unset;
@@ -288,6 +281,11 @@ function gridStyleForIndex(index, total) {
     object-position: center;
     position: absolute;
   }
+
+.portfolio-item-media :deep(video) {
+  border: 0;
+  pointer-events: none;
+}
 
 .portfolio-item-title {
   margin-top: calc(var(--gutter) / 1.5);

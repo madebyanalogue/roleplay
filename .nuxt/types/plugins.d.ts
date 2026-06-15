@@ -25,6 +25,7 @@ type NuxtAppInjections =
   InjectionType<typeof import("../../plugins/favicon.client.js")> &
   InjectionType<typeof import("../../plugins/footer-parallax.client.js")> &
   InjectionType<typeof import("../../plugins/google-analytics.client.js")> &
+  InjectionType<typeof import("../../plugins/lenis.client.js")> &
   InjectionType<typeof import("../../plugins/logo-marquee.client.js")> &
   InjectionType<typeof import("../../plugins/page-transition.client.js")> &
   InjectionType<typeof import("../../plugins/preloader-gated-animations.client.js")> &

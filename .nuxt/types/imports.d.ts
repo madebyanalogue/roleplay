@@ -90,6 +90,7 @@ declare global {
   const sanityVisualEditingRefresh: typeof import('../sanity-visual-editing-refresh.mjs').sanityVisualEditingRefresh
   const scheduleScrollTriggerRefresh: typeof import('../../composables/useGsapScrollTrigger').scheduleScrollTriggerRefresh
   const setInterval: typeof import('../../node_modules/nuxt/dist/app/compat/interval').setInterval
+  const setLenis: typeof import('../../composables/useLenis').setLenis
   const setPageLayout: typeof import('../../node_modules/nuxt/dist/app/composables/router').setPageLayout
   const setResponseStatus: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').setResponseStatus
   const shallowReactive: typeof import('../../node_modules/vue').shallowReactive
@@ -123,6 +124,7 @@ declare global {
   const useLazyAsyncData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useLazyAsyncData
   const useLazyFetch: typeof import('../../node_modules/nuxt/dist/app/composables/fetch').useLazyFetch
   const useLazySanityQuery: typeof import('../../node_modules/@nuxtjs/sanity/dist/runtime/composables/index').useLazySanityQuery
+  const useLenis: typeof import('../../composables/useLenis').useLenis
   const useLineRevealAnimation: typeof import('../../composables/useLineRevealAnimation').useLineRevealAnimation
   const useLink: typeof import('../../node_modules/vue-router').useLink
   const useLoadingIndicator: typeof import('../../node_modules/nuxt/dist/app/composables/loading-indicator').useLoadingIndicator
@@ -304,6 +306,7 @@ declare module 'vue' {
     readonly sanityVisualEditingRefresh: UnwrapRef<typeof import('../sanity-visual-editing-refresh.mjs')['sanityVisualEditingRefresh']>
     readonly scheduleScrollTriggerRefresh: UnwrapRef<typeof import('../../composables/useGsapScrollTrigger')['scheduleScrollTriggerRefresh']>
     readonly setInterval: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/interval')['setInterval']>
+    readonly setLenis: UnwrapRef<typeof import('../../composables/useLenis')['setLenis']>
     readonly setPageLayout: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['setPageLayout']>
     readonly setResponseStatus: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['setResponseStatus']>
     readonly shallowReactive: UnwrapRef<typeof import('../../node_modules/vue')['shallowReactive']>
@@ -337,6 +340,7 @@ declare module 'vue' {
     readonly useLazyAsyncData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useLazyAsyncData']>
     readonly useLazyFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/fetch')['useLazyFetch']>
     readonly useLazySanityQuery: UnwrapRef<typeof import('../../node_modules/@nuxtjs/sanity/dist/runtime/composables/index')['useLazySanityQuery']>
+    readonly useLenis: UnwrapRef<typeof import('../../composables/useLenis')['useLenis']>
     readonly useLineRevealAnimation: UnwrapRef<typeof import('../../composables/useLineRevealAnimation')['useLineRevealAnimation']>
     readonly useLink: UnwrapRef<typeof import('../../node_modules/vue-router')['useLink']>
     readonly useLoadingIndicator: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/loading-indicator')['useLoadingIndicator']>

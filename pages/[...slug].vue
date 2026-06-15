@@ -153,11 +153,23 @@ const { data: page, pending, error } = useAsyncData(
               value,
               icon
             },
+            thumbnailMediaType,
+            thumbnailMediaTypeMobile,
             featuredImage {
               asset->
             },
             featuredImageMobile {
               asset->
+            },
+            featuredVideo {
+              asset-> {
+                url
+              }
+            },
+            featuredVideoMobile {
+              asset-> {
+                url
+              }
             }
           }
         },
@@ -399,7 +411,6 @@ const { data: page, pending, error } = useAsyncData(
           }
         },
         contactVideoAspectRatio,
-        contactRightTitle,
         contactInformation[] {
           _key,
           title,
@@ -430,11 +441,23 @@ const { data: page, pending, error } = useAsyncData(
           value,
           icon
         },
+        thumbnailMediaType,
+        thumbnailMediaTypeMobile,
         featuredImage {
           asset->
         },
         featuredImageMobile {
           asset->
+        },
+        featuredVideo {
+          asset-> {
+            url
+          }
+        },
+        featuredVideoMobile {
+          asset-> {
+            url
+          }
         }
       }
     }`
@@ -502,7 +525,7 @@ watch(pending, (isPending) => {
 .page-content {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--gutter) * 1.5);
+  gap: calc(var(--gutter) * 2.5);
   min-width: 0;
   max-width: 100%;
 }
@@ -516,9 +539,9 @@ watch(pending, (isPending) => {
   min-width: 0;
   max-width: 100%;
 }
-@media (min-width: 800px) {
+@media (min-width: 1000px) {
   .page-content {
-    gap: calc(var(--gutter) * 3.5);
+    gap: calc(var(--gutter) * 1);
   }
 }
 

@@ -1,16 +1,24 @@
 <template>
   <section
     ref="sectionRef"
-    class="featured-projects grid gap-30"
+    class="featured-projects"
     data-featured-projects-scroll
   >
-    <h2 v-if="props.section.featuredProjectsTitle || props.section.title" class="subtitle subtitle--circle orange-dot">
-      {{ props.section.featuredProjectsTitle || props.section.title }}
-    </h2>
+    <div ref="pinRef" class="featured-projects__pin grid gap-30 pad-gutter pad-top">
+      <h2
+        v-if="props.section.featuredProjectsTitle || props.section.title"
+        class="featured-projects__title subtitle subtitle--circle orange-dot"
+      >
+        {{ props.section.featuredProjectsTitle || props.section.title }}
+      </h2>
 
-    <div ref="scrollRef" class="featured-projects__scroll">
-      <div ref="viewportRef" class="featured-projects__viewport">
-        <div ref="trackRef" class="featured-projects__track">
+      <div ref="scrollRef" class="featured-projects__scroll">
+        <div
+          ref="viewportRef"
+          class="featured-projects__viewport"
+          :data-lenis-prevent="isMobileHorizontalScroll ? '' : undefined"
+        >
+          <div ref="trackRef" class="featured-projects__track">
           <article
             v-for="item in projects"
             :key="item.project?._id || item._key"
@@ -23,24 +31,9 @@
             >
               <div class="featured-project-image-container rounded-medium">
                 <div class="featured-project-image-wrapper">
-                  <NuxtImg
-                    v-if="item.project?.featuredImage?.asset"
-                    :src="item.project.featuredImage.asset.url || ''"
-                    alt=""
-                    :class="[
-                      'featured-project-image',
-                      item.project.featuredImageMobile?.asset ? 'is-desktop-archive-img' : '',
-                    ]"
-                    :width="item.project.featuredImage.asset.metadata?.dimensions?.width || 3200"
-                    :height="item.project.featuredImage.asset.metadata?.dimensions?.height"
-                  />
-                  <NuxtImg
-                    v-if="item.project?.featuredImageMobile?.asset"
-                    :src="item.project.featuredImageMobile.asset.url || ''"
-                    alt=""
-                    class="featured-project-image is-mobile-archive-img"
-                    :width="item.project.featuredImageMobile.asset.metadata?.dimensions?.width || 3200"
-                    :height="item.project.featuredImageMobile.asset.metadata?.dimensions?.height"
+                  <PortfolioThumbnailMedia
+                    :project="item.project"
+                    image-class="featured-project-image"
                   />
                   <div class="portfolio-item-overlay pad-40">
                     <div
@@ -66,6 +59,7 @@
               </div>
             </NuxtLink>
           </article>
+          </div>
         </div>
       </div>
     </div>
@@ -86,6 +80,7 @@ const props = defineProps({
 const { portfolioProjectPath } = useSiteSettings()
 
 const sectionRef = ref(null)
+const pinRef = ref(null)
 const scrollRef = ref(null)
 const viewportRef = ref(null)
 const trackRef = ref(null)
@@ -96,6 +91,10 @@ let initTimer = null
 let removePageFinishHook = () => {}
 
 const projects = computed(() => props.section?.featuredProjects || [])
+
+const isMobileHorizontalScroll = ref(false)
+let mobileScrollMq = null
+let syncMobileScrollMode = () => {}
 
 const MAX_INIT_ATTEMPTS = 10
 let initAttempts = 0
@@ -124,8 +123,10 @@ function constrainPinSpacer(scrollTrigger) {
 
 async function waitForMedia(root) {
   const images = root.querySelectorAll('img')
-  await Promise.all(
-    Array.from(images).map(
+  const videos = root.querySelectorAll('video')
+
+  await Promise.all([
+    ...Array.from(images).map(
       (image) =>
         new Promise((resolve) => {
           if (image.complete) {
@@ -137,7 +138,19 @@ async function waitForMedia(root) {
           image.addEventListener('error', resolve, { once: true })
         }),
     ),
-  )
+    ...Array.from(videos).map(
+      (video) =>
+        new Promise((resolve) => {
+          if (video.readyState >= 1) {
+            resolve()
+            return
+          }
+
+          video.addEventListener('loadedmetadata', resolve, { once: true })
+          video.addEventListener('error', resolve, { once: true })
+        }),
+    ),
+  ])
 }
 
 async function initInsideScroll() {
@@ -165,9 +178,10 @@ async function initInsideScroll() {
 
     const setup = async () => {
       const section = sectionRef.value
+      const pin = pinRef.value
       const track = trackRef.value
       const viewport = viewportRef.value
-      if (cancelled || !section || !track || !viewport) return
+      if (cancelled || !section || !pin || !track || !viewport) return
 
       await waitForMedia(section)
       if (cancelled) return
@@ -195,7 +209,7 @@ async function initInsideScroll() {
 
       scrollTrigger = ScrollTrigger.create({
         trigger: section,
-        pin: viewport,
+        pin: pin,
         pinSpacing: true,
         start: getPinStart,
         scrub: 0.45,
@@ -265,6 +279,10 @@ watch(
           item.project?.slug?.current,
           item.project?.featuredImage?.asset?.url,
           item.project?.featuredImageMobile?.asset?.url,
+          item.project?.thumbnailMediaType,
+          item.project?.thumbnailMediaTypeMobile,
+          item.project?.featuredVideo?.asset?.url,
+          item.project?.featuredVideoMobile?.asset?.url,
         ].join(':'),
       )
       .join('|'),
@@ -281,6 +299,13 @@ watch(isPageLoading, (loading) => {
 onMounted(async () => {
   await nextTick()
 
+  mobileScrollMq = window.matchMedia('(max-width: 999px)')
+  syncMobileScrollMode = () => {
+    isMobileHorizontalScroll.value = mobileScrollMq.matches
+  }
+  syncMobileScrollMode()
+  mobileScrollMq.addEventListener('change', syncMobileScrollMode)
+
   removePageFinishHook = nuxtApp.hook('page:finish', () => {
     scheduleInitInsideScroll(TRANSITION_SETTLE_MS)
   })
@@ -295,6 +320,8 @@ onActivated(() => {
 })
 
 onUnmounted(() => {
+  mobileScrollMq?.removeEventListener('change', syncMobileScrollMode)
+  mobileScrollMq = null
   if (initTimer) clearTimeout(initTimer)
   initTimer = null
   removePageFinishHook()
@@ -308,10 +335,23 @@ onUnmounted(() => {
 
 <style scoped>
 .featured-projects {
+  --featured-project-max-height: calc(100dvh - var(--header-full) - var(--gutter) - var(--gutter));
+  --featured-project-card-width: max(280px, calc(100cqw / 1.75));
+  --featured-project-card-min-width: 280px;
   width: 100%;
   min-width: 0;
   max-width: 100%;
   overflow-x: clip;
+}
+
+.featured-projects__pin {
+  width: 100%;
+  min-width: 0;
+}
+
+.featured-projects__title {
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .featured-projects__scroll {
@@ -341,10 +381,10 @@ onUnmounted(() => {
 }
 
 .featured-project {
-  flex: 0 0 calc(100cqw / 1.75);
-  width: calc(100cqw / 1.75);
-  min-width: 0;
-  max-width: calc(100cqw / 1.75);
+  flex: 0 0 var(--featured-project-card-width);
+  width: var(--featured-project-card-width);
+  min-width: var(--featured-project-card-min-width);
+  max-width: var(--featured-project-card-width);
 }
 
 .featured-project-link {
@@ -352,28 +392,38 @@ onUnmounted(() => {
   color: inherit;
   display: block;
   width: 100%;
-  min-width: 0;
 }
 
 .featured-project-image-container {
-  aspect-ratio: 0.605;
+  width: 100%;
+  height: min(
+    calc(var(--featured-project-card-width) / 0.605),
+    var(--featured-project-max-height)
+  );
   position: relative;
   overflow: hidden;
 }
 
 .featured-project-image-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
 }
 
-.featured-project-image {
+.featured-project-image,
+.featured-project-image-wrapper :deep(img),
+.featured-project-image-wrapper :deep(video) {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
   position: absolute;
+  inset: 0;
+}
+
+.featured-project-image-wrapper :deep(video) {
+  border: 0;
+  pointer-events: none;
 }
 
 .portfolio-item-overlay {
@@ -382,7 +432,7 @@ onUnmounted(() => {
   display: flex;
   color: var(--white, #fff);
   opacity: 1;
-  transition: opacity 0.28s ease;
+  transition: opacity 0.18s ease;
   pointer-events: none;
   flex-direction: column;
 }
@@ -406,7 +456,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   opacity: 0;
-  transition: opacity 0.2s ease 0s;
+  transition: opacity 0.4s ease 0s;
 }
 
 .portfolio-item-overlay-title {
@@ -430,7 +480,7 @@ onUnmounted(() => {
 .featured-project-link:hover .portfolio-item-overlay-inner,
 .featured-project-link:focus-visible .portfolio-item-overlay-inner {
   opacity: 1;
-  transition: opacity 0.4s ease 0.15s;
+  transition: opacity 0.6s ease 0.3s;
 }
 
 @media (max-width: 999px) {
@@ -455,19 +505,19 @@ onUnmounted(() => {
 }
 
 @media (min-width: 1000px) {
-  .featured-project {
-    flex: 0 0 calc((100vw - var(--gutter) * 2) / 3.33);
-    width: calc((100vw - var(--gutter) * 2) / 3.33);
-    max-width: calc((100vw - var(--gutter) * 2) / 3.33);
-  }
-
-  .featured-project-image.is-mobile-archive-img {
-    display: none;
+  .featured-projects {
+    --featured-project-card-width: max(320px, calc(100cqw / 3.33));
+    --featured-project-card-min-width: 320px;
   }
 
   .featured-projects__viewport {
     overflow: hidden;
     border-radius: var(--rounded-medium);
+    max-height: var(--featured-project-max-height);
+  }
+
+  .featured-project-image.is-mobile-archive-img {
+    display: none;
   }
 }
 

@@ -7,261 +7,28 @@
       <p>Error loading portfolio: {{ error.message }}</p>
     </div>
     <div v-else-if="project">
+      <div class="sticky-corner-portfolio-strip" />
       <div class="portfolio-layout portfolio-fade-in">
 
 
-        <div class="hide-md pad-30 pad-top-bottom">
+
+        <div class="hide-md pad-30 pad-top">
           <div class="grid gap-50">
             <h1 class="portfolio-title portfolio-title-full fluid-type" style="--desktop: 54; --mobile: 40;">
               {{ project.title }}
             </h1>
-
-            <div
-              v-if="project.intro?.length"
-              class="portfolio-intro" style="--desktop: 18; --mobile: 18;"
-            >
-              <SanityBlocks :blocks="project.intro" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          v-if="isMobileAccordionViewport && mobileFeaturedBlock"
-          class="portfolio-mobile-featured"
-        >
-          <div
-            class="portfolio-content-block"
-          >
-            <div v-if="mobileFeaturedBlock._type === 'imageBlock' && mobileFeaturedBlock.image?.asset" class="portfolio-image-block rounded-portfolio">
-              <div
-                data-click-zoom
-                class="portfolio-image-container"
-                :style="getImageAspectRatio(mobileFeaturedBlock.image.asset)"
-              >
-                <NuxtImg
-                  :src="mobileFeaturedBlock.image.asset.url || ''"
-                  :alt="project.title"
-                  :width="mobileFeaturedBlock.image.asset.metadata?.dimensions?.width"
-                  :height="mobileFeaturedBlock.image.asset.metadata?.dimensions?.height"
-                  class="portfolio-image"
-                  @load="onImageLoad"
-                />
-              </div>
-            </div>
-
-            <div v-else-if="mobileFeaturedBlock._type === 'videoBlock' && videoBlockHasMedia(mobileFeaturedBlock)" class="portfolio-video-block rounded-portfolio">
-              <PortfolioVideoBlock
-                :block="mobileFeaturedBlock"
-                :alt="project.title"
-                @image-load="onImageLoad"
-              />
-            </div>
-
-            <div v-else-if="mobileFeaturedBlock._type === 'testimonialBlock'" class="portfolio-testimonial-block rounded-portfolio beige grid gap-50 pad-30 pad-md-50">
-              <div class="subtitle subtitle--square white-dot portfolio-testimonial-subtitle">
-                {{ mobileFeaturedBlock.subtitle || 'Testimonial' }}
-              </div>
-              <blockquote
-                v-if="mobileFeaturedBlock.testimonial"
-                class="portfolio-testimonial-quote fluid-type pad-md-60 pad-right"
-                style="--desktop: 60; --mobile: 30;"
-              >
-                "{{ mobileFeaturedBlock.testimonial }}"
-              </blockquote>
-              <footer
-                v-if="mobileFeaturedBlock.name || mobileFeaturedBlock.company"
-                class="portfolio-testimonial-attribution fluid-type"
-                style="--desktop: 24; --mobile: 18;"
-              >
-                <div v-if="mobileFeaturedBlock.name">{{ mobileFeaturedBlock.name }}</div>
-                <div v-if="mobileFeaturedBlock.company">{{ mobileFeaturedBlock.company }}</div>
-              </footer>
-            </div>
-
-            <div v-else-if="mobileFeaturedBlock._type === 'servicesBlock' && mobileFeaturedBlock.body" class="portfolio-services-block rounded-portfolio beige grid gap-60  pad-30">
-              <div class="subtitle subtitle--circle orange-dot portfolio-services-subtitle">
-                {{ mobileFeaturedBlock.title || 'Services' }}
-              </div>
-              <div class="portfolio-services-columns fluid-type pad-40 pad-bottom" style="--desktop: 50; --mobile: 24;">
-                <div
-                  v-for="(line, li) in servicesLines(mobileFeaturedBlock.body)"
-                  :key="li"
-                  class="portfolio-services-line"
-                >
-                  {{ line }}
-                </div>
-              </div>
-            </div>
-
-            <div v-else-if="mobileFeaturedBlock._type === 'cardsBlock' && mobileFeaturedBlock.cards?.length" class="portfolio-cards-block">
-              <article
-                v-for="(card, cardIndex) in mobileFeaturedBlock.cards"
-                :key="card._key || cardIndex"
-                class="portfolio-cards-item rounded-portfolio"
-              >
-                <div class="portfolio-cards-item__grid">
-                  <div class="portfolio-cards-item__text underline-links">
-                    <h3 v-if="card.title" class="portfolio-cards-item__title">
-                      {{ card.title }}
-                    </h3>
-                    <SanityBlocks
-                      v-if="card.description?.length"
-                      :blocks="card.description"
-                    />
-                  </div>
-
-                  <div class="portfolio-cards-item__media">
-                    <video
-                      v-if="card.mediaType === 'video' && card.video?.asset?.url"
-                      autoplay
-                      muted
-                      loop
-                      playsinline
-                      class="portfolio-cards-item__video"
-                    >
-                      <source
-                        :src="card.video.asset.url"
-                        :type="videoMimeTypeFromUrl(card.video.asset.url)"
-                      >
-                    </video>
-                    <NuxtImg
-                      v-else-if="card.image?.asset?.url"
-                      :src="card.image.asset.url"
-                      :alt="card.title || project.title"
-                      :width="card.image.asset.metadata?.dimensions?.width"
-                      :height="card.image.asset.metadata?.dimensions?.height"
-                      class="portfolio-cards-item__image"
-                      @load="onImageLoad"
-                    />
-                  </div>
-                </div>
-              </article>
-            </div>
-
-            <div v-else-if="mobileFeaturedBlock._type === 'textBlock' && mobileFeaturedBlock.text" class="portfolio-text-block rounded-portfolio beige underline-links pad-30">
-              <SanityBlocks :blocks="mobileFeaturedBlock.text" />
-            </div>
-
-            <div v-else-if="mobileFeaturedBlock._type === 'galleryBlock' && mobileFeaturedBlock.images && mobileFeaturedBlock.images.length > 0" class="portfolio-gallery-block rounded-portfolio">
-              <PortfolioGallery
-                :images="mobileFeaturedBlock.images"
-                :timing="mobileFeaturedBlock.timing || 1000"
-                :alt="project.title"
-              />
-            </div>
-
-            <div v-else-if="mobileFeaturedBlock._type === 'twoColumnBlock'" class="portfolio-two-column-block">
-              <div
-                class="portfolio-two-column-image rounded-portfolio"
-                :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
-                :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
-              >
-                <PortfolioTwoColumnCell
-                  :column-type="mobileFeaturedBlock.column1Type"
-                  :image="mobileFeaturedBlock.image1"
-                  :images="mobileFeaturedBlock.column1Images"
-                  :timing="mobileFeaturedBlock.column1Timing"
-                  :video-source="mobileFeaturedBlock.column1VideoSource"
-                  :video="mobileFeaturedBlock.column1Video"
-                  :video-vimeo="mobileFeaturedBlock.column1VideoVimeo"
-                  :alt="project.title"
-                  :get-image-aspect-ratio="getImageAspectRatio"
-                  @image-load="onImageLoad"
-                />
-              </div>
-              <div
-                class="portfolio-two-column-image rounded-portfolio"
-                :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
-                :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
-              >
-                <PortfolioTwoColumnCell
-                  :column-type="mobileFeaturedBlock.column2Type"
-                  :image="mobileFeaturedBlock.image2"
-                  :images="mobileFeaturedBlock.column2Images"
-                  :timing="mobileFeaturedBlock.column2Timing"
-                  :video-source="mobileFeaturedBlock.column2VideoSource"
-                  :video="mobileFeaturedBlock.column2Video"
-                  :video-vimeo="mobileFeaturedBlock.column2VideoVimeo"
-                  :alt="project.title"
-                  :get-image-aspect-ratio="getImageAspectRatio"
-                  @image-load="onImageLoad"
-                />
-              </div>
-            </div>
-
-            <div v-else-if="mobileFeaturedBlock._type === 'twoColumnGalleryBlock'" class="portfolio-two-column-gallery-block">
-              <div
-                class="portfolio-two-column-gallery-column rounded-portfolio"
-                :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
-                :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
-              >
-                <PortfolioGallery
-                  v-if="mobileFeaturedBlock.leftImages && mobileFeaturedBlock.leftImages.length > 1"
-                  :images="mobileFeaturedBlock.leftImages"
-                  :timing="mobileFeaturedBlock.leftTiming || 1000"
-                  :alt="project.title"
-                />
-                <div
-                  v-else-if="mobileFeaturedBlock.leftImages && mobileFeaturedBlock.leftImages.length === 1 && mobileFeaturedBlock.leftImages[0]?.asset"
-                  data-click-zoom
-                  class="portfolio-image-container"
-                  :style="getImageAspectRatio(mobileFeaturedBlock.leftImages[0].asset)"
-                >
-                  <NuxtImg
-                    :src="mobileFeaturedBlock.leftImages[0].asset.url || ''"
-                    :alt="project.title"
-                    :width="mobileFeaturedBlock.leftImages[0].asset.metadata?.dimensions?.width"
-                    :height="mobileFeaturedBlock.leftImages[0].asset.metadata?.dimensions?.height"
-                    class="portfolio-image"
-                    @load="onImageLoad"
-                  />
-                </div>
-              </div>
-              <div
-                class="portfolio-two-column-gallery-column rounded-portfolio"
-                :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(mobileFeaturedBlock) }"
-                :style="columnMediaDesktopAspectStyle(mobileFeaturedBlock)"
-              >
-                <PortfolioGallery
-                  v-if="mobileFeaturedBlock.rightImages && mobileFeaturedBlock.rightImages.length > 1"
-                  :images="mobileFeaturedBlock.rightImages"
-                  :timing="mobileFeaturedBlock.rightTiming || 1000"
-                  :alt="project.title"
-                />
-                <div
-                  v-else-if="mobileFeaturedBlock.rightImages && mobileFeaturedBlock.rightImages.length === 1 && mobileFeaturedBlock.rightImages[0]?.asset"
-                  data-click-zoom
-                  class="portfolio-image-container"
-                  :style="getImageAspectRatio(mobileFeaturedBlock.rightImages[0].asset)"
-                >
-                  <NuxtImg
-                    :src="mobileFeaturedBlock.rightImages[0].asset.url || ''"
-                    :alt="project.title"
-                    :width="mobileFeaturedBlock.rightImages[0].asset.metadata?.dimensions?.width"
-                    :height="mobileFeaturedBlock.rightImages[0].asset.metadata?.dimensions?.height"
-                    class="portfolio-image"
-                    @load="onImageLoad"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
         <aside class="portfolio-layout__sidebar rounded-portfolio white pad-30">
+
+          <div class="sticky-corner" />
           <div class="portfolio-sidebar-stack">
             <div class="portfolio-sidebar-stack__middle">
               <div class="portfolio-sidebar-stack__body gap-30">
                 <h1 class="portfolio-title portfolio-title-full fluid-type show-md" style="--desktop: 54; --mobile: 40;">
                   {{ project.title }}
                 </h1>
-
-                <div
-                  v-if="project.intro?.length"
-                  class="portfolio-intro show-md pad-md-30 pad-right" style="--desktop: 18; --mobile: 18;"
-                >
-                  <SanityBlocks :blocks="project.intro" />
-                </div>
 
                 <div
                   v-if="project.role?.length || project.play?.length || project.results?.length || project.resultsStats?.length"
@@ -446,7 +213,7 @@
           :key="block._key || index"
           class="portfolio-content-block"
           :class="{ 'portfolio-fade-in': shouldFadeMainBlock(index) }"
-          :style="{ transitionDelay: `${(mainContentStartIndex + index + 1) * 0.1}s` }"
+          :style="{ transitionDelay: `${(index + 1) * 0.1}s` }"
         >
         <div v-if="block._type === 'imageBlock' && block.image?.asset" class="portfolio-image-block rounded-portfolio">
           <div
@@ -566,42 +333,45 @@
           />
         </div>
         
-        <div v-else-if="block._type === 'twoColumnBlock'" class="portfolio-two-column-block">
-          <div
-            class="portfolio-two-column-image rounded-portfolio"
-            :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(block) }"
-            :style="columnMediaDesktopAspectStyle(block)"
-          >
-            <PortfolioTwoColumnCell
-              :column-type="block.column1Type"
-              :image="block.image1"
-              :images="block.column1Images"
-              :timing="block.column1Timing"
-              :video-source="block.column1VideoSource"
-              :video="block.column1Video"
-              :video-vimeo="block.column1VideoVimeo"
-              :alt="project.title"
-              :get-image-aspect-ratio="getImageAspectRatio"
-              @image-load="onImageLoad"
-            />
-          </div>
-          <div
-            class="portfolio-two-column-image rounded-portfolio"
-            :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(block) }"
-            :style="columnMediaDesktopAspectStyle(block)"
-          >
-            <PortfolioTwoColumnCell
-              :column-type="block.column2Type"
-              :image="block.image2"
-              :images="block.column2Images"
-              :timing="block.column2Timing"
-              :video-source="block.column2VideoSource"
-              :video="block.column2Video"
-              :video-vimeo="block.column2VideoVimeo"
-              :alt="project.title"
-              :get-image-aspect-ratio="getImageAspectRatio"
-              @image-load="onImageLoad"
-            />
+        <div v-else-if="block._type === 'twoColumnBlock'" class="">
+          <div class="sticky-corner-two-columns" />
+          <div class="portfolio-two-column-block">
+            <div
+              class="portfolio-two-column-image rounded-portfolio"
+              :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(block) }"
+              :style="columnMediaDesktopAspectStyle(block)"
+            >
+              <PortfolioTwoColumnCell
+                :column-type="block.column1Type"
+                :image="block.image1"
+                :images="block.column1Images"
+                :timing="block.column1Timing"
+                :video-source="block.column1VideoSource"
+                :video="block.column1Video"
+                :video-vimeo="block.column1VideoVimeo"
+                :alt="project.title"
+                :get-image-aspect-ratio="getImageAspectRatio"
+                @image-load="onImageLoad"
+              />
+            </div>
+            <div
+              class="portfolio-two-column-image rounded-portfolio"
+              :class="{ 'portfolio-column-media--desktop-aspect': columnMediaUsesDesktopAspect(block) }"
+              :style="columnMediaDesktopAspectStyle(block)"
+            >
+              <PortfolioTwoColumnCell
+                :column-type="block.column2Type"
+                :image="block.image2"
+                :images="block.column2Images"
+                :timing="block.column2Timing"
+                :video-source="block.column2VideoSource"
+                :video="block.column2Video"
+                :video-vimeo="block.column2VideoVimeo"
+                :alt="project.title"
+                :get-image-aspect-ratio="getImageAspectRatio"
+                @image-load="onImageLoad"
+              />
+            </div>
           </div>
         </div>
         
@@ -626,6 +396,7 @@
               <NuxtImg
                 :src="block.leftImages[0].asset.url || ''"
                 :alt="project.title"
+                fit="cover"
                 :width="block.leftImages[0].asset.metadata?.dimensions?.width"
                 :height="block.leftImages[0].asset.metadata?.dimensions?.height"
                 class="portfolio-image"
@@ -653,6 +424,7 @@
               <NuxtImg
                 :src="block.rightImages[0].asset.url || ''"
                 :alt="project.title"
+                fit="cover"
                 :width="block.rightImages[0].asset.metadata?.dimensions?.width"
                 :height="block.rightImages[0].asset.metadata?.dimensions?.height"
                 class="portfolio-image"
@@ -740,7 +512,6 @@ const { data: project, pending, error } = useAsyncData(
       _id,
       title,
       slug,
-      intro,
       role,
       play,
       results,
@@ -1052,20 +823,12 @@ const hasClientVideo = computed(() => {
   return !!project.value.clientVideo?.asset?.url
 })
 
-const mobileFeaturedBlock = computed(() => {
-  if (!Array.isArray(project.value?.contentBlocks) || !project.value.contentBlocks.length) return null
-  return project.value.contentBlocks[0]
-})
-
-const mainContentStartIndex = computed(() => (isMobileAccordionViewport.value ? 1 : 0))
-
 const mainContentBlocks = computed(() => {
-  const blocks = Array.isArray(project.value?.contentBlocks) ? project.value.contentBlocks : []
-  return blocks.slice(mainContentStartIndex.value)
+  return Array.isArray(project.value?.contentBlocks) ? project.value.contentBlocks : []
 })
 
 function shouldFadeMainBlock(index) {
-  return mainContentStartIndex.value + index !== 0
+  return index !== 0
 }
 
 function onVideoPopoverDismiss(e) {
@@ -1204,18 +967,14 @@ onUnmounted(() => {
 <style scoped>
 .portfolio-layout {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: var(--gutter);
   align-items: start;
   position: relative;
 }
 
-.portfolio-intro {
-  font-size: 18px;
-}
-
 .portfolio-layout__sidebar {
-  grid-column: span 4;
+  grid-column: span 2;
   min-width: 0;
   background-size: 100%;
 }
@@ -1225,7 +984,7 @@ onUnmounted(() => {
 }
 
 .portfolio-layout__main {
-  grid-column: span 12;
+  grid-column: span 8;
   min-width: 0;
 }
 
@@ -1242,7 +1001,7 @@ onUnmounted(() => {
   }
 
   .portfolio-layout__main {
-    grid-column: span 8;
+    grid-column: span 6;
     min-width: 0;
   }
 }
@@ -1429,57 +1188,9 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.portfolio-video-block-inner {
-  aspect-ratio: 16 / 9;
-}
-
-.portfolio-video-cta {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  border: 0;
-  padding: 0;
-  margin: 0;
+.portfolio-video-block {
   width: 100%;
-  height: 100%;
-  cursor: pointer;
-  background: #000;
-  color: #fff;
-}
-
-.portfolio-video-poster {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.portfolio-video-cta__play {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 6.5rem;
-  min-height: 3.25rem;
-  border-radius: 999px;
-  padding: 0.75rem 1.25rem;
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
-}
-
-.portfolio-video-fade-enter-active,
-.portfolio-video-fade-leave-active {
-  transition: opacity 0.35s ease;
-}
-
-.portfolio-video-fade-enter-from,
-.portfolio-video-fade-leave-to {
-  opacity: 0;
+  min-width: 0;
 }
 
 .sr-only {
@@ -1700,6 +1411,125 @@ onUnmounted(() => {
 }
 
 @media (min-width: 1000px) {
+  .portfolio-layout__sidebar {
+    z-index: 1;
+  }
+  .portfolio-layout__sidebar .sticky-corner {
+    width: var(--rounded-medium);
+    height: var(--rounded-medium);
+    background: var(--background-color);
+    position: absolute;
+    top: 0;
+    left: calc(100% + var(--gutter));
+    z-index: 1;
+    -webkit-mask-image: radial-gradient(
+      circle at 100% 100%,
+      transparent calc(var(--rounded-medium) - 0.5px),
+      #000 calc(var(--rounded-medium) - 0.5px)
+    );
+    mask-image: radial-gradient(
+      circle at 100% 100%,
+      transparent calc(var(--rounded-medium) - 0.5px),
+      #000 calc(var(--rounded-medium) - 0.5px)
+    );
+  }
+
+  .sticky-corner-portfolio-strip {
+    width:100%;
+    display:grid;
+    gap: var(--gutter);
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    position: sticky;
+    top: calc(var(--header-height) + calc(var(--gutter) * 2));
+    left: 0;
+    z-index: 1;
+    height:1px;
+  }
+  .sticky-corner-portfolio-strip:after,
+  .sticky-corner-portfolio-strip:before {
+    content: '';
+    display: block;
+    width: var(--rounded-medium);
+    height: var(--rounded-medium);
+    background: var(--background-color);
+    position: absolute;
+    z-index: 1;
+    top:0;
+  }
+  .sticky-corner-portfolio-strip:after {
+    left:calc(calc(calc(100% / 8) * 2) - var(--gutter) - 10px);
+  -webkit-mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+    
+  }
+  .sticky-corner-portfolio-strip:before {
+    left:calc(calc(calc(100% / 8) * 2) + 5px);
+    -webkit-mask-image: radial-gradient(
+      circle at 100% 100%,
+      transparent calc(var(--rounded-medium) - 0.5px),
+      #000 calc(var(--rounded-medium) - 0.5px)
+    );
+    mask-image: radial-gradient(
+      circle at 100% 100%,
+      transparent calc(var(--rounded-medium) - 0.5px),
+      #000 calc(var(--rounded-medium) - 0.5px)
+    );
+  }
+  .sticky-corner-two-columns {
+    width:100%;
+    height:1px;
+    position: sticky;
+    top: calc(var(--header-height) + calc(var(--gutter) * 2));
+    left: 0;
+    z-index: 1;
+  }
+  .sticky-corner-two-columns:after,
+  .sticky-corner-two-columns:before {
+    content: '';
+    display: block;
+    width: var(--rounded-medium);
+    height: var(--rounded-medium);
+    background: var(--background-color);
+    position: absolute;
+    z-index: 1;
+    top:0;
+  }
+  .sticky-corner-two-columns:after {
+    left:calc(50% - var(--gutter) - 5px);
+  -webkit-mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+    
+  }
+  .sticky-corner-two-columns:before {
+    right:calc(50% - var(--gutter) - 5px);
+    -webkit-mask-image: radial-gradient(
+      circle at 100% 100%,
+      transparent calc(var(--rounded-medium) - 0.5px),
+      #000 calc(var(--rounded-medium) - 0.5px)
+    );
+    mask-image: radial-gradient(
+      circle at 100% 100%,
+      transparent calc(var(--rounded-medium) - 0.5px),
+      #000 calc(var(--rounded-medium) - 0.5px)
+    );
+  }
+
   .portfolio-column-media--desktop-aspect {
     position: relative;
     width: 100%;
@@ -1707,10 +1537,23 @@ onUnmounted(() => {
     aspect-ratio: var(--portfolio-col-aspect);
   }
 
-  .portfolio-column-media--desktop-aspect > .portfolio-image-container {
+  .portfolio-column-media--desktop-aspect > .portfolio-image-container,
+  .portfolio-column-media--desktop-aspect > .portfolio-two-column-video-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
     height: 100%;
     min-height: 100%;
     aspect-ratio: unset !important;
+  }
+
+  .portfolio-column-media--desktop-aspect .portfolio-image,
+  .portfolio-column-media--desktop-aspect :deep(.portfolio-image),
+  .portfolio-column-media--desktop-aspect :deep(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
 
   .portfolio-column-media--desktop-aspect > .portfolio-gallery {
@@ -1751,16 +1594,41 @@ onUnmounted(() => {
   .portfolio-layout__main {
     grid-column: 1 / -1;
   }
+
+  .portfolio-two-column-block,
+  .portfolio-two-column-gallery-block {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolio-two-column-image,
+  .portfolio-two-column-gallery-column {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+  }
+
+  .portfolio-two-column-image > .portfolio-image-container {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+  }
+
+  .portfolio-two-column-image :deep(.portfolio-two-column-video) {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    left: auto !important;
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    height: auto !important;
+    object-fit: unset;
+  }
 }
 
 @media (max-width: 800px) {
   .portfolio-services-columns {
     column-count: 1;
-  }
-
-  .portfolio-two-column-block,
-  .portfolio-two-column-gallery-block {
-    grid-template-columns: 1fr;
   }
 
   .portfolio-cards-item__grid {

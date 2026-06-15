@@ -38,6 +38,7 @@ export const PlyrPlayer: typeof import("../components/PlyrPlayer.vue").default
 export const PortfolioGallery: typeof import("../components/PortfolioGallery.vue").default
 export const PortfolioStats: typeof import("../components/PortfolioStats.vue").default
 export const PortfolioStatsProject: typeof import("../components/PortfolioStatsProject.vue").default
+export const PortfolioThumbnailMedia: typeof import("../components/PortfolioThumbnailMedia.vue").default
 export const PortfolioTwoColumnCell: typeof import("../components/PortfolioTwoColumnCell.vue").default
 export const PortfolioVideoBlock: typeof import("../components/PortfolioVideoBlock.vue").default
 export const Preloader: typeof import("../components/Preloader.vue").default
@@ -94,6 +95,7 @@ export const LazyPlyrPlayer: LazyComponent<typeof import("../components/PlyrPlay
 export const LazyPortfolioGallery: LazyComponent<typeof import("../components/PortfolioGallery.vue").default>
 export const LazyPortfolioStats: LazyComponent<typeof import("../components/PortfolioStats.vue").default>
 export const LazyPortfolioStatsProject: LazyComponent<typeof import("../components/PortfolioStatsProject.vue").default>
+export const LazyPortfolioThumbnailMedia: LazyComponent<typeof import("../components/PortfolioThumbnailMedia.vue").default>
 export const LazyPortfolioTwoColumnCell: LazyComponent<typeof import("../components/PortfolioTwoColumnCell.vue").default>
 export const LazyPortfolioVideoBlock: LazyComponent<typeof import("../components/PortfolioVideoBlock.vue").default>
 export const LazyPreloader: LazyComponent<typeof import("../components/Preloader.vue").default>

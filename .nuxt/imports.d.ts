@@ -32,6 +32,7 @@ export { definePageMeta } from '../node_modules/nuxt/dist/pages/runtime/composab
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
 export { useContactLink } from '../composables/useContactLink';
 export { loadGsapScrollTrigger, scheduleScrollTriggerRefresh, constrainPinSpacerWidth } from '../composables/useGsapScrollTrigger';
+export { setLenis, useLenis } from '../composables/useLenis';
 export { useLineRevealAnimation } from '../composables/useLineRevealAnimation';
 export { initLogoMarquee } from '../composables/useLogoMarquee';
 export { usePageLoading, providePageLoading, injectPageLoading } from '../composables/usePageLoading';

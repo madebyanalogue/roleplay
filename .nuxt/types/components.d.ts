@@ -38,6 +38,7 @@ interface _GlobalComponents {
   'PortfolioGallery': typeof import("../../components/PortfolioGallery.vue").default
   'PortfolioStats': typeof import("../../components/PortfolioStats.vue").default
   'PortfolioStatsProject': typeof import("../../components/PortfolioStatsProject.vue").default
+  'PortfolioThumbnailMedia': typeof import("../../components/PortfolioThumbnailMedia.vue").default
   'PortfolioTwoColumnCell': typeof import("../../components/PortfolioTwoColumnCell.vue").default
   'PortfolioVideoBlock': typeof import("../../components/PortfolioVideoBlock.vue").default
   'Preloader': typeof import("../../components/Preloader.vue").default
@@ -94,6 +95,7 @@ interface _GlobalComponents {
   'LazyPortfolioGallery': LazyComponent<typeof import("../../components/PortfolioGallery.vue").default>
   'LazyPortfolioStats': LazyComponent<typeof import("../../components/PortfolioStats.vue").default>
   'LazyPortfolioStatsProject': LazyComponent<typeof import("../../components/PortfolioStatsProject.vue").default>
+  'LazyPortfolioThumbnailMedia': LazyComponent<typeof import("../../components/PortfolioThumbnailMedia.vue").default>
   'LazyPortfolioTwoColumnCell': LazyComponent<typeof import("../../components/PortfolioTwoColumnCell.vue").default>
   'LazyPortfolioVideoBlock': LazyComponent<typeof import("../../components/PortfolioVideoBlock.vue").default>
   'LazyPreloader': LazyComponent<typeof import("../../components/Preloader.vue").default>

@@ -9,7 +9,7 @@
 
     <div
       class="services-section__grid fluid-type"
-      style="--desktop: 54; --mobile: 28;"
+      style="--desktop: 54; --mobile: 24;"
     >
       <div
         v-for="(line, index) in serviceLines"
@@ -42,13 +42,13 @@ const serviceLines = computed(() => {
 .services-section__grid {
   display: grid;
   grid-template-columns: 1fr;
-  padding: 0 var(--gutter);
   gap: 0 calc(var(--gutter) * 2);
 }
 
 @media (min-width: 700px) {
   .services-section__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0 var(--gutter);
   }
 }
 

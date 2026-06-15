@@ -79,6 +79,19 @@ const hasStructuredContent = computed(
   () => Boolean(props.section.kineticTypographyLine1?.trim()) || hasLine2.value,
 )
 
+function getHeaderFullPx() {
+  if (!import.meta.client) return 89
+
+  const probe = document.createElement('div')
+  probe.style.cssText =
+    'position:absolute;visibility:hidden;pointer-events:none;height:var(--header-full)'
+  document.documentElement.appendChild(probe)
+  const height = probe.offsetHeight
+  probe.remove()
+
+  return height || 89
+}
+
 async function initScrollEffect() {
   mmContext?.revert()
   mmContext = null
@@ -154,8 +167,10 @@ async function initScrollEffect() {
       const FADE_END = 0.5
       const COLLAPSE_START = 0.5
       const COLLAPSE_END = 0.5 + 0.5 * 0.75
+      const easeProgress = gsap.parseEase('power2.inOut')
 
-      const applyProgress = (progress) => {
+      const applyProgress = (rawProgress) => {
+        const progress = easeProgress(Math.min(1, Math.max(0, rawProgress)))
         if (progress <= FADE_END) {
           const opacity = 1 - progress / FADE_END
           fadeEls.forEach((el) => {
@@ -186,12 +201,13 @@ async function initScrollEffect() {
         connectorEl.style.width = `${connectorWidth * (1 - collapse)}px`
       }
 
-      const animationScrollDistance = section.offsetHeight
+      const getAnimationScrollDistance = () =>
+        section.offsetHeight || parseFloat(getComputedStyle(section).height) || 0
 
       scrollTrigger = ScrollTrigger.create({
         trigger: section,
-        start: 'top top',
-        end: () => `+=${animationScrollDistance}`,
+        start: () => `top top+=${getHeaderFullPx()}`,
+        end: () => `+=${getAnimationScrollDistance()}`,
         pin: section,
         pinSpacing: true,
         anticipatePin: 1,
@@ -254,6 +270,7 @@ onBeforeUnmount(() => {
 .kinetic-typography {
   background: transparent;
   color: #555;
+  border-radius: var(--rounded-medium);
 }
 
 .kinetic-typography__text {
@@ -269,7 +286,15 @@ onBeforeUnmount(() => {
 
 @media (min-width: 1000px) {
   .kinetic-typography {
+    box-sizing: border-box;
+    height: var(--screen-height);
+    min-height: var(--screen-height);
     letter-spacing: -0.15em;
+  }
+
+  .kinetic-typography__stage {
+    height: var(--screen-height);
+    min-height: var(--screen-height);
   }
 }
 
@@ -305,10 +330,10 @@ onBeforeUnmount(() => {
 
 .kinetic-typography__stage {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: calc(var(--unit) * 310) calc(var(--unit) * 200) calc(var(--unit) * 200);
+  padding: 0 calc(var(--unit) * 200);
 }
 
 .kinetic-typography__text--animated {

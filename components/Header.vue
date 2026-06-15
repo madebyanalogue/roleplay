@@ -31,7 +31,7 @@
     <div
       v-if="showContactButton && contactMounted"
       ref="contactRoot"
-      class="header-contact show-md"
+      class="header-contact show-sm"
     >
       <NuxtLink
         v-if="contactButtonUrl"
@@ -88,23 +88,24 @@
     <div
       ref="mobileMenuRoot"
       class="header-mobile header--styling"
+      :class="{ 'header-mobile--open': mobileMenuOpen }"
     >
       <button
         type="button"
         class="header-menu-toggle"
-        :class="{ 'header-menu-toggle-open': mobileMenuOpen }"
         :aria-expanded="mobileMenuOpen"
         aria-controls="header-mobile-nav"
         @click="toggleMobileMenu"
       >
-        Menu
+        {{ mobileMenuOpen ? 'Close' : 'Menu' }}
       </button>
       <div
         v-show="mobileMenuOpen"
         id="header-mobile-nav"
-        class="header-mobile-panel header-mobile-panel--fullscreen underline-links"
+        class="header-mobile-panel header-mobile-panel--fullscreen"
         role="navigation"
         aria-label="Main"
+        data-lenis-prevent
       >
         <div class="header-mobile-panel-main">
           <NuxtLink
@@ -113,7 +114,15 @@
             :to="getMenuItemUrl(item)"
             :target="isExternalUrl(item.link?.url) ? '_blank' : undefined"
             :rel="isExternalUrl(item.link?.url) ? 'noopener' : undefined"
-            :class="['header-mobile-link', 'header-link', { 'header-link-active': isActive(item) }]"
+            :class="[
+              'header-mobile-menu-item',
+              'header-mobile-link',
+              'header-link',
+              {
+                'header-link-active': isActive(item),
+                'header-mobile-menu-item--button': item.showAsButton,
+              },
+            ]"
             @click="mobileMenuOpen = false"
           >
             <span class="header-link-text">{{ item.text }}</span>
@@ -123,13 +132,13 @@
           v-if="showMobileMenuSocialLinks"
           class="header-mobile-social"
         >
-          <p
+          <div
             v-if="mobileMenuSocialLinksTitle.trim()"
-            class="header-mobile-social-title"
+            class="header-mobile-social-title subtitle subtitle--circle orange-dot"
           >
             {{ mobileMenuSocialLinksTitle }}
-          </p>
-          <div class="header-mobile-social-links">
+          </div>
+          <div class="header-mobile-social-links underline-links">
             <template
               v-for="row in mobileMenuSocialLinks"
               :key="row._key"
@@ -416,6 +425,15 @@ onUnmounted(() => {
   position: relative;
 }
 
+.header-mobile--open {
+  background-color: var(--orange);
+  color: var(--white);
+}
+
+.header-mobile--open .header-menu-toggle {
+  color: inherit;
+}
+
 @media (max-width: 799px) {
   .header-nav {
     display: none;
@@ -490,6 +508,7 @@ onUnmounted(() => {
   font: inherit;
   color: inherit;
   padding: 0;
+  color: var(--orange);
 }
 
 .header-mobile-panel {
@@ -500,22 +519,24 @@ onUnmounted(() => {
   padding: calc(var(--gutter) * 0.75);
   background: var(--background-color);
   color: var(--text-color);
-  border: 1px solid currentColor;
   z-index: 1100;
   display: flex;
   flex-direction: column;
-  gap: calc(var(--gutter) * 0.5);
+  gap: calc(var(--gutter) * 2);
 }
 
 .header-mobile-panel--fullscreen {
+  --background-color: var(--white);
   position: fixed;
   inset: 0;
-  width: 100vw;
-  min-height: 100dvh;
+  width: calc(100vw - var(--gutter) * 2);
+  min-height: calc(100dvh - var(--header-full) - calc(var(--gutter) * 1));
   max-width: none;
   min-width: 0;
   margin: 0;
-  top: 0;
+  background: var(--background-color);
+  left: var(--gutter);
+  top: var(--header-full);
   right: 0;
   padding: calc(var(--gutter) * 1.25);
   padding-top: max(calc(var(--gutter) * 1.25), env(safe-area-inset-top));
@@ -523,37 +544,101 @@ onUnmounted(() => {
   z-index: 1200;
   justify-content: space-between;
   overflow: auto;
+  border-radius: var(--rounded-medium);
 }
 
 .header-mobile-panel-main {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: calc(var(--gutter) * 0.5);
+  text-align: center;
+  font-size: 20px;
 }
 
 .header-mobile-social {
   margin-top: auto;
   padding-top: calc(var(--gutter) * 1);
-  border-top: 1px solid currentColor;
+  border-top: 1px rgba(0, 0, 0, 0.2) solid;
 }
 
 .header-mobile-social-title {
-  margin: 0 0 calc(var(--gutter) * 0.5);
-  font-weight: 600;
+  margin: 0 0 calc(var(--gutter) * 1);
 }
 
 .header-mobile-social-links {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--gutter) * 0.5);
+  gap: calc(var(--gutter) * 0.75);
 }
 
 .header-mobile-social-link {
   color: inherit;
 }
 
+@media all and (min-width: 500px) and (max-width: 799px) {
+  .header-mobile-social {
+    margin-top: unset;
+    padding-top:0;
+    border-top: none;
+  }
+  .header-mobile-panel--fullscreen .header-mobile-social {
+    border-top: none;
+  }
+
+  .header-mobile-panel--fullscreen .header-mobile-social-links {
+    gap: calc(var(--gutter) * 1);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .header-mobile-panel--fullscreen .header-mobile-social-title {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    display: none;
+  }
+
+  .header-mobile-panel--fullscreen .header-mobile-social-title.subtitle--circle::before {
+    display: none;
+  }
+}
+
+@media (min-width: 500px) and (max-width: 799px) {
+  .header-mobile-panel--fullscreen {
+    display: grid;
+    align-items: center;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.header-mobile-menu-item,
 .header-mobile-link {
   display: block;
+  text-align: center;
+  text-decoration: none;
+}
+.header-mobile-menu-item {
+border-radius: var(--rounded-button);
+padding: 0.8em 1.2em;
+width: 100%;
+}
+
+.header-mobile-menu-item--button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  background: var(--orange);
+  color: var(--white);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--rounded-button);
+  padding: 0.8em 1.2em;
+  width: 100%;
 }
 
 .header.header-static {
@@ -567,10 +652,12 @@ body.header--is--fixed {
 .header.header-fixed {
   position: fixed;
   top: 0;
-  left: 0;
+  left: 50%;
   padding: var(--gutter);
   background: var(--background-color);
   width: 100%;
+  max-width: var(--max-width);
+  transform: translateX(-50%);
 }
 
 .header-corner-fill {

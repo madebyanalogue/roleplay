@@ -44,6 +44,8 @@ const preloaderReady = ref(false)
 // Page loading state - track when pages are loading
 const { isLoading: isPageLoading } = providePageLoading()
 
+const { scrollTo: lenisScrollTo } = useLenis()
+
 // Preloader handlers
 const onPreloaderReady = () => {
   // Preloader is ready to start, show content
@@ -132,7 +134,7 @@ watch(() => route.path, (newPath) => {
     // Match page transition duration, then scroll and clear navigating state
     setTimeout(() => {
       if (process.client) {
-        window.scrollTo(0, 0)
+        lenisScrollTo(0, { immediate: true })
       }
       setTimeout(() => {
         isNavigating.value = false

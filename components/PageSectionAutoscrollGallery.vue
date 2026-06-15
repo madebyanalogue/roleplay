@@ -268,13 +268,15 @@ onBeforeUnmount(() => {
 <style scoped>
 
 .draggable-marquee {
-  --card-width: 50vw;
+  --card-width: max(40vw, 130px);
 }
+
 @media all and (min-width: 700px) {
   .draggable-marquee {
     --card-width: 40vw;
   }
 }
+
 @media all and (min-width: 1000px) {
   .draggable-marquee {
     --card-width: 25vw;
@@ -365,11 +367,5 @@ onBeforeUnmount(() => {
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-@media all and (max-width: 999px) {
-  .draggable-marquee {
-    --card-width: calc(min(100vw, 100%) / 6);
-  }
 }
 </style>

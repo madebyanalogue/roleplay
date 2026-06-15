@@ -14,6 +14,7 @@
     <NuxtImg
       :src="image.asset.url || ''"
       :alt="alt"
+      fit="cover"
       :width="image.asset.metadata?.dimensions?.width"
       :height="image.asset.metadata?.dimensions?.height"
       class="portfolio-image"
@@ -23,6 +24,8 @@
   <div
     v-else-if="columnType === 'video' && hasVideo"
     class="portfolio-image-container portfolio-two-column-video-container"
+    :class="{ 'portfolio-two-column-video-container--vimeo': !!vimeoId }"
+    :style="videoContainerStyle"
   >
     <iframe
       v-if="vimeoId"
@@ -123,6 +126,35 @@ const hasVideo = computed(() => {
   if (vimeoId.value) return true
   return !!props.video?.asset?.url
 })
+
+const vimeoAspectRatio = ref(null)
+
+watch(
+  vimeoId,
+  async (id) => {
+    vimeoAspectRatio.value = null
+    if (!id || !import.meta.client) return
+    try {
+      const response = await fetch(
+        `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(`https://vimeo.com/${id}`)}`,
+      )
+      if (!response.ok) return
+      const data = await response.json()
+      const { width, height } = data
+      if (width > 0 && height > 0) {
+        vimeoAspectRatio.value = `${width} / ${height}`
+      }
+    } catch {
+      // ignore
+    }
+  },
+  { immediate: true },
+)
+
+const videoContainerStyle = computed(() => {
+  if (!vimeoId.value || !vimeoAspectRatio.value) return {}
+  return { '--portfolio-two-column-video-aspect': vimeoAspectRatio.value }
+})
 </script>
 
 <style scoped>
@@ -130,6 +162,10 @@ const hasVideo = computed(() => {
   min-height: 100%;
   height: 100%;
   aspect-ratio: 16 / 9;
+}
+
+.portfolio-two-column-video-container--vimeo {
+  aspect-ratio: var(--portfolio-two-column-video-aspect, 16 / 9);
 }
 
 .portfolio-two-column-video,
@@ -142,5 +178,33 @@ const hasVideo = computed(() => {
   display: block;
   border: 0;
   pointer-events: none;
+}
+
+@media (max-width: 999px) {
+  .portfolio-two-column-video-container {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: unset;
+    min-height: 0;
+    height: auto;
+  }
+
+  .portfolio-two-column-video-container--vimeo {
+    aspect-ratio: var(--portfolio-two-column-video-aspect, 16 / 9);
+    position: relative;
+    width: 100%;
+  }
+
+  .portfolio-two-column-video {
+    position: relative;
+    inset: unset;
+    top: auto;
+    left: auto;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: unset;
+  }
 }
 </style>

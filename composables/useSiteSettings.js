@@ -27,7 +27,9 @@ export const useSiteSettings = () => {
       headerMenu-> {
         title,
         items[] {
+          _key,
           text,
+          showAsButton,
           link {
             type,
             page-> {
@@ -42,7 +44,9 @@ export const useSiteSettings = () => {
       mobileMenu-> {
         title,
         items[] {
+          _key,
           text,
+          showAsButton,
           link {
             type,
             page-> {

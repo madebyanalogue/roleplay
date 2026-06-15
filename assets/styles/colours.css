@@ -47,10 +47,10 @@ svg > * {
 .beige { background-color: var(--beige);}
 .lavender { background-color: var(--lavender);}
 
-.pink-1 { background-color: var(--pink-1); }
-.pink-2 { background-color: var(--pink-2); }
-.pink-3 { background-color: var(--pink-3); }
-.pink-4 { background-color: var(--pink-4); }
+.pink-1 { background-color: var(--pink-tint-1); }
+.pink-2 { background-color: var(--pink-tint-2); }
+.pink-3 { background-color: var(--pink-tint-3); }
+.pink-4 { background-color: var(--pink-tint-4); }
 
 .orange-text { color: var(--orange); }
 .yellow-text { color: var(--yellow); }

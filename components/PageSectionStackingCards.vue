@@ -8,7 +8,7 @@
   <section
     v-if="hasCards"
     ref="sectionRef"
-    class="sticky-cards stacking-cards-section__desktop grid gap-30"
+    class="sticky-cards stacking-cards-section__desktop"
   >
     <h2
       v-if="cardsSectionTitle"
@@ -17,63 +17,66 @@
       {{ cardsSectionTitle }}
     </h2>
 
-    <div class="sticky-cards__container">
-        <article
-          v-for="(card, index) in section.cards"
-          :key="card._key || `card-${index}`"
-          class="sticky-cards__card rounded-medium pad-20 pad-sm-50"
-          :style="{
-            zIndex: section.cards.length - index,
-            '--card-index': index,
-          }"
-        >
-        <div class="sticky-cards__grid">
-          <div class="sticky-cards__media">
-            <video
-              v-if="card.mediaType === 'video' && card.video?.asset?.url"
-              autoplay
-              muted
-              loop
-              playsinline
-              class="sticky-cards__video"
-            >
-              <source
-                :src="card.video.asset.url"
-                :type="videoMimeTypeFromUrl(card.video.asset.url)"
-              >
-            </video>
+    <div class="sticky-cards__slides">
+      <article
+        v-for="(card, index) in section.cards"
+        :key="card._key || `card-${index}`"
+        class="sticky-cards__slide"
+      >
+        <div class="sticky-cards__wrapper">
+          <div
+            class="sticky-cards__card rounded-medium pad-20 pad-sm-50"
+            :class="`sticky-cards__card--${(index % 4) + 1}`"
+          >
+            <div class="sticky-cards__grid">
+              <div class="sticky-cards__text">
+                <div class="grid gap-30 pad-md-50 pad-right">
+                  <h3
+                    v-if="card.title"
+                    class="sticky-cards__title fluid-type line-height-1 pad-60 pad-right"
+                    style="--desktop: 56; --mobile: 24;"
+                  >
+                    {{ card.title }}
+                  </h3>
+                  <div class="fluid-type" style="--desktop: 40; --mobile: 16;">
+                    <SanityBlocks
+                      v-if="card.description?.length"
+                      :blocks="card.description"
+                    />
+                  </div>
+                </div>
+              </div>
 
-            <NuxtImg
-              v-else-if="card.image?.asset?.url"
-              :src="card.image.asset.url"
-              :alt="card.title || ''"
-              :width="card.image.asset.metadata?.dimensions?.width"
-              :height="card.image.asset.metadata?.dimensions?.height"
-              class="sticky-cards__image"
-            />
-          </div>
+              <div class="sticky-cards__media">
+                <video
+                  v-if="card.mediaType === 'video' && card.video?.asset?.url"
+                  autoplay
+                  muted
+                  loop
+                  playsinline
+                  class="sticky-cards__video"
+                >
+                  <source
+                    :src="card.video.asset.url"
+                    :type="videoMimeTypeFromUrl(card.video.asset.url)"
+                  >
+                </video>
 
-          <div class="sticky-cards__text">
-            <div class="grid gap-30 pad-md-50 pad-right">
-              <h3
-                v-if="card.title"
-                class="sticky-cards__title fluid-type line-height-1 pad-60 pad-right"
-                style="--desktop: 56; --mobile: 24;"
-              >
-                {{ card.title }}
-              </h3>
-              <div class="fluid-type" style="--desktop: 40; --mobile: 16;">
-                <SanityBlocks
-                  v-if="card.description?.length"
-                  :blocks="card.description"
+                <NuxtImg
+                  v-else-if="card.image?.asset?.url"
+                  :src="card.image.asset.url"
+                  :alt="card.title || ''"
+                  :width="card.image.asset.metadata?.dimensions?.width"
+                  :height="card.image.asset.metadata?.dimensions?.height"
+                  class="sticky-cards__image"
                 />
               </div>
             </div>
           </div>
         </div>
-        </article>
-      </div>
-    </section>
+      </article>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -122,6 +125,47 @@ function videoMimeTypeFromUrl(url) {
   return 'video/mp4'
 }
 
+function getHeaderHeightPx() {
+  if (!import.meta.client) return 49
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--header-height')
+    .trim()
+  const value = Number.parseFloat(raw)
+  return Number.isFinite(value) ? value : 49
+}
+
+function getGutterPx() {
+  if (!import.meta.client) return 20
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--gutter')
+    .trim()
+  const value = Number.parseFloat(raw)
+  return Number.isFinite(value) ? value : 20
+}
+
+function getPinStart() {
+  return `top top+=${getHeaderHeightPx() + getGutterPx()}`
+}
+
+function getSlideScrollDistance() {
+  return Math.max(window.innerHeight - getHeaderHeightPx() - getGutterPx(), 1)
+}
+
+function getCardRotationZ(index) {
+  return ((index % 5) - 2) * 2
+}
+
+function syncHeadingSpace(section) {
+  const heading = section.querySelector('.sticky-cards__heading')
+  if (!heading) {
+    section.style.setProperty('--cards-heading-space', '0px')
+    return
+  }
+
+  const space = heading.offsetHeight
+  section.style.setProperty('--cards-heading-space', `${space}px`)
+}
+
 async function waitForMedia(root) {
   const images = root.querySelectorAll('img')
   await Promise.all(
@@ -152,10 +196,12 @@ async function initStickyCards() {
   mmContext = gsap.matchMedia()
 
   mmContext.add(DESKTOP_MQ, () => {
-    let scrollTrigger = null
+    const scrollTriggers = []
     let cancelled = false
 
     const onResize = () => {
+      const section = sectionRef.value
+      if (section) syncHeadingSpace(section)
       scheduleScrollTriggerRefresh()
     }
 
@@ -171,9 +217,9 @@ async function initStickyCards() {
         return
       }
 
-      const cardEls = section.querySelectorAll('.sticky-cards__card')
-      const totalCards = cardEls.length
-      if (totalCards < 1 || section.offsetHeight === 0) {
+      const slideEls = section.querySelectorAll('.sticky-cards__slide')
+      const totalSlides = slideEls.length
+      if (totalSlides < 1 || section.offsetHeight === 0) {
         if (initAttempts < MAX_INIT_ATTEMPTS) {
           initAttempts += 1
           scheduleInitStickyCards(150)
@@ -188,96 +234,64 @@ async function initStickyCards() {
       await new Promise((resolve) => requestAnimationFrame(resolve))
       if (cancelled) return
 
-      const segmentSize = 1 / totalCards
-      const cardYOffset = 5
-      const cardScaleStep = 0.075
-      const maxAnimProgress =
-        totalCards <= 1 ? 0 : (totalCards - 1) / totalCards
+      syncHeadingSpace(section)
 
-      cardEls.forEach((card, index) => {
+      slideEls.forEach((slide, index) => {
+        const wrapper = slide.querySelector('.sticky-cards__wrapper')
+        const card = slide.querySelector('.sticky-cards__card')
+        if (!wrapper || !card) return
+
+        const isLastSlide = index === totalSlides - 1
+
         gsap.set(card, {
-          xPercent: -50,
-          yPercent: -50 + index * cardYOffset,
-          scale: 1 - index * cardScaleStep,
+          rotationX: 0,
+          rotationZ: 0,
+          scale: 1,
+          autoAlpha: 1,
         })
+
+        if (isLastSlide) return
+
+        const pinTrigger = ScrollTrigger.create({
+          animation: gsap.to(card, {
+            rotationZ: getCardRotationZ(index),
+            scale: 0.7,
+            rotationX: 40,
+            ease: 'power1.in',
+          }),
+          pin: wrapper,
+          trigger: slide,
+          start: getPinStart,
+          end: () => `+=${getSlideScrollDistance()}`,
+          scrub: true,
+          anticipatePin: 0,
+          invalidateOnRefresh: true,
+          onRefresh(self) {
+            constrainPinSpacerWidth(self, section)
+          },
+          onEnter(self) {
+            constrainPinSpacerWidth(self, section)
+          },
+          onEnterBack(self) {
+            constrainPinSpacerWidth(self, section)
+          },
+        })
+
+        const fadeTrigger = ScrollTrigger.create({
+          animation: gsap.to(card, {
+            autoAlpha: 0,
+            ease: 'power1.in',
+          }),
+          trigger: card,
+          start: 'top -80%',
+          end: () => `+=${getSlideScrollDistance() * 0.2}`,
+          scrub: true,
+          invalidateOnRefresh: true,
+        })
+
+        scrollTriggers.push(pinTrigger, fadeTrigger)
       })
 
-      function updateCards(rawProgress) {
-        const animProgress =
-          totalCards <= 1 ? 0 : Math.min(rawProgress, 1) * maxAnimProgress
-        const activeIndex = Math.min(
-          Math.floor(animProgress / segmentSize),
-          totalCards - 1,
-        )
-        const segProgress =
-          (animProgress - activeIndex * segmentSize) / segmentSize
-
-        cardEls.forEach((card, index) => {
-          if (index < activeIndex) {
-            gsap.set(card, {
-              xPercent: -50,
-              yPercent: -250,
-              rotationX: 35,
-              scale: 1,
-            })
-          } else if (index === activeIndex) {
-            gsap.set(card, {
-              xPercent: -50,
-              yPercent: gsap.utils.interpolate(-50, -200, segProgress),
-              rotationX: gsap.utils.interpolate(0, 35, segProgress),
-              scale: 1,
-            })
-          } else {
-            const behindIndex = index - activeIndex
-            const currentYOffset = (behindIndex - segProgress) * cardYOffset
-            const currentScale =
-              1 - (behindIndex - segProgress) * cardScaleStep
-
-            gsap.set(card, {
-              xPercent: -50,
-              yPercent: -50 + currentYOffset,
-              rotationX: 0,
-              scale: currentScale,
-            })
-          }
-        })
-      }
-
-      scrollTrigger = ScrollTrigger.create({
-        trigger: section,
-        start: 'top top',
-        end: () =>
-          `+=${window.innerHeight * Math.max((totalCards - 1) * 2, 1)}`,
-        pin: section,
-        pinSpacing: true,
-        scrub: 1,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onUpdate(self) {
-          updateCards(self.progress)
-        },
-        onRefresh(self) {
-          constrainPinSpacerWidth(self, section)
-          updateCards(self.progress)
-        },
-        onEnter(self) {
-          constrainPinSpacerWidth(self, section)
-          updateCards(self.progress)
-        },
-        onEnterBack(self) {
-          constrainPinSpacerWidth(self, section)
-          updateCards(self.progress)
-        },
-        onLeave() {
-          updateCards(1)
-        },
-        onLeaveBack() {
-          updateCards(0)
-        },
-      })
-
-      constrainPinSpacerWidth(scrollTrigger, section)
-      updateCards(scrollTrigger.progress)
       initAttempts = 0
       scheduleScrollTriggerRefresh(hasFeaturedProjectsSection() ? 500 : 120)
     }
@@ -287,8 +301,7 @@ async function initStickyCards() {
     return () => {
       cancelled = true
       window.removeEventListener('resize', onResize)
-      scrollTrigger?.kill()
-      scrollTrigger = null
+      scrollTriggers.forEach((trigger) => trigger.kill())
       const cards = sectionRef.value?.querySelectorAll('.sticky-cards__card')
       if (cards?.length) {
         gsap.set(cards, { clearProps: 'all' })
@@ -309,7 +322,6 @@ function isFeaturedProjectsReady() {
 
 function getInitDelay() {
   if (!import.meta.client) return 0
-  // Allow layout/fonts to settle in production builds.
   return hasFeaturedProjectsSection() ? 450 : 150
 }
 
@@ -363,7 +375,6 @@ function scheduleInitWhenDependenciesReady(extraDelay = 0) {
     )
   }
 
-  // Fallback if featured projects never initializes (e.g. fewer than 2 projects).
   startInit(TRANSITION_SETTLE_MS)
 }
 
@@ -374,6 +385,12 @@ function runWhenPreloaderReady(callback) {
   }
   document.addEventListener('preloader-complete', callback, { once: true })
 }
+
+watch(cardsSectionTitle, async () => {
+  await nextTick()
+  if (sectionRef.value) syncHeadingSpace(sectionRef.value)
+  scheduleInitWhenDependenciesReady(TRANSITION_SETTLE_MS)
+})
 
 watch(
   () =>
@@ -428,7 +445,7 @@ onUnmounted(() => {
 
 <style scoped>
 .stacking-cards-section__mobile {
-  display: block;
+  display: grid;
 }
 
 .stacking-cards-section__desktop {
@@ -450,82 +467,91 @@ onUnmounted(() => {
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  height: 100svh;
-  overflow: hidden;
-  perspective: 1000px;
-  grid-template-rows: auto 1fr;
-  align-content: start;
+  overflow-x: clip;
 }
 
 .sticky-cards__heading {
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: calc(var(--header-height) + var(--gutter));
+  z-index: 30;
   pointer-events: none;
   width: 100%;
-  padding-top: calc(var(--gutter) * 1.5);
+  margin: 0;
+  padding: calc(var(--gutter) * 1.5) var(--gutter) var(--gutter);
 }
 
-.sticky-cards__container {
+.sticky-cards__slides {
+  position: relative;
+  margin-top: calc(var(--cards-heading-space, 0px) * -1);
+}
+
+.sticky-cards__slide {
+  height: calc(100svh - var(--header-height) - var(--gutter));
+  position: relative;
+}
+
+.sticky-cards__wrapper {
   position: relative;
   width: 100%;
-  min-height: 100dvh;
+  height: 100%;
+  perspective: 250vw;
 }
 
 .sticky-cards__card {
   position: absolute;
-  top: calc(50% - calc(var(--gutter) * 3));
-  left: 50%;
-  width: calc(100% - calc(var(--gutter) * 2));
-  height: calc(100vh - calc(var(--gutter) * 10) - var(--header-height));
-  aspect-ratio: 1.6;
+  top: var(--cards-heading-space, 0px);
+  right: var(--gutter);
+  bottom: var(--gutter);
+  left: var(--gutter);
   color: var(--black);
-  transform-origin: center bottom;
-  will-change: transform;
+  transform-style: preserve-3d;
+  transform-origin: 50% 10%;
+  will-change: transform, opacity;
 }
 
-@media (min-width: 1000px) {
-  /* Match GSAP progress 0 before ScrollTrigger inits. */
-  .sticky-cards__card {
-    transform: translate(-50%, calc(-50% + var(--card-index, 0) * 5%))
-      scale(calc(1 - var(--card-index, 0) * 0.075));
-  }
-}
-
-.sticky-cards__card:nth-child(4n - 1) {
+.sticky-cards__card--1 {
   background-color: var(--purple);
 }
 
-.sticky-cards__card:nth-child(4n - 2) {
+.sticky-cards__card--2 {
   background-color: var(--purple-tint-2);
 }
 
-.sticky-cards__card:nth-child(4n - 3) {
+.sticky-cards__card--3 {
   background-color: var(--purple-tint-3);
 }
 
-.sticky-cards__card:nth-child(4n - 4) {
+.sticky-cards__card--4 {
   background-color: var(--purple-tint-4);
 }
 
 .sticky-cards__grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  grid-template-areas: 'text media';
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--gutter);
   height: 100%;
+  width: 100%;
 }
 
 .sticky-cards__text {
-  grid-area: text;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .sticky-cards__media {
-  grid-area: media;
-  aspect-ratio: 1.4;
+  flex: 0 0 auto;
+  align-self: stretch;
+  aspect-ratio: 4 / 3;
+  width: auto;
+  height: 100%;
+  max-width: 62%;
   border-radius: calc(var(--unit) * 80) calc(var(--unit) * 20)
     calc(var(--unit) * 20) calc(var(--unit) * 80);
   overflow: hidden;
-  height: 100%;
-  width: 100%;
 }
 
 .sticky-cards__title {

@@ -247,7 +247,7 @@ const shouldOpenInNewTab = (link, openInNewTab) => {
   background-color: var(--background-color, #ffffff);
   position: sticky;
   /* Default: account for header height */
-  top: calc(var(--header-height) + var(--gutter));
+  top: var(--header-full);
 }
 
 /* When header is static, don't account for header height */

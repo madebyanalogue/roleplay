@@ -21,6 +21,7 @@ html {
   overflow-x: clip;
 }
 
+
 :root {
   --mobile-breakpoint: 800;
 
@@ -48,6 +49,8 @@ html {
   
   /* Header height (will be set dynamically via inline styles) */
   --header-height: 49px;
+  --header-full: calc(var(--header-height) + calc(var(--gutter) * 2));
+  --screen-height: calc(100dvh - var(--header-full) - calc(var(--gutter) * 1));
 
   --rounded-medium: 10px;
   --rounded-small: 8px;

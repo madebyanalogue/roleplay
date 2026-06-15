@@ -1,5 +1,5 @@
-import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { defineComponent, shallowRef, h, resolveComponent, computed, toValue, getCurrentInstance, onServerPrefetch, hasInjectionContext, inject, useAttrs, ref, mergeProps, unref, toRef, nextTick, createElementBlock, provide, cloneVNode, Suspense, Fragment, useSSRContext, createApp, withCtx, createVNode, toDisplayString, createTextVNode, shallowReactive, onErrorCaptured, resolveDynamicComponent, reactive, effectScope, isReadonly, isRef, isShallow, isReactive, toRaw, defineAsyncComponent, watch, getCurrentScope } from 'vue';
-import { l as parseQuery, m as hasProtocol, n as joinURL, w as withQuery, o as withTrailingSlash, q as withoutTrailingSlash, t as isScriptProtocol, v as getContext, x as sanitizeStatusCode, c as createError$1, y as defu, z as withLeadingSlash, A as parseURL, $ as $fetch$1, B as baseURL, C as createHooks, D as executeAsync, E as encodeParam, F as encodePath, G as toRouteMatcher, H as createRouter$1 } from '../nitro/nitro.mjs';
+import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { defineComponent, shallowRef, h, resolveComponent, computed, toValue, getCurrentInstance, onServerPrefetch, inject, hasInjectionContext, useAttrs, ref, mergeProps, unref, toRef, nextTick, createElementBlock, provide, cloneVNode, Suspense, Fragment, useSSRContext, createApp, withCtx, createVNode, toDisplayString, createTextVNode, shallowReactive, onErrorCaptured, resolveDynamicComponent, reactive, effectScope, isReadonly, isRef, isShallow, isReactive, toRaw, defineAsyncComponent, watch, getCurrentScope } from 'vue';
+import { l as parseQuery, m as hasProtocol, n as isScriptProtocol, o as joinURL, w as withQuery, q as sanitizeStatusCode, t as withTrailingSlash, v as withoutTrailingSlash, x as getContext, c as createError$1, y as defu, z as withLeadingSlash, A as parseURL, $ as $fetch$1, B as baseURL, C as createHooks, D as executeAsync, E as encodeParam, F as encodePath, G as toRouteMatcher, H as createRouter$1 } from '../nitro/nitro.mjs';
 import { RouterView, createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 import { ssrRenderAttrs, ssrRenderSlot, ssrRenderList, ssrRenderComponent, ssrInterpolate, ssrRenderClass, ssrRenderAttr, ssrRenderStyle, ssrRenderSuspense, ssrRenderVNode, ssrRenderTeleport } from 'vue/server-renderer';
 import { debounce } from 'perfect-debounce';
@@ -387,17 +387,22 @@ const _routes = [
   {
     name: "slug",
     path: "/:slug(.*)*",
-    component: () => import('./_...slug_-BAJ7ja6T.mjs')
+    component: () => import('./_...slug_-DhPXTuGA.mjs')
+  },
+  {
+    name: "work-slug",
+    path: "/work/:slug()",
+    component: () => import('./_slug_-BWo5taEB.mjs')
   },
   {
     name: "portfolio",
     path: "/portfolio",
-    component: () => import('./index-CVwYZTX3.mjs')
+    component: () => import('./index-C3ygZ0LA.mjs')
   },
   {
     name: "portfolio-slug",
     path: "/portfolio/:slug(.*)*",
-    component: () => import('./_...slug_-OS085HHy.mjs')
+    component: () => import('./_...slug_-4zFillY-.mjs')
   }
 ];
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g;
@@ -1430,6 +1435,11 @@ const useSiteSettings = () => {
         title,
         url
       },
+      portfolioPage-> {
+        slug {
+          current
+        }
+      },
       singlePortfolioNextProjectSettings {
         enabled,
         nextUpSubtitle,
@@ -1523,6 +1533,15 @@ const useSiteSettings = () => {
   const mobileMenuSocialLinks = computed(
     () => settings.value?.mobileMenuSocialLinks || []
   );
+  const portfolioBasePath = computed(() => {
+    const slug = settings.value?.portfolioPage?.slug?.current;
+    return slug && slug !== "home" ? slug : "work";
+  });
+  const portfolioProjectPath = (projectSlug) => {
+    const slug = typeof projectSlug === "string" ? projectSlug.trim() : projectSlug?.current;
+    if (!slug) return null;
+    return `/${portfolioBasePath.value}/${slug}`;
+  };
   const singlePortfolioNextProjectSettings = computed(() => {
     const section = settings.value?.singlePortfolioNextProjectSettings || {};
     const nextUpSubtitle = section?.nextUpSubtitle?.trim?.() || "Next up:";
@@ -1561,6 +1580,8 @@ const useSiteSettings = () => {
     showMobileMenuSocialLinks,
     mobileMenuSocialLinksTitle,
     mobileMenuSocialLinks,
+    portfolioBasePath,
+    portfolioProjectPath,
     singlePortfolioNextProjectSettings,
     navigationContact,
     footerColumns,
@@ -1712,7 +1733,7 @@ const _sfc_main$7 = {
           "header-hidden": unref(headerType) === "responsive" && unref(isScrollingDown),
           "header-transition": unref(headerType) === "responsive" && unref(shouldAddTransition)
         }]
-      }, _attrs))} data-v-59ff3d60><div class="header-bar header--styling" data-v-59ff3d60><div class="header-logo" data-v-59ff3d60>`);
+      }, _attrs))} data-v-32e53d05><div class="header-bar header--styling" data-v-32e53d05><div class="header-logo" data-v-32e53d05>`);
       _push(ssrRenderComponent(_component_NuxtLink, { to: "/" }, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
@@ -1725,7 +1746,7 @@ const _sfc_main$7 = {
         }),
         _: 1
       }, _parent));
-      _push(`</div><nav class="header-nav" aria-label="Main" data-v-59ff3d60><!--[-->`);
+      _push(`</div><nav class="header-nav" aria-label="Main" data-v-32e53d05><!--[-->`);
       ssrRenderList(unref(headerMenuItems), (item) => {
         _push(ssrRenderComponent(_component_NuxtLink, {
           key: item._key || item.text,
@@ -1736,7 +1757,7 @@ const _sfc_main$7 = {
         }, {
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<span class="header-link-text" data-v-59ff3d60${_scopeId}>${ssrInterpolate(item.text)}</span>`);
+              _push2(`<span class="header-link-text" data-v-32e53d05${_scopeId}>${ssrInterpolate(item.text)}</span>`);
             } else {
               return [
                 createVNode("span", { class: "header-link-text" }, toDisplayString(item.text), 1)
@@ -1748,7 +1769,7 @@ const _sfc_main$7 = {
       });
       _push(`<!--]--></nav></div>`);
       if (unref(showContactButton) && unref(contactMounted)) {
-        _push(`<div class="header-contact show-md" data-v-59ff3d60>`);
+        _push(`<div class="header-contact show-md" data-v-32e53d05>`);
         if (unref(contactButtonUrl)) {
           _push(ssrRenderComponent(_component_NuxtLink, {
             to: unref(contactButtonUrl),
@@ -1756,7 +1777,7 @@ const _sfc_main$7 = {
           }, {
             default: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<div data-v-59ff3d60${_scopeId}>${ssrInterpolate(unref(navigationContact).buttonTitle)}</div>`);
+                _push2(`<div data-v-32e53d05${_scopeId}>${ssrInterpolate(unref(navigationContact).buttonTitle)}</div>`);
               } else {
                 return [
                   createVNode("div", null, toDisplayString(unref(navigationContact).buttonTitle), 1)
@@ -1766,11 +1787,11 @@ const _sfc_main$7 = {
             _: 1
           }, _parent));
         } else {
-          _push(`<!--[--><button type="button" class="${ssrRenderClass([{ "header-contact-toggle-open": unref(contactOpen) }, "header-contact-toggle header--styling"])}"${ssrRenderAttr("aria-expanded", unref(contactOpen))} aria-haspopup="true" data-v-59ff3d60><div data-v-59ff3d60>${ssrInterpolate(unref(navigationContact).buttonTitle)}</div></button><div class="header-contact-panel white-text rounded-medium" role="region"${ssrRenderAttr("aria-label", unref(navigationContact).buttonTitle)} style="${ssrRenderStyle(unref(contactOpen) ? null : { display: "none" })}" data-v-59ff3d60><!--[-->`);
+          _push(`<!--[--><button type="button" class="${ssrRenderClass([{ "header-contact-toggle-open": unref(contactOpen) }, "header-contact-toggle header--styling"])}"${ssrRenderAttr("aria-expanded", unref(contactOpen))} aria-haspopup="true" data-v-32e53d05><div data-v-32e53d05>${ssrInterpolate(unref(navigationContact).buttonTitle)}</div></button><div class="header-contact-panel white-text rounded-medium" role="region"${ssrRenderAttr("aria-label", unref(navigationContact).buttonTitle)} style="${ssrRenderStyle(unref(contactOpen) ? null : { display: "none" })}" data-v-32e53d05><!--[-->`);
           ssrRenderList(unref(navigationContact).contacts, (row) => {
-            _push(`<div class="header-contact-item pad-20" data-v-59ff3d60><div class="header-contact-item-title subtitle subtitle--circle white-dot" data-v-59ff3d60>${ssrInterpolate(row.title)}</div>`);
+            _push(`<div class="header-contact-item pad-20" data-v-32e53d05><div class="header-contact-item-title subtitle subtitle--circle white-dot" data-v-32e53d05>${ssrInterpolate(row.title)}</div>`);
             if (unref(contactLinkUsesNative)(unref(getContactLinkUrl)(row))) {
-              _push(`<a${ssrRenderAttr("href", unref(getContactLinkUrl)(row))}${ssrRenderAttr("target", unref(isExternalHttp)(unref(getContactLinkUrl)(row)) ? "_blank" : void 0)}${ssrRenderAttr("rel", unref(isExternalHttp)(unref(getContactLinkUrl)(row)) ? "noopener" : void 0)} class="header-contact-link" data-v-59ff3d60>${ssrInterpolate(row.linkText)}</a>`);
+              _push(`<a${ssrRenderAttr("href", unref(getContactLinkUrl)(row))}${ssrRenderAttr("target", unref(isExternalHttp)(unref(getContactLinkUrl)(row)) ? "_blank" : void 0)}${ssrRenderAttr("rel", unref(isExternalHttp)(unref(getContactLinkUrl)(row)) ? "noopener" : void 0)} class="header-contact-link" data-v-32e53d05>${ssrInterpolate(row.linkText)}</a>`);
             } else {
               _push(ssrRenderComponent(_component_NuxtLink, {
                 to: unref(getContactLinkUrl)(row),
@@ -1796,7 +1817,7 @@ const _sfc_main$7 = {
       } else {
         _push(`<!---->`);
       }
-      _push(`<div class="header-mobile header--styling" data-v-59ff3d60><button type="button" class="${ssrRenderClass([{ "header-menu-toggle-open": unref(mobileMenuOpen) }, "header-menu-toggle"])}"${ssrRenderAttr("aria-expanded", unref(mobileMenuOpen))} aria-controls="header-mobile-nav" data-v-59ff3d60> Menu </button><div id="header-mobile-nav" class="header-mobile-panel header-mobile-panel--fullscreen underline-links" role="navigation" aria-label="Main" style="${ssrRenderStyle(unref(mobileMenuOpen) ? null : { display: "none" })}" data-v-59ff3d60><div class="header-mobile-panel-main" data-v-59ff3d60><!--[-->`);
+      _push(`<div class="header-mobile header--styling" data-v-32e53d05><button type="button" class="${ssrRenderClass([{ "header-menu-toggle-open": unref(mobileMenuOpen) }, "header-menu-toggle"])}"${ssrRenderAttr("aria-expanded", unref(mobileMenuOpen))} aria-controls="header-mobile-nav" data-v-32e53d05> Menu </button><div id="header-mobile-nav" class="header-mobile-panel header-mobile-panel--fullscreen underline-links" role="navigation" aria-label="Main" data-lenis-prevent style="${ssrRenderStyle(unref(mobileMenuOpen) ? null : { display: "none" })}" data-v-32e53d05><div class="header-mobile-panel-main" data-v-32e53d05><!--[-->`);
       ssrRenderList(unref(mobileMenuItems), (item) => {
         _push(ssrRenderComponent(_component_NuxtLink, {
           key: item._key || item.text,
@@ -1808,7 +1829,7 @@ const _sfc_main$7 = {
         }, {
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<span class="header-link-text" data-v-59ff3d60${_scopeId}>${ssrInterpolate(item.text)}</span>`);
+              _push2(`<span class="header-link-text" data-v-32e53d05${_scopeId}>${ssrInterpolate(item.text)}</span>`);
             } else {
               return [
                 createVNode("span", { class: "header-link-text" }, toDisplayString(item.text), 1)
@@ -1820,17 +1841,17 @@ const _sfc_main$7 = {
       });
       _push(`<!--]--></div>`);
       if (unref(showMobileMenuSocialLinks)) {
-        _push(`<div class="header-mobile-social" data-v-59ff3d60>`);
+        _push(`<div class="header-mobile-social" data-v-32e53d05>`);
         if (unref(mobileMenuSocialLinksTitle).trim()) {
-          _push(`<p class="header-mobile-social-title" data-v-59ff3d60>${ssrInterpolate(unref(mobileMenuSocialLinksTitle))}</p>`);
+          _push(`<p class="header-mobile-social-title" data-v-32e53d05>${ssrInterpolate(unref(mobileMenuSocialLinksTitle))}</p>`);
         } else {
           _push(`<!---->`);
         }
-        _push(`<div class="header-mobile-social-links" data-v-59ff3d60><!--[-->`);
+        _push(`<div class="header-mobile-social-links" data-v-32e53d05><!--[-->`);
         ssrRenderList(unref(mobileMenuSocialLinks), (row) => {
           _push(`<!--[-->`);
           if (unref(contactLinkUsesNative)(row.url)) {
-            _push(`<a${ssrRenderAttr("href", row.url)}${ssrRenderAttr("target", unref(isExternalHttp)(row.url) ? "_blank" : void 0)}${ssrRenderAttr("rel", unref(isExternalHttp)(row.url) ? "noopener" : void 0)} class="header-mobile-social-link" data-v-59ff3d60>${ssrInterpolate(row.title)}</a>`);
+            _push(`<a${ssrRenderAttr("href", row.url)}${ssrRenderAttr("target", unref(isExternalHttp)(row.url) ? "_blank" : void 0)}${ssrRenderAttr("rel", unref(isExternalHttp)(row.url) ? "noopener" : void 0)} class="header-mobile-social-link" data-v-32e53d05>${ssrInterpolate(row.title)}</a>`);
           } else {
             _push(ssrRenderComponent(_component_NuxtLink, {
               to: row.url,
@@ -1857,7 +1878,7 @@ const _sfc_main$7 = {
       }
       _push(`</div></div>`);
       if (unref(headerType) === "fixed") {
-        _push(`<!--[--><div class="header-corner-fill" aria-hidden="true" data-v-59ff3d60></div><div class="header-corner-fill right" aria-hidden="true" data-v-59ff3d60></div><!--]-->`);
+        _push(`<!--[--><div class="header-corner-fill" aria-hidden="true" data-v-32e53d05></div><div class="header-corner-fill right" aria-hidden="true" data-v-32e53d05></div><!--]-->`);
       } else {
         _push(`<!---->`);
       }
@@ -1871,7 +1892,7 @@ _sfc_main$7.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/Header.vue");
   return _sfc_setup$7 ? _sfc_setup$7(props, ctx) : void 0;
 };
-const __nuxt_component_1$1 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main$7, [["__scopeId", "data-v-59ff3d60"]]), { __name: "Header" });
+const __nuxt_component_1 = /* @__PURE__ */ Object.assign(_export_sfc(_sfc_main$7, [["__scopeId", "data-v-32e53d05"]]), { __name: "Header" });
 const defineRouteProvider = (name = "RouteProvider") => defineComponent({
   name,
   props: {
@@ -2697,7 +2718,7 @@ _sfc_main$5.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("node_modules/@nuxt/image/dist/runtime/components/NuxtImg.vue");
   return _sfc_setup$5 ? _sfc_setup$5(props, ctx) : void 0;
 };
-const __nuxt_component_1 = Object.assign(_sfc_main$5, { __name: "NuxtImg" });
+const __nuxt_component_3$1 = Object.assign(_sfc_main$5, { __name: "NuxtImg" });
 const _sfc_main$4 = {
   __name: "SanityBlocks",
   __ssrInlineRender: true,
@@ -2710,7 +2731,7 @@ const _sfc_main$4 = {
   setup(__props) {
     return (_ctx, _push, _parent, _attrs) => {
       const _component_SanityBlock = __nuxt_component_0$1;
-      const _component_NuxtImg = __nuxt_component_1;
+      const _component_NuxtImg = __nuxt_component_3$1;
       _push(`<div${ssrRenderAttrs(mergeProps({ class: "sanity-blocks" }, _attrs))} data-v-c0c010f8><!--[-->`);
       ssrRenderList(__props.blocks, (block, index) => {
         _push(`<!--[-->`);
@@ -2943,7 +2964,7 @@ const _sfc_main$2 = {
     });
     return (_ctx, _push, _parent, _attrs) => {
       const _component_ClientOnly = __nuxt_component_0$3;
-      const _component_Header = __nuxt_component_1$1;
+      const _component_Header = __nuxt_component_1;
       const _component_NuxtPage = __nuxt_component_2;
       const _component_Footer = __nuxt_component_3;
       _push(`<!--[-->`);
@@ -3070,5 +3091,5 @@ let entry;
 }
 const entry_default = (ssrContext) => entry(ssrContext);
 
-export { _export_sfc as _, __nuxt_component_0$2 as a, useNuxtApp as b, __nuxt_component_1 as c, useAsyncData as d, entry_default as default, useRuntimeConfig as e, __nuxt_component_0 as f, useContactLink as g, useRoute as h, injectPageLoading as i, useSiteSettings as j, useHead as u };
+export { _export_sfc as _, __nuxt_component_0$2 as a, __nuxt_component_3$1 as b, useSiteSettings as c, useNuxtApp as d, entry_default as default, useAsyncData as e, useRuntimeConfig as f, __nuxt_component_0 as g, useContactLink as h, injectPageLoading as i, useRoute as j, navigateTo as n, useHead as u };
 //# sourceMappingURL=server.mjs.map
