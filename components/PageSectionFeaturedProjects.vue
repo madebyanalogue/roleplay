@@ -41,14 +41,14 @@
                       aria-hidden="true"
                     />
                     <div class="portfolio-item-overlay-inner gap-40">
-                      <h3 class="portfolio-item-overlay-title fluid-type line-height-1" style="--desktop:72;">
+                      <h3 class="portfolio-item-overlay-title fluid-type line-height-1" style="--desktop:52.5;">
                         {{ item.project?.title }}
                       </h3>
                       <div class="portfolio-item-overlay-content gap-50">
                         <div
                           v-if="item.project?.thumbnailDescription"
                           class="portfolio-item-overlay-desc fluid-type pad-20 pad-bottom"
-                          style="--desktop:36;"
+                          style="--desktop:27;"
                         >
                           {{ item.project.thumbnailDescription }}
                         </div>
@@ -451,8 +451,9 @@ onUnmounted(() => {
   z-index: 1;
   width: 100%;
   max-height: 100%;
-  overflow: auto;
+  overflow: hidden;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   opacity: 0;

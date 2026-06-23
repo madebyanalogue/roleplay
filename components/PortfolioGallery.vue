@@ -2,7 +2,7 @@
   <div
     v-if="images && images.length > 0"
     class="portfolio-gallery"
-    data-click-zoom-article
+    v-bind="clickZoom ? { 'data-click-zoom-article': '' } : {}"
   >
     <div
       v-for="(image, index) in images"
@@ -35,6 +35,10 @@ const props = defineProps({
   alt: {
     type: String,
     default: '',
+  },
+  clickZoom: {
+    type: Boolean,
+    default: true,
   },
 })
 

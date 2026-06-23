@@ -1,0 +1,1 @@
+import{N as o,Q as e,R as n}from"./Cb8-EniE.js";const i={__name:"[...slug]",async setup(u){let t,a;const s=o().params.slug,r=Array.isArray(s)?s.join("/"):s;return[t,a]=e(()=>n(r?`/work/${r}`:"/work",{})),await t,a(),()=>{}}};export{i as default};

@@ -10,12 +10,20 @@
     ref="sectionRef"
     class="sticky-cards stacking-cards-section__desktop"
   >
-    <h2
+    <div
       v-if="cardsSectionTitle"
-      class="sticky-cards__heading subtitle subtitle--circle purple-dot"
+      class="sticky-cards__heading-spacer"
+      aria-hidden="true"
+    />
+
+    <div
+      v-if="cardsSectionTitle"
+      class="sticky-cards__heading-anchor"
     >
-      {{ cardsSectionTitle }}
-    </h2>
+      <h2 class="sticky-cards__heading subtitle subtitle--circle purple-dot">
+        {{ cardsSectionTitle }}
+      </h2>
+    </div>
 
     <div class="sticky-cards__slides">
       <article
@@ -148,22 +156,32 @@ function getPinStart() {
 }
 
 function getSlideScrollDistance() {
-  return Math.max(window.innerHeight - getHeaderHeightPx() - getGutterPx(), 1)
+  return Math.max(
+    window.innerHeight - getHeaderHeightPx() - getGutterPx() * 2,
+    1,
+  )
 }
 
 function getCardRotationZ(index) {
   return ((index % 5) - 2) * 2
 }
 
-function syncHeadingSpace(section) {
+function syncHeadingSpace(section, totalSlides = 0) {
   const heading = section.querySelector('.sticky-cards__heading')
   if (!heading) {
     section.style.setProperty('--cards-heading-space', '0px')
+    section.style.removeProperty('--heading-anchor-height')
     return
   }
 
   const space = heading.offsetHeight
+  const stickyTop = getHeaderHeightPx() + getGutterPx()
+  const slideCount = totalSlides || section.querySelectorAll('.sticky-cards__slide').length
+  const anchorHeight =
+    Math.max(slideCount - 1, 0) * getSlideScrollDistance() + stickyTop + space
+
   section.style.setProperty('--cards-heading-space', `${space}px`)
+  section.style.setProperty('--heading-anchor-height', `${anchorHeight}px`)
 }
 
 async function waitForMedia(root) {
@@ -201,7 +219,10 @@ async function initStickyCards() {
 
     const onResize = () => {
       const section = sectionRef.value
-      if (section) syncHeadingSpace(section)
+      if (section) {
+        const totalSlides = section.querySelectorAll('.sticky-cards__slide').length
+        syncHeadingSpace(section, totalSlides)
+      }
       scheduleScrollTriggerRefresh()
     }
 
@@ -234,7 +255,7 @@ async function initStickyCards() {
       await new Promise((resolve) => requestAnimationFrame(resolve))
       if (cancelled) return
 
-      syncHeadingSpace(section)
+      syncHeadingSpace(section, totalSlides)
 
       slideEls.forEach((slide, index) => {
         const wrapper = slide.querySelector('.sticky-cards__wrapper')
@@ -388,7 +409,10 @@ function runWhenPreloaderReady(callback) {
 
 watch(cardsSectionTitle, async () => {
   await nextTick()
-  if (sectionRef.value) syncHeadingSpace(sectionRef.value)
+  if (sectionRef.value) {
+    const totalSlides = sectionRef.value.querySelectorAll('.sticky-cards__slide').length
+    syncHeadingSpace(sectionRef.value, totalSlides)
+  }
   scheduleInitWhenDependenciesReady(TRANSITION_SETTLE_MS)
 })
 
@@ -470,10 +494,23 @@ onUnmounted(() => {
   overflow-x: clip;
 }
 
-.sticky-cards__heading {
+.sticky-cards__heading-spacer {
+  height: var(--cards-heading-space, 0px);
+  pointer-events: none;
+}
+
+.sticky-cards__heading-anchor {
   position: sticky;
   top: calc(var(--header-height) + var(--gutter));
+  left: 0;
+  right: 0;
+  height: calc(100vh - var(--header-height) - calc(var(--gutter) * 4));
   z-index: 30;
+  pointer-events: none;
+}
+
+.sticky-cards__heading {
+  position: relative;
   pointer-events: none;
   width: 100%;
   margin: 0;
@@ -486,7 +523,7 @@ onUnmounted(() => {
 }
 
 .sticky-cards__slide {
-  height: calc(100svh - var(--header-height) - var(--gutter));
+  height: calc(100svh - var(--header-height) - calc(var(--gutter) * 2));
   position: relative;
 }
 
@@ -548,9 +585,8 @@ onUnmounted(() => {
   aspect-ratio: 4 / 3;
   width: auto;
   height: 100%;
-  max-width: 62%;
-  border-radius: calc(var(--unit) * 80) calc(var(--unit) * 20)
-    calc(var(--unit) * 20) calc(var(--unit) * 80);
+  border-radius: calc(var(--unit) * 60) calc(var(--unit) * 20)
+    calc(var(--unit) * 20) calc(var(--unit) * 60);
   overflow: hidden;
 }
 
@@ -565,5 +601,16 @@ onUnmounted(() => {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+@media (min-width: 700px) {
+  .sticky-cards__media {
+    aspect-ratio: 3/2;
+  }
+}
+@media (min-width: 700px) {
+  .sticky-cards__media {
+max-width: 85%;
+  }
 }
 </style>

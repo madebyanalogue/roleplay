@@ -38,6 +38,7 @@
                   <div
                     v-if="project.role?.length"
                     class="portfolio-accordion"
+                    :class="{ 'portfolio-accordion--open': accordionSectionOpen('role') }"
                   >
                     <button
                       id="accordion-heading-role"
@@ -71,6 +72,7 @@
                   <div
                     v-if="project.play?.length"
                     class="portfolio-accordion"
+                    :class="{ 'portfolio-accordion--open': accordionSectionOpen('play') }"
                   >
                     <button
                       id="accordion-heading-play"
@@ -104,6 +106,7 @@
                   <div
                     v-if="project.results?.length || project.resultsStats?.length"
                     class="portfolio-accordion"
+                    :class="{ 'portfolio-accordion--open': accordionSectionOpen('results') }"
                   >
                     <button
                       id="accordion-heading-results"
@@ -150,55 +153,86 @@
               ref="clientVideoLaunchRef"
               class="portfolio-sidebar-stack__footer"
             >
-              <div class="portfolio-video-launch">
-                <button
-                  type="button"
-                  class="portfolio-hear-btn gap-bounce-hover fluid-type mono lavender"
-                  style="--desktop: 18; --mobile: 14;"
-                  :aria-expanded="clientVideoOpen"
-                  aria-controls="portfolio-client-video-pop"
-                  @click="clientVideoOpen = !clientVideoOpen"
-                >
-                  <span class="subtitle subtitle--circle orange-dot">Hear from the client</span>
-                  <div class="orange-text pad-20 pad-left">
-                    <svg
-                      class="portfolio-hear-arrow"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 16 16"
-                      width="1em"
-                      height="1em"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill="currentColor"
-                        d="M0.270896 13.5043L11.9361 1.83905L2.51334 1.83905C2.38258 1.85469 2.24999 1.84216 2.12448 1.80231C1.99897 1.76246 1.88343 1.6962 1.78565 1.608C1.68787 1.51979 1.61009 1.41168 1.55756 1.29093C1.50502 1.17017 1.47894 1.03957 1.48106 0.907898C1.48319 0.776227 1.51347 0.646535 1.56987 0.527537C1.62627 0.408538 1.70749 0.30299 1.80807 0.217985C1.90865 0.132979 2.02626 0.0704848 2.15299 0.0347015C2.27973 -0.00108239 2.41265 -0.00932503 2.54283 0.0105246L14.1923 0.0105213C14.3141 0.0078327 14.4351 0.0298347 14.5482 0.0751989C14.6612 0.120563 14.7639 0.188354 14.85 0.274477C14.9361 0.3606 15.0039 0.463272 15.0493 0.576306C15.0946 0.68934 15.1166 0.81039 15.1139 0.932156L15.1139 12.5816C15.1148 12.7039 15.0913 12.825 15.0449 12.9381C14.9985 13.0512 14.9301 13.1539 14.8437 13.2404C14.7572 13.3268 14.6545 13.3952 14.5414 13.4416C14.4283 13.488 14.3072 13.5115 14.1849 13.5106C13.9397 13.5069 13.7056 13.4078 13.5322 13.2344C13.3588 13.0609 13.2597 12.8268 13.2559 12.5816L13.2486 3.15145L1.5833 14.8167C1.40861 14.9875 1.1736 15.0825 0.929272 15.0812C0.684948 15.0798 0.451024 14.9821 0.278269 14.8093C0.190835 14.7248 0.121168 14.6237 0.0733622 14.5119C0.025557 14.4002 0.000577941 14.2799 -0.000109264 14.1584C-0.000796447 14.0368 0.0228239 13.9163 0.0693633 13.804C0.115903 13.6916 0.184423 13.5898 0.270896 13.5043Z"
-                      />
-                    </svg>
-                  </div>
-                </button>
-
+              <div
+                class="portfolio-video-launch"
+                :class="{ 'portfolio-video-launch--expanded': clientVideoExpanded }"
+              >
                 <div
-                  v-show="clientVideoOpen"
-                  id="portfolio-client-video-pop"
-                  class="portfolio-video-pop"
-                  role="dialog"
-                  aria-label="Client video"
+                  ref="clientVideoBtnRef"
+                  class="portfolio-hear-btn portfolio-hear-btn--launch fluid-type mono lavender"
+                  :class="{
+                    'portfolio-hear-btn--expanded': clientVideoExpanded,
+                    'portfolio-hear-btn--video-visible': clientVideoVisible,
+                  }"
+                  :style="{
+                    '--desktop': '18',
+                    '--mobile': '14',
+                    '--client-video-aspect': clientVideoAspect,
+                  }"
+                  @transitionend="onClientVideoWidthTransitionEnd"
                 >
-                  <div class="portfolio-video-pop__inner portfolio-image-container">
-                    <PlyrPlayer
-                      v-if="clientVimeoId"
-                      :key="`pop-vimeo-${clientVimeoId}`"
-                      type="vimeo"
-                      :vimeo-id="clientVimeoId"
-                    />
-                    <PlyrPlayer
-                      v-else-if="project.clientVideo?.asset?.url"
-                      :key="`pop-mp4-${project.clientVideo.asset.url}`"
-                      type="html5"
-                      :src="project.clientVideo.asset.url"
-                    />
+                  <div
+                    v-if="clientVideoMounted"
+                    id="portfolio-client-video-panel"
+                    class="portfolio-hear-btn__video-panel"
+                    role="region"
+                    aria-label="Client video"
+                    @click.stop
+                    @pointerdown.stop
+                    @transitionend="onClientVideoPanelTransitionEnd"
+                  >
+                    <div class="portfolio-hear-btn__video-inner">
+                      <div
+                        class="portfolio-hear-btn__video-media"
+                        @transitionend="onClientVideoFadeTransitionEnd"
+                      >
+                        <PlyrPlayer
+                          v-if="clientVimeoId"
+                          :key="`client-vimeo-${clientVimeoId}`"
+                          type="vimeo"
+                          :vimeo-id="clientVimeoId"
+                          variant="client"
+                          fill
+                        />
+                        <PlyrPlayer
+                          v-else-if="project.clientVideo?.asset?.url"
+                          :key="`client-mp4-${project.clientVideo.asset.url}`"
+                          type="html5"
+                          :src="project.clientVideo.asset.url"
+                          variant="client"
+                          fill
+                        />
+                      </div>
+                    </div>
                   </div>
+
+                  <button
+                    type="button"
+                    class="portfolio-hear-btn__toggle"
+                    :aria-expanded="clientVideoOpen"
+                    aria-controls="portfolio-client-video-panel"
+                    @click="toggleClientVideo"
+                  >
+                    <span class="portfolio-hear-btn__row gap-bounce-hover">
+                      <span class="subtitle subtitle--circle orange-dot">Client says</span>
+                      <div class="orange-text pad-20 pad-left">
+                        <svg
+                          class="portfolio-hear-arrow"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 16 16"
+                          width="1em"
+                          height="1em"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill="currentColor"
+                            d="M0.270896 13.5043L11.9361 1.83905L2.51334 1.83905C2.38258 1.85469 2.24999 1.84216 2.12448 1.80231C1.99897 1.76246 1.88343 1.6962 1.78565 1.608C1.68787 1.51979 1.61009 1.41168 1.55756 1.29093C1.50502 1.17017 1.47894 1.03957 1.48106 0.907898C1.48319 0.776227 1.51347 0.646535 1.56987 0.527537C1.62627 0.408538 1.70749 0.30299 1.80807 0.217985C1.90865 0.132979 2.02626 0.0704848 2.15299 0.0347015C2.27973 -0.00108239 2.41265 -0.00932503 2.54283 0.0105246L14.1923 0.0105213C14.3141 0.0078327 14.4351 0.0298347 14.5482 0.0751989C14.6612 0.120563 14.7639 0.188354 14.85 0.274477C14.9361 0.3606 15.0039 0.463272 15.0493 0.576306C15.0946 0.68934 15.1166 0.81039 15.1139 0.932156L15.1139 12.5816C15.1148 12.7039 15.0913 12.825 15.0449 12.9381C14.9985 13.0512 14.9301 13.1539 14.8437 13.2404C14.7572 13.3268 14.6545 13.3952 14.5414 13.4416C14.4283 13.488 14.3072 13.5115 14.1849 13.5106C13.9397 13.5069 13.7056 13.4078 13.5322 13.2344C13.3588 13.0609 13.2597 12.8268 13.2559 12.5816L13.2486 3.15145L1.5833 14.8167C1.40861 14.9875 1.1736 15.0825 0.929272 15.0812C0.684948 15.0798 0.451024 14.9821 0.278269 14.8093C0.190835 14.7248 0.121168 14.6237 0.0733622 14.5119C0.025557 14.4002 0.000577941 14.2799 -0.000109264 14.1584C-0.000796447 14.0368 0.0228239 13.9163 0.0693633 13.804C0.115903 13.6916 0.184423 13.5898 0.270896 13.5043Z"
+                          />
+                        </svg>
+                      </div>
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -217,7 +251,7 @@
         >
         <div v-if="block._type === 'imageBlock' && block.image?.asset" class="portfolio-image-block rounded-portfolio">
           <div
-            data-click-zoom
+            v-bind="portfolioImageClickZoom ? { 'data-click-zoom': '' } : {}"
             class="portfolio-image-container"
             :style="getImageAspectRatio(block.image.asset)"
           >
@@ -330,6 +364,7 @@
             :images="block.images"
             :timing="block.timing || 1000"
             :alt="project.title"
+            :click-zoom="portfolioImageClickZoom"
           />
         </div>
         
@@ -350,6 +385,7 @@
                 :video="block.column1Video"
                 :video-vimeo="block.column1VideoVimeo"
                 :alt="project.title"
+                :click-zoom="portfolioImageClickZoom"
                 :get-image-aspect-ratio="getImageAspectRatio"
                 @image-load="onImageLoad"
               />
@@ -368,6 +404,7 @@
                 :video="block.column2Video"
                 :video-vimeo="block.column2VideoVimeo"
                 :alt="project.title"
+                :click-zoom="portfolioImageClickZoom"
                 :get-image-aspect-ratio="getImageAspectRatio"
                 @image-load="onImageLoad"
               />
@@ -386,10 +423,11 @@
               :images="block.leftImages"
               :timing="block.leftTiming || 1000"
               :alt="project.title"
+              :click-zoom="portfolioImageClickZoom"
             />
             <div
               v-else-if="block.leftImages && block.leftImages.length === 1 && block.leftImages[0]?.asset"
-              data-click-zoom
+              v-bind="portfolioImageClickZoom ? { 'data-click-zoom': '' } : {}"
               class="portfolio-image-container"
               :style="getImageAspectRatio(block.leftImages[0].asset)"
             >
@@ -414,10 +452,11 @@
               :images="block.rightImages"
               :timing="block.rightTiming || 1000"
               :alt="project.title"
+              :click-zoom="portfolioImageClickZoom"
             />
             <div
               v-else-if="block.rightImages && block.rightImages.length === 1 && block.rightImages[0]?.asset"
-              data-click-zoom
+              v-bind="portfolioImageClickZoom ? { 'data-click-zoom': '' } : {}"
               class="portfolio-image-container"
               :style="getImageAspectRatio(block.rightImages[0].asset)"
             >
@@ -452,15 +491,15 @@
             <NuxtLink
               :to="portfolioProjectPath(nextProject.slug)"
               class="next--button fluid-type"
-              style="--desktop: 24; --mobile: 18;--background-color: var(--white);--color: var(--black);--border-color: var(--white);"
+              style="--desktop: 24; --mobile: 18;"
             >
               {{ singlePortfolioNextProjectSettings.viewProjectButtonTitle }}
             </NuxtLink>
             <NuxtLink
               v-if="singlePortfolioNextProjectSettings.backLink"
               :to="singlePortfolioNextProjectSettings.backLink.path"
-              class="next--button outline fluid-type"
-              style="--desktop: 24; --mobile: 18;--background-color: transparent;--color: var(--black);--border-color: var(--black);"
+              class="next--button fluid-type"
+              style="--desktop: 24; --mobile: 18;"
             >
               {{ singlePortfolioNextProjectSettings.backLink.title }}
             </NuxtLink>
@@ -481,7 +520,11 @@ import { injectPageLoading } from '~/composables/usePageLoading'
 
 const route = useRoute()
 const { setLoading } = injectPageLoading()
-const { singlePortfolioNextProjectSettings, portfolioProjectPath } = useSiteSettings()
+const { singlePortfolioNextProjectSettings, singlePortfolioImageSettings, portfolioProjectPath } = useSiteSettings()
+
+const portfolioImageClickZoom = computed(
+  () => !singlePortfolioImageSettings.value.disableClickZoom,
+)
 
 /** Accept Vimeo URL or numeric ID */
 function parseVimeoId(input) {
@@ -519,7 +562,16 @@ const { data: project, pending, error } = useAsyncData(
       clientVideoSource,
       clientVideoVimeo,
       clientVideo {
-        asset->
+        asset-> {
+          url,
+          metadata {
+            dimensions {
+              width,
+              height,
+              aspectRatio
+            }
+          }
+        }
       },
       contentBlocks[] {
         _type,
@@ -746,10 +798,236 @@ const clientVimeoId = computed(() => {
 })
 
 const clientVideoOpen = ref(false)
+const clientVideoExpanded = ref(false)
+const clientVideoVisible = ref(false)
+const clientVideoMounted = ref(false)
+const clientVideoAnimating = ref(false)
 const clientVideoLaunchRef = ref(null)
+const clientVideoBtnRef = ref(null)
+const prefersReducedMotion = ref(false)
+const collapsedClientVideoWidth = ref(0)
+
+const CLIENT_VIDEO_EXPAND_MS = 700
+const CLIENT_VIDEO_FADE_MS = 400
+
+let clientVideoExpandTimer = null
+let clientVideoFadeTimer = null
+
+function clearClientVideoTimers() {
+  if (clientVideoExpandTimer) {
+    clearTimeout(clientVideoExpandTimer)
+    clientVideoExpandTimer = null
+  }
+  if (clientVideoFadeTimer) {
+    clearTimeout(clientVideoFadeTimer)
+    clientVideoFadeTimer = null
+  }
+}
+
+function scheduleClientVideoExpandComplete() {
+  clearClientVideoTimers()
+  clientVideoExpandTimer = setTimeout(() => {
+    clientVideoExpandTimer = null
+    if (
+      clientVideoExpanded.value
+      && clientVideoMounted.value
+      && !clientVideoVisible.value
+      && clientVideoOpen.value
+    ) {
+      clientVideoVisible.value = true
+      clientVideoAnimating.value = false
+    }
+    if (!clientVideoExpanded.value && !clientVideoVisible.value && clientVideoMounted.value) {
+      applyClientVideoCollapsedSize()
+      setTimeout(() => {
+        if (!clientVideoExpanded.value && clientVideoMounted.value) {
+          clearClientVideoButtonStyles()
+          collapsedClientVideoWidth.value = 0
+          clientVideoMounted.value = false
+          clientVideoOpen.value = false
+          clientVideoAnimating.value = false
+        }
+      }, CLIENT_VIDEO_EXPAND_MS + 50)
+    }
+  }, CLIENT_VIDEO_EXPAND_MS + 50)
+}
+
+function scheduleClientVideoFadeComplete() {
+  if (clientVideoFadeTimer) clearTimeout(clientVideoFadeTimer)
+  clientVideoFadeTimer = setTimeout(() => {
+    clientVideoFadeTimer = null
+    if (!clientVideoVisible.value && clientVideoMounted.value && clientVideoExpanded.value) {
+      clientVideoExpanded.value = false
+      clientVideoOpen.value = false
+      scheduleClientVideoExpandComplete()
+    }
+  }, CLIENT_VIDEO_FADE_MS + 50)
+}
+
+const clientVideoAspect = computed(() => {
+  const p = project.value
+  if (!p) return 16 / 9
+
+  const dims = p.clientVideo?.asset?.metadata?.dimensions
+  if (dims?.aspectRatio) return dims.aspectRatio
+  if (dims?.width && dims?.height) return dims.width / dims.height
+
+  return 16 / 9
+})
+
+function getClientVideoLaunchEl() {
+  return clientVideoBtnRef.value?.closest('.portfolio-video-launch') ?? null
+}
+
+function clearClientVideoButtonStyles() {
+  const btn = clientVideoBtnRef.value
+  if (!btn) return
+  btn.style.width = ''
+  btn.style.removeProperty('--client-video-expanded-height')
+}
+
+function prepareClientVideoExpand() {
+  const btn = clientVideoBtnRef.value
+  if (!btn) return
+
+  collapsedClientVideoWidth.value = btn.offsetWidth
+  btn.style.width = `${collapsedClientVideoWidth.value}px`
+}
+
+function applyClientVideoExpandedSize() {
+  const btn = clientVideoBtnRef.value
+  const launch = getClientVideoLaunchEl()
+  if (!btn || !launch) return
+
+  const targetWidth = launch.clientWidth
+  const videoHeight = targetWidth / clientVideoAspect.value
+  btn.style.width = `${targetWidth}px`
+  btn.style.setProperty('--client-video-expanded-height', `${videoHeight}px`)
+}
+
+function applyClientVideoCollapsedSize() {
+  const btn = clientVideoBtnRef.value
+  if (!btn || !collapsedClientVideoWidth.value) return
+
+  btn.style.width = `${collapsedClientVideoWidth.value}px`
+  btn.style.removeProperty('--client-video-expanded-height')
+}
+
+function resetClientVideoState() {
+  clearClientVideoTimers()
+  clearClientVideoButtonStyles()
+  collapsedClientVideoWidth.value = 0
+  clientVideoOpen.value = false
+  clientVideoExpanded.value = false
+  clientVideoVisible.value = false
+  clientVideoMounted.value = false
+  clientVideoAnimating.value = false
+}
+
+function openClientVideo() {
+  if (clientVideoMounted.value || clientVideoAnimating.value) return
+
+  if (prefersReducedMotion.value) {
+    clientVideoMounted.value = true
+    clientVideoOpen.value = true
+    clientVideoExpanded.value = true
+    clientVideoVisible.value = true
+    nextTick(() => applyClientVideoExpandedSize())
+    return
+  }
+
+  clientVideoAnimating.value = true
+  clientVideoMounted.value = true
+  clientVideoOpen.value = true
+
+  nextTick(() => {
+    prepareClientVideoExpand()
+    requestAnimationFrame(() => {
+      clientVideoExpanded.value = true
+      applyClientVideoExpandedSize()
+      scheduleClientVideoExpandComplete()
+    })
+  })
+}
+
+function closeClientVideo() {
+  if (!clientVideoMounted.value || clientVideoAnimating.value) return
+
+  if (prefersReducedMotion.value) {
+    resetClientVideoState()
+    return
+  }
+
+  clientVideoAnimating.value = true
+
+  if (clientVideoVisible.value) {
+    clientVideoVisible.value = false
+    scheduleClientVideoFadeComplete()
+    return
+  }
+
+  clientVideoExpanded.value = false
+  clientVideoOpen.value = false
+  scheduleClientVideoExpandComplete()
+}
+
+function toggleClientVideo() {
+  if (clientVideoMounted.value) {
+    closeClientVideo()
+    return
+  }
+
+  openClientVideo()
+}
+
+function onClientVideoPanelTransitionEnd(e) {
+  if (e.target !== e.currentTarget || e.propertyName !== 'max-height') return
+
+  if (
+    clientVideoExpanded.value
+    && clientVideoMounted.value
+    && !clientVideoVisible.value
+    && clientVideoOpen.value
+  ) {
+    clearClientVideoTimers()
+    clientVideoVisible.value = true
+    clientVideoAnimating.value = false
+    return
+  }
+
+  if (!clientVideoExpanded.value && !clientVideoVisible.value) {
+    applyClientVideoCollapsedSize()
+    scheduleClientVideoExpandComplete()
+  }
+}
+
+function onClientVideoWidthTransitionEnd(e) {
+  const btn = clientVideoBtnRef.value
+  if (!btn || e.target !== btn || e.propertyName !== 'width') return
+
+  if (!clientVideoExpanded.value && !clientVideoVisible.value && clientVideoMounted.value) {
+    clearClientVideoTimers()
+    clearClientVideoButtonStyles()
+    collapsedClientVideoWidth.value = 0
+    clientVideoMounted.value = false
+    clientVideoOpen.value = false
+    clientVideoAnimating.value = false
+  }
+}
+
+function onClientVideoFadeTransitionEnd(e) {
+  if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return
+
+  if (!clientVideoVisible.value && clientVideoMounted.value && clientVideoExpanded.value) {
+    clearClientVideoTimers()
+    clientVideoExpanded.value = false
+    clientVideoOpen.value = false
+    scheduleClientVideoExpandComplete()
+  }
+}
 
 watch(slug, () => {
-  clientVideoOpen.value = false
+  resetClientVideoState()
 })
 
 /** Sidebar accordions: one open on desktop with height animation; mobile = all open, no toggle (CSS). */
@@ -832,15 +1110,14 @@ function shouldFadeMainBlock(index) {
 }
 
 function onVideoPopoverDismiss(e) {
-  if (!clientVideoOpen.value || !clientVideoLaunchRef.value) return
-  if (!clientVideoLaunchRef.value.contains(e.target)) {
-    clientVideoOpen.value = false
-  }
+  if (!clientVideoMounted.value || !clientVideoLaunchRef.value) return
+  if (clientVideoLaunchRef.value.contains(e.target)) return
+  closeClientVideo()
 }
 
 function onEscClose(e) {
-  if (e.key === 'Escape') {
-    clientVideoOpen.value = false
+  if (e.key === 'Escape' && clientVideoMounted.value) {
+    closeClientVideo()
   }
 }
 
@@ -936,6 +1213,9 @@ let removeAccordionMqListener = () => {}
 
 onMounted(() => {
   if (import.meta.client) {
+    prefersReducedMotion.value = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches
     syncAccordionViewport()
     const mqAccordion = window.matchMedia(`(max-width: ${ACCORDION_BREAKPOINT_MAX}px)`)
     mqAccordion.addEventListener('change', onAccordionMqChange)
@@ -956,6 +1236,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  clearClientVideoTimers()
   removeAccordionMqListener()
   if (import.meta.client) {
     document.removeEventListener('pointerdown', onVideoPopoverDismiss, true)
@@ -1052,7 +1333,7 @@ onUnmounted(() => {
 .portfolio-accordions {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--gutter) * 0.75);
+  gap: calc(var(--gutter) * 1);
 }
 
 .portfolio-accordion {
@@ -1062,6 +1343,12 @@ onUnmounted(() => {
 @media all and (min-width: 1000px) {
   .portfolio-accordion {
     margin-top: calc(var(--gutter) / 2);
+    opacity: 0.5;
+    transition: opacity 0.38s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .portfolio-accordion--open {
+    opacity: 1;
   }
 }
 
@@ -1146,46 +1433,142 @@ onUnmounted(() => {
 
 .portfolio-video-launch {
   position: relative;
-  display: inline-block;
+  display: block;
+  width: 100%;
   max-width: 100%;
 }
 
+.portfolio-hear-btn--launch {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: width var(--client-video-expand-duration, 0.7s) cubic-bezier(0.34, 1.4, 0.64, 1);
+}
 
+.portfolio-hear-btn__toggle {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-transform: inherit;
+  transition: width var(--client-video-expand-duration, 0.7s) cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.portfolio-hear-btn__toggle:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.portfolio-hear-btn__row {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.portfolio-hear-btn__row .orange-text {
+  margin-left: auto;
+}
+
+.portfolio-hear-btn__video-panel {
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+  transition:
+    max-height var(--client-video-expand-duration, 0.7s) cubic-bezier(0.34, 1.4, 0.64, 1),
+    padding-bottom var(--client-video-expand-duration, 0.7s) cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.portfolio-hear-btn--expanded .portfolio-hear-btn__video-panel {
+  max-height: var(--client-video-expanded-height, 60vh);
+  padding-bottom: 2.1em;
+  margin: 0 -4px;
+  width: calc(100% + 8px);
+
+}
+
+.portfolio-hear-btn__video-inner {
+  overflow: hidden;
+  background: transparent;
+}
+
+.portfolio-hear-btn__video-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--client-video-aspect, 16 / 9);
+  border-radius: 6px;
+  overflow: hidden;
+  opacity: 0;
+  background: transparent;
+  transition: opacity var(--client-video-fade-duration, 0.4s) ease;
+}
+
+.portfolio-hear-btn__video-media :deep(.plyr-player-wrap) {
+  opacity: 1;
+  transition: none;
+}
+
+.portfolio-hear-btn__video-media :deep(.plyr),
+.portfolio-hear-btn__video-media :deep(.plyr__video-wrapper),
+.portfolio-hear-btn__video-media :deep(video),
+.portfolio-hear-btn__video-media :deep(iframe) {
+  border-radius: 6px;
+  background: transparent;
+}
+
+.portfolio-hear-btn--video-visible .portfolio-hear-btn__video-media {
+  opacity: 1;
+}
+
+.portfolio-hear-btn--launch .portfolio-hear-arrow {
+  transition: transform var(--client-video-expand-duration, 0.7s) cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.portfolio-hear-btn--expanded .portfolio-hear-arrow {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-hear-btn--launch,
+  .portfolio-hear-btn__video-panel,
+  .portfolio-hear-btn__video-media,
+  .portfolio-hear-btn--launch .portfolio-hear-arrow {
+    transition: none;
+  }
+}
 
 @media all and (max-width: 999px) {
   .portfolio-sidebar-stack__footer {
-  position: fixed;
+    position: fixed;
     bottom: var(--gutter);
     right: var(--gutter);
     z-index: 100;
+    left: var(--gutter);
+    width: auto;
   }
+
+  .portfolio-video-launch--expanded {
+    width: 100%;
+  }
+
   .portfolio-video-launch .subtitle--circle::before {
     display: none;
   }
-}
-
-.portfolio-hear-arrow {
-  flex-shrink: 0;
-  display: block;
-}
-
-.portfolio-video-pop {
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + var(--gutter));
-  z-index: 20;
-  width: 100%;
-  min-width: min(200px, 100%);
-  max-width: 100%;
-  box-shadow: none;
-  border-radius: var(--rounded-button);
-  overflow: hidden;
-}
-
-.portfolio-video-pop__inner {
-  aspect-ratio: 16 / 9;
-  position: relative;
-  overflow: hidden;
 }
 
 .portfolio-video-block {
@@ -1361,6 +1744,19 @@ onUnmounted(() => {
   align-items: center;
   gap: calc(var(--gutter) * 0.5);
   flex-wrap: wrap;
+}
+
+.portfolio-next-project__actions .next--button {
+  background-color: transparent;
+  color: var(--black);
+  border: 1px solid var(--black);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.portfolio-next-project__actions .next--button:hover,
+.portfolio-next-project__actions .next--button:focus-visible {
+  background-color: var(--white);
+  border-color: var(--white);
 }
 
 .portfolio-image-container {

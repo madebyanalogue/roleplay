@@ -4,7 +4,14 @@
       <button class="footer-back-to-top" @click="scrollToTop" aria-label="Back to top"><span><div class="arrow-up"></div></span></button>
     </div> -->
     <div>
-      <Logo />
+      <LottieAnimation
+        v-if="footerLottieAnimation"
+        path="/lottie/roleplay.lottie"
+        loop
+        class-name="footer-lottie"
+        aria-label="Roleplay"
+      />
+      <Logo v-else class="footer-logo" />
     </div>
     <div class="show-sm" />
 
@@ -50,7 +57,7 @@ import { computed } from 'vue'
 import { useSiteSettings } from '~/composables/useSiteSettings'
 import SanityBlocks from '~/components/SanityBlocks.vue'
 
-const { footerColumns, footerCallToAction, copyright } = useSiteSettings()
+const { footerLottieAnimation, footerColumns, footerCallToAction, copyright } = useSiteSettings()
 
 const visibleFooterColumns = computed(() =>
   footerColumns.value.filter((col) => col.content?.length > 0),
@@ -67,6 +74,11 @@ const scrollToTop = () => {
 </script>
 
 <style scoped>
+.footer-lottie,
+.footer-logo {
+
+}
+
 .footer-cta :deep(.sanity-blocks p) {
   margin-bottom: 0;
 }

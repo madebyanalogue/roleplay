@@ -26,9 +26,9 @@
               aria-hidden="true"
             />
             <div class="portfolio-item-overlay-inner gap-40">
-              <h3 class="portfolio-item-overlay-title fluid-type" style="--desktop:72;">{{ project.title }}</h3>
+              <h3 class="portfolio-item-overlay-title fluid-type" style="--desktop:52.5;">{{ project.title }}</h3>
               <div class="portfolio-item-overlay-content gap-50">
-                <div  v-if="project.thumbnailDescription" class="portfolio-item-overlay-desc fluid-type" style="--desktop:36;" >
+                <div  v-if="project.thumbnailDescription" class="portfolio-item-overlay-desc fluid-type" style="--desktop:27;" >
                   {{ project.thumbnailDescription }}
                 </div>
                 <PortfolioStats
@@ -167,8 +167,9 @@ function gridStyleForIndex(index, total) {
   z-index: 1;
   width: 100%;
   max-height: 100%;
-  overflow: auto;
+  overflow: hidden;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }

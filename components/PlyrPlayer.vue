@@ -4,6 +4,7 @@
     :class="{
       'plyr-player-wrap--ready': isReady,
       'plyr-player-wrap--contact': variant === 'contact',
+      'plyr-player-wrap--client': variant === 'client',
     }"
   >
     <video
@@ -72,7 +73,7 @@ const props = defineProps({
   variant: {
     type: String,
     default: 'default',
-    validator: (v) => v === 'default' || v === 'contact',
+    validator: (v) => v === 'default' || v === 'contact' || v === 'client',
   },
   fill: {
     type: Boolean,
@@ -100,7 +101,10 @@ const defaultControls = [
 
 function getControls() {
   if (props.variant === 'contact') {
-    return ['progress', 'fullscreen']
+    return ['rewind', 'fullscreen']
+  }
+  if (props.variant === 'client') {
+    return ['play-large', 'rewind', 'fullscreen']
   }
   return defaultControls
 }
@@ -138,7 +142,7 @@ async function setupPlyr() {
     ratio: props.fill || props.variant === 'contact' ? null : '16:9',
     autoplay: props.autoplay,
     muted: props.muted,
-    hideControls: props.variant === 'contact' ? false : true,
+    hideControls: props.variant === 'contact' || props.variant === 'client' ? false : true,
     clickToPlay: true,
     fullscreen: { enabled: true, iosNative: true },
     vimeo: {
@@ -253,7 +257,12 @@ onBeforeUnmount(() => {
 .plyr-player-wrap--contact :deep([data-plyr='play']),
 .plyr-player-wrap--contact :deep(.plyr__time),
 .plyr-player-wrap--contact :deep(.plyr__volume),
-.plyr-player-wrap--contact :deep(.plyr__menu) {
+.plyr-player-wrap--contact :deep(.plyr__menu),
+.plyr-player-wrap--client :deep([data-plyr='play']),
+.plyr-player-wrap--client :deep([data-plyr='mute']),
+.plyr-player-wrap--client :deep(.plyr__time),
+.plyr-player-wrap--client :deep(.plyr__volume),
+.plyr-player-wrap--client :deep(.plyr__menu) {
   display: none !important;
 }
 
@@ -279,13 +288,38 @@ onBeforeUnmount(() => {
   background: linear-gradient(transparent, rgb(0 0 0 / 45%));
 }
 
-.plyr-player-wrap--contact :deep(.plyr__progress__container) {
-  flex: 1;
-  margin: 0;
+.plyr-player-wrap--contact :deep(.plyr__progress__container),
+.plyr-player-wrap--client :deep(.plyr__progress__container) {
+  display: none !important;
 }
 
-.plyr-player-wrap--contact :deep([data-plyr='fullscreen']) {
+.plyr-player-wrap--contact :deep([data-plyr='rewind']),
+.plyr-player-wrap--client :deep([data-plyr='rewind']) {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.plyr-player-wrap--contact :deep([data-plyr='fullscreen']),
+.plyr-player-wrap--client :deep([data-plyr='fullscreen']) {
   flex-shrink: 0;
   margin-left: 8px;
+}
+
+.plyr-player-wrap--client :deep(.plyr__controls) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 45%));
+}
+
+.plyr-player-wrap--client :deep(.plyr__control--overlaid) {
+  background: transparent;
+  box-shadow: none;
+}
+
+.plyr-player-wrap--client :deep(.plyr__control--overlaid svg) {
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 35%));
 }
 </style>

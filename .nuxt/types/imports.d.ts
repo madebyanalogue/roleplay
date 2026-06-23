@@ -39,6 +39,7 @@ declare global {
   const inject: typeof import('../../node_modules/vue').inject
   const injectHead: typeof import('../../node_modules/nuxt/dist/app/composables/head').injectHead
   const injectPageLoading: typeof import('../../composables/usePageLoading').injectPageLoading
+  const isHomepagePath: typeof import('../../composables/useHomepagePreloader').isHomepagePath
   const isNuxtError: typeof import('../../node_modules/nuxt/dist/app/composables/error').isNuxtError
   const isPrerendered: typeof import('../../node_modules/nuxt/dist/app/composables/payload').isPrerendered
   const isProxy: typeof import('../../node_modules/vue').isProxy
@@ -50,6 +51,7 @@ declare global {
   const isVue3: typeof import('../../node_modules/nuxt/dist/app/compat/vue-demi').isVue3
   const loadGsapScrollTrigger: typeof import('../../composables/useGsapScrollTrigger').loadGsapScrollTrigger
   const loadPayload: typeof import('../../node_modules/nuxt/dist/app/composables/payload').loadPayload
+  const markHomepagePreloaderDone: typeof import('../../composables/useHomepagePreloader').markHomepagePreloaderDone
   const markRaw: typeof import('../../node_modules/vue').markRaw
   const navigateTo: typeof import('../../node_modules/nuxt/dist/app/composables/router').navigateTo
   const nextTick: typeof import('../../node_modules/vue').nextTick
@@ -96,6 +98,7 @@ declare global {
   const shallowReactive: typeof import('../../node_modules/vue').shallowReactive
   const shallowReadonly: typeof import('../../node_modules/vue').shallowReadonly
   const shallowRef: typeof import('../../node_modules/vue').shallowRef
+  const shouldShowHomepagePreloader: typeof import('../../composables/useHomepagePreloader').shouldShowHomepagePreloader
   const showError: typeof import('../../node_modules/nuxt/dist/app/composables/error').showError
   const toRaw: typeof import('../../node_modules/vue').toRaw
   const toRef: typeof import('../../node_modules/vue').toRef
@@ -116,6 +119,7 @@ declare global {
   const useFetch: typeof import('../../node_modules/nuxt/dist/app/composables/fetch').useFetch
   const useHead: typeof import('../../node_modules/nuxt/dist/app/composables/head').useHead
   const useHeadSafe: typeof import('../../node_modules/nuxt/dist/app/composables/head').useHeadSafe
+  const useHomepagePreloader: typeof import('../../composables/useHomepagePreloader').useHomepagePreloader
   const useHydration: typeof import('../../node_modules/nuxt/dist/app/composables/hydrate').useHydration
   const useId: typeof import('../../node_modules/vue').useId
   const useImage: typeof import('../../node_modules/@nuxt/image/dist/runtime/composables').useImage
@@ -255,6 +259,7 @@ declare module 'vue' {
     readonly inject: UnwrapRef<typeof import('../../node_modules/vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['injectHead']>
     readonly injectPageLoading: UnwrapRef<typeof import('../../composables/usePageLoading')['injectPageLoading']>
+    readonly isHomepagePath: UnwrapRef<typeof import('../../composables/useHomepagePreloader')['isHomepagePath']>
     readonly isNuxtError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['isNuxtError']>
     readonly isPrerendered: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/payload')['isPrerendered']>
     readonly isProxy: UnwrapRef<typeof import('../../node_modules/vue')['isProxy']>
@@ -266,6 +271,7 @@ declare module 'vue' {
     readonly isVue3: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/compat/vue-demi')['isVue3']>
     readonly loadGsapScrollTrigger: UnwrapRef<typeof import('../../composables/useGsapScrollTrigger')['loadGsapScrollTrigger']>
     readonly loadPayload: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/payload')['loadPayload']>
+    readonly markHomepagePreloaderDone: UnwrapRef<typeof import('../../composables/useHomepagePreloader')['markHomepagePreloaderDone']>
     readonly markRaw: UnwrapRef<typeof import('../../node_modules/vue')['markRaw']>
     readonly navigateTo: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['navigateTo']>
     readonly nextTick: UnwrapRef<typeof import('../../node_modules/vue')['nextTick']>
@@ -312,6 +318,7 @@ declare module 'vue' {
     readonly shallowReactive: UnwrapRef<typeof import('../../node_modules/vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('../../node_modules/vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('../../node_modules/vue')['shallowRef']>
+    readonly shouldShowHomepagePreloader: UnwrapRef<typeof import('../../composables/useHomepagePreloader')['shouldShowHomepagePreloader']>
     readonly showError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['showError']>
     readonly toRaw: UnwrapRef<typeof import('../../node_modules/vue')['toRaw']>
     readonly toRef: UnwrapRef<typeof import('../../node_modules/vue')['toRef']>
@@ -332,6 +339,7 @@ declare module 'vue' {
     readonly useFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/fetch')['useFetch']>
     readonly useHead: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['useHeadSafe']>
+    readonly useHomepagePreloader: UnwrapRef<typeof import('../../composables/useHomepagePreloader')['useHomepagePreloader']>
     readonly useHydration: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/hydrate')['useHydration']>
     readonly useId: UnwrapRef<typeof import('../../node_modules/vue')['useId']>
     readonly useImage: UnwrapRef<typeof import('../../node_modules/@nuxt/image/dist/runtime/composables')['useImage']>

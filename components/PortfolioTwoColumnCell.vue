@@ -4,10 +4,11 @@
     :images="images"
     :timing="timing || 1000"
     :alt="alt"
+    :click-zoom="clickZoom"
   />
   <div
     v-else-if="columnType === 'image' && image?.asset"
-    data-click-zoom
+    v-bind="clickZoom ? { 'data-click-zoom': '' } : {}"
     class="portfolio-image-container"
     :style="getImageAspectRatio(image.asset)"
   >
@@ -84,6 +85,10 @@ const props = defineProps({
   alt: {
     type: String,
     default: '',
+  },
+  clickZoom: {
+    type: Boolean,
+    default: true,
   },
   getImageAspectRatio: {
     type: Function,

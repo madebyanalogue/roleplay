@@ -3,8 +3,8 @@
   --unit-mobile: calc(1px / 1.5);
   --unit-tablet: calc(1px / 1.2);
   --unit-desktop: calc(100 / calc(var(--design-screen-width)) * 1vw);
-  --logo-height: 18px;
-  --header-height: 49px;
+  --logo-height: 22px;
+  --header-height: 50px;
   --gutter: 20px;
 }
 

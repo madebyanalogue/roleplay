@@ -98,8 +98,16 @@ export default defineNuxtConfig({
   },
   vite: {
     optimizeDeps: {
-      exclude: ['@sanity/visual-editing', '@sanity/ui', 'react-compiler-runtime', 'react', 'react-dom'],
+      exclude: [
+        '@sanity/visual-editing',
+        '@sanity/ui',
+        'react-compiler-runtime',
+        'react',
+        'react-dom',
+        '@lottiefiles/dotlottie-web',
+      ],
     },
+    assetsInclude: ['**/*.wasm'],
     ssr: {
       noExternal: [],
       external: ['@sanity/visual-editing'],

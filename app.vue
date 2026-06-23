@@ -267,6 +267,15 @@ body.preloader-ready #app {
   transition: opacity 0.2s ease-in;
 }
 
+body.homepage-intro-pending .header {
+  transform: translateY(-100%);
+}
+
+body.homepage-intro-pending .hero-carousel__desktop .hero-carousel__column {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
 /* Page wrapper to ensure stable DOM structure during transitions */
 
 /* Page transitions */

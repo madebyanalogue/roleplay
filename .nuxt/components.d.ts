@@ -17,6 +17,7 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 export const Footer: typeof import("../components/Footer.vue").default
 export const Header: typeof import("../components/Header.vue").default
 export const Logo: typeof import("../components/Logo.vue").default
+export const LottieAnimation: typeof import("../components/LottieAnimation.vue").default
 export const PageSectionAutoscrollGallery: typeof import("../components/PageSectionAutoscrollGallery.vue").default
 export const PageSectionCards: typeof import("../components/PageSectionCards.vue").default
 export const PageSectionClients: typeof import("../components/PageSectionClients.vue").default
@@ -74,6 +75,7 @@ export const NuxtIsland: typeof import("../node_modules/nuxt/dist/app/components
 export const LazyFooter: LazyComponent<typeof import("../components/Footer.vue").default>
 export const LazyHeader: LazyComponent<typeof import("../components/Header.vue").default>
 export const LazyLogo: LazyComponent<typeof import("../components/Logo.vue").default>
+export const LazyLottieAnimation: LazyComponent<typeof import("../components/LottieAnimation.vue").default>
 export const LazyPageSectionAutoscrollGallery: LazyComponent<typeof import("../components/PageSectionAutoscrollGallery.vue").default>
 export const LazyPageSectionCards: LazyComponent<typeof import("../components/PageSectionCards.vue").default>
 export const LazyPageSectionClients: LazyComponent<typeof import("../components/PageSectionClients.vue").default>

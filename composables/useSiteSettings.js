@@ -81,6 +81,9 @@ export const useSiteSettings = () => {
           }
         }
       },
+      singlePortfolioImageSettings {
+        disableClickZoom,
+      },
       navigationContact {
         buttonTitle,
         buttonPage-> {
@@ -104,6 +107,7 @@ export const useSiteSettings = () => {
           }
         }
       },
+      footerLottieAnimation,
       footerColumns[] {
         _key,
         content
@@ -205,7 +209,15 @@ export const useSiteSettings = () => {
       backLink,
     }
   })
+
+  const singlePortfolioImageSettings = computed(() => ({
+    disableClickZoom:
+      settings.value?.singlePortfolioImageSettings?.disableClickZoom === true,
+  }))
   const navigationContact = computed(() => settings.value?.navigationContact || null)
+  const footerLottieAnimation = computed(
+    () => settings.value?.footerLottieAnimation !== false,
+  )
   const footerColumns = computed(() => settings.value?.footerColumns || [])
   const footerCallToAction = computed(() => settings.value?.footerCallToAction || [])
   const headerType = computed(() => settings.value?.headerType || 'responsive')
@@ -232,7 +244,9 @@ export const useSiteSettings = () => {
     portfolioBasePath,
     portfolioProjectPath,
     singlePortfolioNextProjectSettings,
+    singlePortfolioImageSettings,
     navigationContact,
+    footerLottieAnimation,
     footerColumns,
     footerCallToAction,
     headerType,
