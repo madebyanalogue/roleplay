@@ -100,11 +100,8 @@ const defaultControls = [
 ]
 
 function getControls() {
-  if (props.variant === 'contact') {
-    return ['rewind', 'fullscreen']
-  }
-  if (props.variant === 'client') {
-    return ['play-large', 'rewind', 'fullscreen']
+  if (props.variant === 'contact' || props.variant === 'client') {
+    return ['play', 'progress']
   }
   return defaultControls
 }
@@ -254,15 +251,15 @@ onBeforeUnmount(() => {
 }
 
 .plyr-player-wrap--contact :deep(.plyr__control--overlaid),
-.plyr-player-wrap--contact :deep([data-plyr='play']),
 .plyr-player-wrap--contact :deep(.plyr__time),
 .plyr-player-wrap--contact :deep(.plyr__volume),
 .plyr-player-wrap--contact :deep(.plyr__menu),
-.plyr-player-wrap--client :deep([data-plyr='play']),
+.plyr-player-wrap--client :deep(.plyr__control--overlaid),
 .plyr-player-wrap--client :deep([data-plyr='mute']),
 .plyr-player-wrap--client :deep(.plyr__time),
 .plyr-player-wrap--client :deep(.plyr__volume),
-.plyr-player-wrap--client :deep(.plyr__menu) {
+.plyr-player-wrap--client :deep(.plyr__menu),
+.plyr-player-wrap--client :deep([data-plyr='fullscreen']) {
   display: none !important;
 }
 
@@ -290,19 +287,14 @@ onBeforeUnmount(() => {
 
 .plyr-player-wrap--contact :deep(.plyr__progress__container),
 .plyr-player-wrap--client :deep(.plyr__progress__container) {
-  display: none !important;
+  flex: 1;
+  margin: 0;
 }
 
-.plyr-player-wrap--contact :deep([data-plyr='rewind']),
-.plyr-player-wrap--client :deep([data-plyr='rewind']) {
+.plyr-player-wrap--contact :deep([data-plyr='play']),
+.plyr-player-wrap--client :deep([data-plyr='play']) {
   flex-shrink: 0;
-  margin-left: auto;
-}
-
-.plyr-player-wrap--contact :deep([data-plyr='fullscreen']),
-.plyr-player-wrap--client :deep([data-plyr='fullscreen']) {
-  flex-shrink: 0;
-  margin-left: 8px;
+  margin-right: 8px;
 }
 
 .plyr-player-wrap--client :deep(.plyr__controls) {
@@ -312,14 +304,5 @@ onBeforeUnmount(() => {
   bottom: 0;
   padding: 10px;
   background: linear-gradient(transparent, rgb(0 0 0 / 45%));
-}
-
-.plyr-player-wrap--client :deep(.plyr__control--overlaid) {
-  background: transparent;
-  box-shadow: none;
-}
-
-.plyr-player-wrap--client :deep(.plyr__control--overlaid svg) {
-  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 35%));
 }
 </style>

@@ -1,5 +1,6 @@
 <template>
   <section class="hero-carousel">
+    <div class="sticky-corner-two-columns" />
     <div v-if="hasDesktop" class="hero-carousel__desktop">
       <div class="hero-carousel__column rounded-medium">
         <div class="hero-carousel__stack">
@@ -359,7 +360,6 @@ onBeforeUnmount(() => {
   opacity: 0;
   z-index: 1;
   pointer-events: none;
-  transition: opacity 450ms ease;
 }
 
 .hero-carousel__slide--active {

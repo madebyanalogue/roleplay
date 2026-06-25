@@ -84,6 +84,9 @@ export const useSiteSettings = () => {
       singlePortfolioImageSettings {
         disableClickZoom,
       },
+      singlePortfolioClientVideoSettings {
+        disableClientVideos,
+      },
       navigationContact {
         buttonTitle,
         buttonPage-> {
@@ -214,6 +217,11 @@ export const useSiteSettings = () => {
     disableClickZoom:
       settings.value?.singlePortfolioImageSettings?.disableClickZoom === true,
   }))
+
+  const singlePortfolioClientVideoSettings = computed(() => ({
+    disableClientVideos:
+      settings.value?.singlePortfolioClientVideoSettings?.disableClientVideos === true,
+  }))
   const navigationContact = computed(() => settings.value?.navigationContact || null)
   const footerLottieAnimation = computed(
     () => settings.value?.footerLottieAnimation !== false,
@@ -245,6 +253,7 @@ export const useSiteSettings = () => {
     portfolioProjectPath,
     singlePortfolioNextProjectSettings,
     singlePortfolioImageSettings,
+    singlePortfolioClientVideoSettings,
     navigationContact,
     footerLottieAnimation,
     footerColumns,

@@ -130,7 +130,8 @@ function gridStyleForIndex(index, total) {
   overflow: hidden;
   position: relative;
 }
-.portfolio-item-media > * {
+.portfolio-item-media :deep(img),
+.portfolio-item-media :deep(video) {
   width: 100%;
   position: absolute;
   height: 100%;
@@ -248,9 +249,6 @@ function gridStyleForIndex(index, total) {
     grid-column: 1 / -1 !important;
   }
 
-  .portfolio-item-image.is-desktop-archive-img {
-    display: none;
-  }
 }
 
 @media (min-width: 1000px) {
@@ -262,30 +260,12 @@ function gridStyleForIndex(index, total) {
   }
 
 
-  .portfolio-item-media img,
-  .portfolio-item-media video {
+  .portfolio-item-media :deep(img),
+  .portfolio-item-media :deep(video) {
     height: 100%;
     position: absolute;
     aspect-ratio: unset;
   }
-
-
-  .portfolio-item-image.is-mobile-archive-img {
-    display: none;
-  }
-}
-
-.portfolio-item-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    position: absolute;
-  }
-
-.portfolio-item-media :deep(video) {
-  border: 0;
-  pointer-events: none;
 }
 
 .portfolio-item-title {

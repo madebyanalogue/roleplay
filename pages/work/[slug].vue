@@ -520,7 +520,12 @@ import { injectPageLoading } from '~/composables/usePageLoading'
 
 const route = useRoute()
 const { setLoading } = injectPageLoading()
-const { singlePortfolioNextProjectSettings, singlePortfolioImageSettings, portfolioProjectPath } = useSiteSettings()
+const {
+  singlePortfolioNextProjectSettings,
+  singlePortfolioImageSettings,
+  singlePortfolioClientVideoSettings,
+  portfolioProjectPath,
+} = useSiteSettings()
 
 const portfolioImageClickZoom = computed(
   () => !singlePortfolioImageSettings.value.disableClickZoom,
@@ -1096,6 +1101,7 @@ function onAccordionToggle(id) {
 }
 
 const hasClientVideo = computed(() => {
+  if (singlePortfolioClientVideoSettings.value.disableClientVideos) return false
   if (!project.value) return false
   if (clientVimeoId.value) return true
   return !!project.value.clientVideo?.asset?.url
@@ -1879,53 +1885,6 @@ onUnmounted(() => {
       #000 calc(var(--rounded-medium) - 0.5px)
     );
   }
-  .sticky-corner-two-columns {
-    width:100%;
-    height:1px;
-    position: sticky;
-    top: calc(var(--header-height) + calc(var(--gutter) * 2));
-    left: 0;
-    z-index: 1;
-  }
-  .sticky-corner-two-columns:after,
-  .sticky-corner-two-columns:before {
-    content: '';
-    display: block;
-    width: var(--rounded-medium);
-    height: var(--rounded-medium);
-    background: var(--background-color);
-    position: absolute;
-    z-index: 1;
-    top:0;
-  }
-  .sticky-corner-two-columns:after {
-    left:calc(50% - var(--gutter) - 5px);
-  -webkit-mask-image: radial-gradient(
-    circle at 0 100%,
-    transparent calc(var(--rounded-medium) - 0.5px),
-    #000 calc(var(--rounded-medium) - 0.5px)
-  );
-  mask-image: radial-gradient(
-    circle at 0 100%,
-    transparent calc(var(--rounded-medium) - 0.5px),
-    #000 calc(var(--rounded-medium) - 0.5px)
-  );
-    
-  }
-  .sticky-corner-two-columns:before {
-    right:calc(50% - var(--gutter) - 5px);
-    -webkit-mask-image: radial-gradient(
-      circle at 100% 100%,
-      transparent calc(var(--rounded-medium) - 0.5px),
-      #000 calc(var(--rounded-medium) - 0.5px)
-    );
-    mask-image: radial-gradient(
-      circle at 100% 100%,
-      transparent calc(var(--rounded-medium) - 0.5px),
-      #000 calc(var(--rounded-medium) - 0.5px)
-    );
-  }
-
   .portfolio-column-media--desktop-aspect {
     position: relative;
     width: 100%;

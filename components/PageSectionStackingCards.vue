@@ -9,6 +9,7 @@
     v-if="hasCards"
     ref="sectionRef"
     class="sticky-cards stacking-cards-section__desktop"
+    data-stacking-cards-scroll
   >
     <div
       v-if="cardsSectionTitle"
@@ -16,16 +17,19 @@
       aria-hidden="true"
     />
 
-    <div
+     <!-- <div
       v-if="cardsSectionTitle"
       class="sticky-cards__heading-anchor"
     >
+    <h2 class="sticky-cards__heading subtitle subtitle--circle purple-dot">
+        {{ cardsSectionTitle }}
+      </h2>
+    </div> -->
+
+    <div class="sticky-cards__slides">
       <h2 class="sticky-cards__heading subtitle subtitle--circle purple-dot">
         {{ cardsSectionTitle }}
       </h2>
-    </div>
-
-    <div class="sticky-cards__slides">
       <article
         v-for="(card, index) in section.cards"
         :key="card._key || `card-${index}`"
@@ -90,6 +94,8 @@
 <script setup>
 const DESKTOP_MQ = '(min-width: 1000px)'
 const TRANSITION_SETTLE_MS = 650
+const CARDS_HEADING_SPACE_PX = 0
+const PIN_RELEASE_EARLY_PX = 20
 
 const props = defineProps({
   section: {
@@ -151,8 +157,58 @@ function getGutterPx() {
   return Number.isFinite(value) ? value : 20
 }
 
-function getPinStart() {
-  return `top top+=${getHeaderHeightPx() + getGutterPx()}`
+function initHeadingScrollTransform(section, gsap, ScrollTrigger) {
+  const heading = section.querySelector('.sticky-cards__heading')
+  if (!heading) return null
+
+  const { lenis } = useLenis()
+  let removeLenisScrollListener = () => {}
+
+  gsap.set(heading, { y: 0 })
+
+  const syncHeadingY = () => {
+    const rect = section.getBoundingClientRect()
+    const viewportBottom = window.innerHeight
+    const gutter = getGutterPx()
+    const triggerLine = viewportBottom - gutter
+
+    if (rect.bottom > triggerLine) {
+      gsap.set(heading, { y: 0 })
+      return
+    }
+
+    const travel = Math.min(
+      Math.max(0, triggerLine - rect.bottom),
+      section.offsetHeight,
+    )
+    gsap.set(heading, { y: -travel })
+  }
+
+  const trigger = ScrollTrigger.create({
+    scroller: document.documentElement,
+    trigger: section,
+    start: () => `bottom bottom-=${getGutterPx()}`,
+    end: 'top bottom',
+    invalidateOnRefresh: true,
+    onUpdate: syncHeadingY,
+    onRefresh: syncHeadingY,
+    onLeaveBack: () => gsap.set(heading, { y: 0 }),
+  })
+
+  if (lenis) {
+    const onLenisScroll = () => syncHeadingY()
+    lenis.on('scroll', onLenisScroll)
+    removeLenisScrollListener = () => lenis.off('scroll', onLenisScroll)
+  }
+
+  syncHeadingY()
+
+  return {
+    kill() {
+      trigger.kill()
+      removeLenisScrollListener()
+    },
+  }
 }
 
 function getSlideScrollDistance() {
@@ -160,6 +216,14 @@ function getSlideScrollDistance() {
     window.innerHeight - getHeaderHeightPx() - getGutterPx() * 2,
     1,
   )
+}
+
+function getSlidePinScrollDistance() {
+  return Math.max(getSlideScrollDistance() - PIN_RELEASE_EARLY_PX, 1)
+}
+
+function getPinStart() {
+  return `top top+=${getHeaderHeightPx() + getGutterPx()}`
 }
 
 function getCardRotationZ(index) {
@@ -170,17 +234,19 @@ function syncHeadingSpace(section, totalSlides = 0) {
   const heading = section.querySelector('.sticky-cards__heading')
   if (!heading) {
     section.style.setProperty('--cards-heading-space', '0px')
+    section.style.setProperty('--stacking-heading-height', '100px')
     section.style.removeProperty('--heading-anchor-height')
     return
   }
 
-  const space = heading.offsetHeight
+  const space = CARDS_HEADING_SPACE_PX
   const stickyTop = getHeaderHeightPx() + getGutterPx()
   const slideCount = totalSlides || section.querySelectorAll('.sticky-cards__slide').length
   const anchorHeight =
     Math.max(slideCount - 1, 0) * getSlideScrollDistance() + stickyTop + space
 
   section.style.setProperty('--cards-heading-space', `${space}px`)
+  section.style.setProperty('--stacking-heading-height', '100px')
   section.style.setProperty('--heading-anchor-height', `${anchorHeight}px`)
 }
 
@@ -283,7 +349,7 @@ async function initStickyCards() {
           pin: wrapper,
           trigger: slide,
           start: getPinStart,
-          end: () => `+=${getSlideScrollDistance()}`,
+          end: () => `+=${getSlidePinScrollDistance()}`,
           scrub: true,
           anticipatePin: 0,
           invalidateOnRefresh: true,
@@ -313,6 +379,15 @@ async function initStickyCards() {
         scrollTriggers.push(pinTrigger, fadeTrigger)
       })
 
+      const headingScrollTrigger = initHeadingScrollTransform(
+        section,
+        gsap,
+        ScrollTrigger,
+      )
+      if (headingScrollTrigger) {
+        scrollTriggers.push(headingScrollTrigger)
+      }
+
       initAttempts = 0
       scheduleScrollTriggerRefresh(hasFeaturedProjectsSection() ? 500 : 120)
     }
@@ -323,6 +398,10 @@ async function initStickyCards() {
       cancelled = true
       window.removeEventListener('resize', onResize)
       scrollTriggers.forEach((trigger) => trigger.kill())
+      const heading = sectionRef.value?.querySelector('.sticky-cards__heading')
+      if (heading) {
+        gsap.set(heading, { clearProps: 'transform' })
+      }
       const cards = sectionRef.value?.querySelectorAll('.sticky-cards__card')
       if (cards?.length) {
         gsap.set(cards, { clearProps: 'all' })
@@ -495,7 +574,7 @@ onUnmounted(() => {
 }
 
 .sticky-cards__heading-spacer {
-  height: var(--cards-heading-space, 0px);
+  height: var(--cards-heading-space, 140px);
   pointer-events: none;
 }
 
@@ -504,7 +583,7 @@ onUnmounted(() => {
   top: calc(var(--header-height) + var(--gutter));
   left: 0;
   right: 0;
-  height: calc(100vh - var(--header-height) - calc(var(--gutter) * 4));
+  height: calc(100vh - var(--header-height) - calc(var(--gutter) * 2));
   z-index: 30;
   pointer-events: none;
 }
@@ -514,12 +593,12 @@ onUnmounted(() => {
   pointer-events: none;
   width: 100%;
   margin: 0;
-  padding: calc(var(--gutter) * 1.5) var(--gutter) var(--gutter);
+  padding: calc(var(--gutter) * 2) var(--gutter) calc(var(--gutter) / 2);
+  will-change: transform;
 }
 
 .sticky-cards__slides {
   position: relative;
-  margin-top: calc(var(--cards-heading-space, 0px) * -1);
 }
 
 .sticky-cards__slide {
@@ -532,11 +611,12 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   perspective: 250vw;
+  margin-top: -70px;
 }
 
 .sticky-cards__card {
   position: absolute;
-  top: var(--cards-heading-space, 0px);
+  top: 100px;
   right: var(--gutter);
   bottom: var(--gutter);
   left: var(--gutter);
@@ -581,13 +661,12 @@ onUnmounted(() => {
 
 .sticky-cards__media {
   flex: 0 0 auto;
-  align-self: stretch;
   aspect-ratio: 4 / 3;
   width: auto;
-  height: 100%;
   border-radius: calc(var(--unit) * 60) calc(var(--unit) * 20)
     calc(var(--unit) * 20) calc(var(--unit) * 60);
   overflow: hidden;
+  width: 100%;
 }
 
 .sticky-cards__title {
@@ -610,7 +689,19 @@ onUnmounted(() => {
 }
 @media (min-width: 700px) {
   .sticky-cards__media {
-max-width: 85%;
+max-width: 75%;
   }
 }
+
+
+
+
+@media (min-width: 1000px) {
+  .sticky-cards__heading {
+    position: sticky;
+    top: calc(var(--header-height) + calc(var(--gutter) * 1));
+    z-index: 2;
+  }
+}
+
 </style>

@@ -242,6 +242,87 @@ a {
   display: block;
 }
 
+
+.sticky-corner-two-columns {
+  width:100%;
+  height:1px;
+  position: sticky;
+  top: calc(var(--header-height) + calc(var(--gutter) * 2));
+  left: 0;
+  z-index: 3;
+}
+.sticky-corner-two-columns:after,
+.sticky-corner-two-columns:before {
+  content: '';
+  display: block;
+  width: var(--rounded-medium);
+  height: var(--rounded-medium);
+  background: var(--background-color);
+  position: absolute;
+  z-index: 1;
+  top:0;
+}
+.sticky-corner-two-columns:after {
+  left:calc(50% - var(--gutter) - 5px);
+-webkit-mask-image: radial-gradient(
+  circle at 0 100%,
+  transparent calc(var(--rounded-medium) - 0.5px),
+  #000 calc(var(--rounded-medium) - 0.5px)
+);
+mask-image: radial-gradient(
+  circle at 0 100%,
+  transparent calc(var(--rounded-medium) - 0.5px),
+  #000 calc(var(--rounded-medium) - 0.5px)
+);
+  
+}
+.sticky-corner-two-columns:before {
+  right:calc(50% - var(--gutter) - 5px);
+  -webkit-mask-image: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+}
+
+@media (min-width: 1000px) {
+.featured-project-corners div {
+width: var(--rounded-medium);
+height: var(--rounded-medium);
+background: var(--background-color);
+border-top:1px solid var(--background-color);
+}
+.featured-project-corners div:first-child {
+  -webkit-mask-image: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+}
+.featured-project-corners div:last-child {
+  -webkit-mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--rounded-medium) - 0.5px),
+    #000 calc(var(--rounded-medium) - 0.5px)
+  );
+}
+}
+
 #app {
   min-height: 100vh;
   max-width: var(--max-width);

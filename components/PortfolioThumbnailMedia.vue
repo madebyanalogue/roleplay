@@ -136,7 +136,9 @@ const showMobileImage = computed(
 </script>
 
 <style scoped>
-.portfolio-thumbnail-media {
+.portfolio-thumbnail-media,
+:deep(img),
+:deep(video) {
   display: block;
   width: 100%;
   height: 100%;
@@ -145,5 +147,17 @@ const showMobileImage = computed(
   position: absolute;
   border: 0;
   pointer-events: none;
+}
+
+@media (max-width: 999px) {
+  .is-desktop-archive-img {
+    display: none;
+  }
+}
+
+@media (min-width: 1000px) {
+  .is-mobile-archive-img {
+    display: none;
+  }
 }
 </style>

@@ -391,6 +391,9 @@ onUnmounted(() => {
   gap: 10px;
   padding: 12px 16px;
 }
+.header-link-text {
+  font-weight: 600;
+}
 
 
 @media (min-width: 800px) {

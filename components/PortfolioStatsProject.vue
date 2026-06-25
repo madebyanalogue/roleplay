@@ -35,7 +35,7 @@
           </td>
           <td
             class="portfolio-stats__label fluid-type"
-            style="--desktop: 28;--mobile: 18;"
+            style="--desktop: 24; --mobile: 18"
           >
             {{ row.label }}
           </td>
