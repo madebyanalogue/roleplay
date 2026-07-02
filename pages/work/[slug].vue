@@ -33,7 +33,6 @@
                 <div
                   v-if="project.role?.length || project.play?.length || project.results?.length || project.resultsStats?.length"
                   class="portfolio-accordions"
-                  :class="{ 'portfolio-accordions--no-transition': disableAccordionTransition }"
                 >
                   <div
                     v-if="project.role?.length"
@@ -44,8 +43,8 @@
                       id="accordion-heading-role"
                       type="button"
                       class="portfolio-accordion-summary"
-                      :tabindex="isMobileAccordionViewport ? -1 : 0"
-                      :aria-expanded="accordionAriaExpanded('role')"
+                      tabindex="0"
+                      :aria-expanded="accordionSectionOpen('role')"
                       aria-controls="accordion-panel-role"
                       @click="onAccordionToggle('role')"
                     >
@@ -78,8 +77,8 @@
                       id="accordion-heading-play"
                       type="button"
                       class="portfolio-accordion-summary"
-                      :tabindex="isMobileAccordionViewport ? -1 : 0"
-                      :aria-expanded="accordionAriaExpanded('play')"
+                      tabindex="0"
+                      :aria-expanded="accordionSectionOpen('play')"
                       aria-controls="accordion-panel-play"
                       @click="onAccordionToggle('play')"
                     >
@@ -112,8 +111,8 @@
                       id="accordion-heading-results"
                       type="button"
                       class="portfolio-accordion-summary"
-                      :tabindex="isMobileAccordionViewport ? -1 : 0"
-                      :aria-expanded="accordionAriaExpanded('results')"
+                      tabindex="0"
+                      :aria-expanded="accordionSectionOpen('results')"
                       aria-controls="accordion-panel-results"
                       @click="onAccordionToggle('results')"
                     >
@@ -1035,9 +1034,7 @@ watch(slug, () => {
   resetClientVideoState()
 })
 
-/** Sidebar accordions: one open on desktop with height animation; mobile = all open, no toggle (CSS). */
-const ACCORDION_BREAKPOINT_MAX = 999
-
+/** Sidebar accordions: one section open at a time with height animation. */
 function accordionHasBlocks(arr) {
   return Array.isArray(arr) && arr.length > 0
 }
@@ -1069,27 +1066,11 @@ watch(
   },
 )
 
-const isMobileAccordionViewport = ref(false)
-const disableAccordionTransition = ref(false)
-
-function syncAccordionViewport() {
-  if (!import.meta.client) return
-  isMobileAccordionViewport.value = window.matchMedia(
-    `(max-width: ${ACCORDION_BREAKPOINT_MAX}px)`,
-  ).matches
-}
-
 function accordionSectionOpen(id) {
   return effectiveAccordionOpenId.value === id
 }
 
-function accordionAriaExpanded(id) {
-  if (isMobileAccordionViewport.value) return true
-  return effectiveAccordionOpenId.value === id
-}
-
 function onAccordionToggle(id) {
-  if (isMobileAccordionViewport.value) return
   const first = defaultAccordionSectionId(project.value ?? null)
   const openId = effectiveAccordionOpenId.value
   if (openId === id) {
@@ -1202,31 +1183,11 @@ function columnMediaUsesDesktopAspect(block) {
   return parseColumnAspectRatioString(block?.columnAspectRatio) != null
 }
 
-function onAccordionMqChange() {
-  const wasMobile = isMobileAccordionViewport.value
-  syncAccordionViewport()
-  if (wasMobile && !isMobileAccordionViewport.value) {
-    disableAccordionTransition.value = true
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        disableAccordionTransition.value = false
-      })
-    })
-  }
-}
-
-let removeAccordionMqListener = () => {}
-
 onMounted(() => {
   if (import.meta.client) {
     prefersReducedMotion.value = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     ).matches
-    syncAccordionViewport()
-    const mqAccordion = window.matchMedia(`(max-width: ${ACCORDION_BREAKPOINT_MAX}px)`)
-    mqAccordion.addEventListener('change', onAccordionMqChange)
-    removeAccordionMqListener = () =>
-      mqAccordion.removeEventListener('change', onAccordionMqChange)
 
     document.addEventListener('pointerdown', onVideoPopoverDismiss, true)
     document.addEventListener('keydown', onEscClose)
@@ -1243,7 +1204,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearClientVideoTimers()
-  removeAccordionMqListener()
   if (import.meta.client) {
     document.removeEventListener('pointerdown', onVideoPopoverDismiss, true)
     document.removeEventListener('keydown', onEscClose)
@@ -1345,17 +1305,13 @@ onUnmounted(() => {
 .portfolio-accordion {
   border: 0;
   display: grid;
+  margin-top: calc(var(--gutter) / 2);
+  opacity: 0.5;
+  transition: opacity 0.38s cubic-bezier(0.33, 1, 0.68, 1);
 }
-@media all and (min-width: 1000px) {
-  .portfolio-accordion {
-    margin-top: calc(var(--gutter) / 2);
-    opacity: 0.5;
-    transition: opacity 0.38s cubic-bezier(0.33, 1, 0.68, 1);
-  }
 
-  .portfolio-accordion--open {
-    opacity: 1;
-  }
+.portfolio-accordion--open {
+  opacity: 1;
 }
 
 .portfolio-accordion-summary {
@@ -1406,36 +1362,6 @@ onUnmounted(() => {
   opacity: 1;
   transition: opacity 0.65s ease 0.38s;
 }
-
-.portfolio-accordions--no-transition .portfolio-accordion-panel-outer,
-.portfolio-accordions--no-transition .portfolio-accordion-panel,
-.portfolio-accordions--no-transition .portfolio-accordion-panel-outer--open .portfolio-accordion-panel {
-  transition: none !important;
-}
-
-@media (max-width: 999px) {
-  .portfolio-accordion-summary {
-    cursor: default;
-    pointer-events: none;
-  }
-
-  .portfolio-accordion-panel-outer {
-    grid-template-rows: 1fr !important;
-    transition: none !important;
-  }
-
-  .portfolio-accordion-panel-outer--open {
-    grid-template-rows: 1fr !important;
-  }
-
-  .portfolio-accordion-panel {
-    opacity: 1 !important;
-    transition: none !important;
-  }
-}
-
-
-
 
 .portfolio-video-launch {
   position: relative;

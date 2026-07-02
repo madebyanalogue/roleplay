@@ -149,7 +149,7 @@ const { contactLinkUsesNative, isExternalHttp, getContactLinkUrl } = useContactL
     align-items: flex-end;
   }
   .contact-section__column {
-    gap: var(--gutter);
+    gap: calc(var(--gutter) * 10);
   }
 }
 

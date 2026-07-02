@@ -88,6 +88,9 @@ const scrollToTop = () => {
 .footer-logo {
 
 }
+.footer-lottie {
+  transform: translateY(-15%) scale(1.03);
+}
 
 .footer-cta :deep(.sanity-blocks p) {
   margin-bottom: 0;

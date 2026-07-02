@@ -8,9 +8,11 @@
       <div ref="lottieWrapRef" class="preloader-homepage__lottie">
         <LottieAnimation
           ref="lottieRef"
-          path="/lottie/roleplay.lottie"
+          :animation-data="showPreloaderLottie ? footerLottieAnimationData : undefined"
+          :path="showPreloaderLottie ? '' : '/lottie/roleplay.lottie'"
           :loop="false"
           :autoplay="false"
+          class-name="preloader-lottie"
           aria-label="Roleplay"
           @ready="onLottieReady"
           @complete="onLottieComplete"
@@ -35,7 +37,15 @@ const props = defineProps({
 
 const emit = defineEmits(['preloader-complete', 'preloader-ready'])
 
-const { disablePreloader } = useSiteSettings()
+const {
+  disablePreloader,
+  footerLottieAnimation,
+  footerLottieAnimationData,
+} = useSiteSettings()
+
+const showPreloaderLottie = computed(
+  () => footerLottieAnimation.value && footerLottieAnimationData.value,
+)
 
 const active = ref(false)
 const panelRef = ref(null)
@@ -48,6 +58,7 @@ let lottieCompleteResolve = null
 let lottieReadyResolve = null
 
 function onLottieReady() {
+  lottieRef.value?.resize?.()
   lottieReadyResolve?.()
 }
 
@@ -169,7 +180,6 @@ async function initHomepagePreloader() {
   ])
   lottieCompleteResolve = null
 
-  const holdAfterComplete = 0.2
   const wipeDuration = 1
   const lottieParallaxFactor = 1.2
 
@@ -178,8 +188,6 @@ async function initHomepagePreloader() {
       if (props.autoHide) finishPreloader()
     },
   })
-
-  animationTimeline.to({}, { duration: holdAfterComplete })
 
   animationTimeline.add(() => {
     runHomepageIntroAnimations(gsap)
@@ -244,6 +252,7 @@ onUnmounted(() => {
   inset: 0;
   z-index: 99999;
   pointer-events: auto;
+  --max-width: 1400px;
 }
 
 .preloader-homepage__panel {
@@ -257,9 +266,26 @@ onUnmounted(() => {
 }
 
 .preloader-homepage__lottie {
-  width: min(72vw, 420px);
+  /* Match footer: full content width inside site max-width, minus footer-like padding */
+  --preloader-lottie-width: min(calc(100vw - 6.25rem), var(--max-width, 1800px));
+  width: var(--preloader-lottie-width);
+  max-width: 100%;
   will-change: transform;
 }
+
+.preloader-homepage__lottie :deep(.lottie-animation) {
+  width: 100%;
+}
+
+.preloader-homepage__lottie :deep(.lottie-animation svg),
+.preloader-homepage__lottie :deep(.lottie-animation canvas) {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
+}
+
+
+
 
 :is(.wf-design-mode, .w-editor) .preloader-homepage {
   display: none;

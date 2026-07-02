@@ -212,15 +212,51 @@ function initHeadingScrollTransform(section, gsap, ScrollTrigger) {
   }
 }
 
-function getSlideScrollDistance() {
+function getViewportScrollDistance() {
   return Math.max(
     window.innerHeight - getHeaderHeightPx() - getGutterPx() * 2,
     1,
   )
 }
 
-function getSlidePinScrollDistance() {
-  return Math.max(getSlideScrollDistance() - PIN_RELEASE_EARLY_PX, 1)
+function getRequiredSlideHeight(slide) {
+  const wrapper = slide.querySelector('.sticky-cards__wrapper')
+  const card = slide.querySelector('.sticky-cards__card')
+  if (!card) return getViewportScrollDistance()
+
+  const viewportMin = getViewportScrollDistance()
+  const wrapperStyle = wrapper ? getComputedStyle(wrapper) : null
+  const marginTop = wrapperStyle
+    ? Number.parseFloat(wrapperStyle.marginTop) || 0
+    : 0
+  const cardTop = Number.parseFloat(getComputedStyle(card).top) || 0
+  const cardHeight = Math.max(
+    card.scrollHeight,
+    card.getBoundingClientRect().height,
+  )
+  const required = marginTop + cardTop + cardHeight + getGutterPx()
+
+  return Math.max(viewportMin, Math.ceil(required))
+}
+
+function syncSlideHeights(section) {
+  const slides = section.querySelectorAll('.sticky-cards__slide')
+  slides.forEach((slide) => {
+    slide.style.minHeight = `${getRequiredSlideHeight(slide)}px`
+  })
+  slides.forEach((slide) => {
+    slide.style.minHeight = `${getRequiredSlideHeight(slide)}px`
+  })
+}
+
+function getSlideScrollDistance(slide) {
+  const viewportMin = getViewportScrollDistance()
+  if (!slide) return viewportMin
+  return Math.max(viewportMin, slide.offsetHeight || getRequiredSlideHeight(slide))
+}
+
+function getSlidePinScrollDistance(slide) {
+  return Math.max(getSlideScrollDistance(slide) - PIN_RELEASE_EARLY_PX, 1)
 }
 
 function getPinStart() {
@@ -242,9 +278,12 @@ function syncHeadingSpace(section, totalSlides = 0) {
 
   const space = CARDS_HEADING_SPACE_PX
   const stickyTop = getHeaderHeightPx() + getGutterPx()
-  const slideCount = totalSlides || section.querySelectorAll('.sticky-cards__slide').length
-  const anchorHeight =
-    Math.max(slideCount - 1, 0) * getSlideScrollDistance() + stickyTop + space
+  const slides = Array.from(section.querySelectorAll('.sticky-cards__slide'))
+  const slideCount = totalSlides || slides.length
+  const scrollTotal = slides
+    .slice(0, Math.max(slideCount - 1, 0))
+    .reduce((sum, slide) => sum + getSlideScrollDistance(slide), 0)
+  const anchorHeight = scrollTotal + stickyTop + space
 
   section.style.setProperty('--cards-heading-space', `${space}px`)
   section.style.setProperty('--stacking-heading-height', '100px')
@@ -253,8 +292,10 @@ function syncHeadingSpace(section, totalSlides = 0) {
 
 async function waitForMedia(root) {
   const images = root.querySelectorAll('img')
-  await Promise.all(
-    Array.from(images).map(
+  const videos = root.querySelectorAll('video')
+
+  await Promise.all([
+    ...Array.from(images).map(
       (image) =>
         new Promise((resolve) => {
           if (image.complete) {
@@ -266,7 +307,19 @@ async function waitForMedia(root) {
           image.addEventListener('error', resolve, { once: true })
         }),
     ),
-  )
+    ...Array.from(videos).map(
+      (video) =>
+        new Promise((resolve) => {
+          if (video.readyState >= 1) {
+            resolve()
+            return
+          }
+
+          video.addEventListener('loadedmetadata', resolve, { once: true })
+          video.addEventListener('error', resolve, { once: true })
+        }),
+    ),
+  ])
 }
 
 async function initStickyCards() {
@@ -287,6 +340,7 @@ async function initStickyCards() {
     const onResize = () => {
       const section = sectionRef.value
       if (section) {
+        syncSlideHeights(section)
         const totalSlides = section.querySelectorAll('.sticky-cards__slide').length
         syncHeadingSpace(section, totalSlides)
       }
@@ -322,6 +376,7 @@ async function initStickyCards() {
       await new Promise((resolve) => requestAnimationFrame(resolve))
       if (cancelled) return
 
+      syncSlideHeights(section)
       syncHeadingSpace(section, totalSlides)
 
       slideEls.forEach((slide, index) => {
@@ -350,7 +405,7 @@ async function initStickyCards() {
           pin: wrapper,
           trigger: slide,
           start: getPinStart,
-          end: () => `+=${getSlidePinScrollDistance()}`,
+          end: () => `+=${getSlidePinScrollDistance(slide)}`,
           scrub: true,
           anticipatePin: 0,
           invalidateOnRefresh: true,
@@ -372,7 +427,7 @@ async function initStickyCards() {
           }),
           trigger: card,
           start: 'top -80%',
-          end: () => `+=${getSlideScrollDistance() * 0.2}`,
+          end: () => `+=${getSlideScrollDistance(slide) * 0.2}`,
           scrub: true,
           invalidateOnRefresh: true,
         })
@@ -407,6 +462,9 @@ async function initStickyCards() {
       if (cards?.length) {
         gsap.set(cards, { clearProps: 'all' })
       }
+      sectionRef.value?.querySelectorAll('.sticky-cards__slide').forEach((slide) => {
+        slide.style.removeProperty('min-height')
+      })
     }
   })
 }
@@ -490,6 +548,7 @@ function runWhenPreloaderReady(callback) {
 watch(cardsSectionTitle, async () => {
   await nextTick()
   if (sectionRef.value) {
+    syncSlideHeights(sectionRef.value)
     const totalSlides = sectionRef.value.querySelectorAll('.sticky-cards__slide').length
     syncHeadingSpace(sectionRef.value, totalSlides)
   }

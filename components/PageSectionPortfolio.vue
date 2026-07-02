@@ -257,6 +257,8 @@ function gridStyleForIndex(index, total) {
 
   .portfolio-item-media {
     aspect-ratio: var(--portfolio-aspect-ratio);
+    width:100%;
+    max-height:calc(100dvh - 160px);
   }
   .portfolio-item-overlay {
     display: none;

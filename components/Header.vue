@@ -512,6 +512,7 @@ onUnmounted(() => {
   color: inherit;
   padding: 0;
   color: var(--orange);
+  font-weight: bold;
 }
 
 .header-mobile-panel {
@@ -572,7 +573,8 @@ onUnmounted(() => {
 .header-mobile-social-links {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--gutter) * 0.75);
+  gap: calc(var(--gutter) * 1);
+  font-size: 21px;
 }
 
 .header-mobile-social-link {

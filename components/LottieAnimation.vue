@@ -149,17 +149,36 @@ async function loadLottieWebAnimation() {
     autoplay: props.autoplay,
     animationData: props.animationData || undefined,
     path: props.path || undefined,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid meet',
+    },
   })
 
   animation.setSpeed(props.speed)
 
   animation.addEventListener('DOMLoaded', () => {
+    syncLottieWebSize()
     emit('ready', animation)
   })
 
   animation.addEventListener('complete', () => {
     emit('complete', animation)
   })
+}
+
+function syncLottieWebSize() {
+  if (!containerRef.value || !animation || dotLottieMode) return
+
+  const svg = containerRef.value.querySelector('svg')
+  if (svg) {
+    svg.removeAttribute('width')
+    svg.removeAttribute('height')
+    svg.style.width = '100%'
+    svg.style.height = 'auto'
+    svg.style.display = 'block'
+  }
+
+  animation.resize()
 }
 
 async function loadAnimation() {
@@ -218,12 +237,24 @@ function getDuration() {
   return animation.getDuration(true) ?? 0
 }
 
+function resize() {
+  if (!animation) return
+
+  if (dotLottieMode) {
+    animation.resize?.()
+    return
+  }
+
+  syncLottieWebSize()
+}
+
 defineExpose({
   play,
   pause,
   stop,
   goToAndPlay,
   getDuration,
+  resize,
   getAnimation: () => animation,
 })
 

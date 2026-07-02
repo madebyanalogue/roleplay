@@ -8,15 +8,6 @@ export const useSiteSettings = () => {
     headerType,
     mobileBreakpoint,
     disablePreloader,
-    preloaderImages[] {
-      image {
-        asset->
-      },
-      alt,
-      repeatLeftRight
-    },
-    preloaderText,
-    preloaderSvgCode,
       facebookShareImage {
         asset-> {
           _id,
@@ -137,9 +128,6 @@ export const useSiteSettings = () => {
   const seoTitle = computed(() => settings.value?.seoTitle || 'Roleplay')
   const seoDescription = computed(() => settings.value?.seoDescription || '')
   const disablePreloader = computed(() => settings.value?.disablePreloader === true)
-  const preloaderImages = computed(() => settings.value?.preloaderImages || [])
-  const preloaderText = computed(() => settings.value?.preloaderText || [])
-  const preloaderSvgCode = computed(() => settings.value?.preloaderSvgCode || null)
   const facebookShareImage = computed(() => {
     const asset = settings.value?.facebookShareImage?.asset
     if (!asset) return null
@@ -276,9 +264,6 @@ export const useSiteSettings = () => {
     mobileBreakpoint,
     copyright,
     disablePreloader,
-    preloaderImages,
-    preloaderText,
-    preloaderSvgCode,
   }
 }
 

@@ -13,7 +13,7 @@
       <article
         v-for="(card, index) in section.cards || []"
         :key="card._key || index"
-        class="cards-section__item pad-25 rounded-medium"
+        class="cards-section__item pad-25 pad-sm-40 pad-md-40 rounded-medium"
       >
         <div class="cards-section__grid pad-20 pad-md-60 pad-bottom">
 
@@ -43,8 +43,8 @@
           </div>
           
           <div class="cards-section__text">
-            <h3 v-if="card.title" class="cards-section__title fluid-type pad-60 pad-right" style="--desktop: 58; --mobile: 24;">{{ card.title }}</h3>
-            <div class="fluid-type" style="--desktop: 30; --mobile: 16;">
+            <h3 v-if="card.title" class="cards-section__title fluid-type pad-60 pad-right" style="--desktop: 58; --tablet:42;--mobile: 24;">{{ card.title }}</h3>
+            <div class="fluid-type" style="--desktop: 30; --tablet:29;--mobile: 16;">
               <SanityBlocks
                 v-if="card.description?.length"
                 :blocks="card.description"
@@ -303,7 +303,9 @@ function videoMimeTypeFromUrl(url) {
 }
 .cards-section--grid-mode .cards-section__media {
   aspect-ratio: 1.4;
+  border-radius: calc(var(--unit) * 20);
 }
+@media all and (min-width: 700px) {
 .cards-section--grid-mode .cards-section__item:nth-child(3n - 2) .cards-section__media {
   border-radius: calc(var(--unit) * 50) calc(var(--unit) * 20) calc(var(--unit) * 20) calc(var(--unit) * 50);
 }
@@ -313,7 +315,7 @@ function videoMimeTypeFromUrl(url) {
 .cards-section--grid-mode .cards-section__item:nth-child(3n - 0) .cards-section__media {
   border-radius: calc(var(--unit) * 20) calc(var(--unit) * 50) calc(var(--unit) * 50) calc(var(--unit) * 20);
 }
-
+}
 @media all and (min-width: 1000px) {
   .cards-section--grid-mode .cards-section__media {
     aspect-ratio: .95;

@@ -268,7 +268,7 @@ onBeforeUnmount(() => {
 <style scoped>
 
 .draggable-marquee {
-  --card-width: max(40vw, 130px);
+  --card-width: clamp(100px, 50vw, 300px);
 }
 
 @media all and (min-width: 700px) {

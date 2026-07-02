@@ -315,8 +315,9 @@ onBeforeUnmount(() => {
     width: calc(50% - 0.5em);
   }
 
-  .team-member__heading {
-    font-size: 2em;
+  .team-member__heading, .team-member__role {
+    font-size: clamp(14px,5.5vw,2em);
+    line-height: 1.1;
   }
 
   .team-member__visual {
