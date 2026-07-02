@@ -5,8 +5,8 @@
     </div> -->
     <div>
       <LottieAnimation
-        v-if="footerLottieAnimation"
-        path="/lottie/roleplay.lottie"
+        v-if="showFooterLottie"
+        :animation-data="footerLottieAnimationData"
         loop
         class-name="footer-lottie"
         aria-label="Roleplay"
@@ -57,7 +57,17 @@ import { computed } from 'vue'
 import { useSiteSettings } from '~/composables/useSiteSettings'
 import SanityBlocks from '~/components/SanityBlocks.vue'
 
-const { footerLottieAnimation, footerColumns, footerCallToAction, copyright } = useSiteSettings()
+const {
+  footerLottieAnimation,
+  footerLottieAnimationData,
+  footerColumns,
+  footerCallToAction,
+  copyright,
+} = useSiteSettings()
+
+const showFooterLottie = computed(
+  () => footerLottieAnimation.value && footerLottieAnimationData.value,
+)
 
 const visibleFooterColumns = computed(() =>
   footerColumns.value.filter((col) => col.content?.length > 0),

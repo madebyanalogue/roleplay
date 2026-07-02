@@ -153,6 +153,7 @@ const { data: page, pending, error } = useAsyncData(
               value,
               icon
             },
+            disableThumbnailClickThrough,
             thumbnailMediaType,
             thumbnailMediaTypeMobile,
             featuredImage {
@@ -403,6 +404,7 @@ const { data: page, pending, error } = useAsyncData(
           }
         },
         contactTitle,
+        contactEnableVideo,
         contactVideoSubtitle,
         contactVideo {
           asset-> {
@@ -441,6 +443,7 @@ const { data: page, pending, error } = useAsyncData(
           value,
           icon
         },
+        disableThumbnailClickThrough,
         thumbnailMediaType,
         thumbnailMediaTypeMobile,
         featuredImage {

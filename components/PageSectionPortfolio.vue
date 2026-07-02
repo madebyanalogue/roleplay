@@ -10,17 +10,21 @@
       :class="{ 'portfolio-item--orphan': isOrphanSlot(index, listLength) }"
       :style="gridStyleForIndex(index, listLength)"
     >
-      <NuxtLink
-        v-if="project.slug?.current"
-        :to="portfolioProjectPath(project.slug)"
+      <component
+        :is="isProjectClickable(project) ? NuxtLink : 'div'"
+        v-bind="projectLinkProps(project)"
         class="portfolio-item-link"
+        :class="{ 'portfolio-item-link--static': !isProjectClickable(project) }"
       >
         <div class="portfolio-item-media rounded-medium">
           <PortfolioThumbnailMedia
             :project="project"
             image-class="portfolio-item-image rounded-medium"
           />
-          <div class="portfolio-item-overlay pad-40">
+          <div
+            v-if="isProjectClickable(project)"
+            class="portfolio-item-overlay pad-40"
+          >
             <div
               class="portfolio-item-overlay-bg"
               aria-hidden="true"
@@ -40,8 +44,13 @@
             </div>
           </div>
         </div>
-        <h3 class="portfolio-item-title">{{ project.title }}</h3>
-      </NuxtLink>
+        <h3
+          v-if="isProjectClickable(project)"
+          class="portfolio-item-title"
+        >
+          {{ project.title }}
+        </h3>
+      </component>
     </div>
   </div>
 </template>
@@ -60,6 +69,16 @@ const props = defineProps({
 })
 
 const { portfolioProjectPath } = useSiteSettings()
+const NuxtLink = resolveComponent('NuxtLink')
+
+function isProjectClickable(project) {
+  return !!project?.slug?.current && project?.disableThumbnailClickThrough !== true
+}
+
+function projectLinkProps(project) {
+  if (!isProjectClickable(project)) return {}
+  return { to: portfolioProjectPath(project.slug) }
+}
 
 /** Desktop mosaic: [4,8], [7,5], [5,7] repeating every 6 items */
 const SPAN_CYCLE = [4, 8, 7, 5, 5, 7]
@@ -124,6 +143,10 @@ function gridStyleForIndex(index, total) {
   text-decoration: none;
   color: inherit;
   display: block;
+}
+
+.portfolio-item-link--static {
+  cursor: default;
 }
 
 .portfolio-item-media {
@@ -198,13 +221,13 @@ function gridStyleForIndex(index, total) {
   transition: opacity 0.4s ease 0s;
 }
 
-.portfolio-item-link:hover .portfolio-item-overlay-bg,
-.portfolio-item-link:focus-visible .portfolio-item-overlay-bg {
+.portfolio-item-link:not(.portfolio-item-link--static):hover .portfolio-item-overlay-bg,
+.portfolio-item-link:not(.portfolio-item-link--static):focus-visible .portfolio-item-overlay-bg {
   opacity: 0.9;
   transition: opacity 0.5s ease 0s;
 }
-.portfolio-item-link:hover .portfolio-item-overlay-inner,
-.portfolio-item-link:focus-visible .portfolio-item-overlay-inner {
+.portfolio-item-link:not(.portfolio-item-link--static):hover .portfolio-item-overlay-inner,
+.portfolio-item-link:not(.portfolio-item-link--static):focus-visible .portfolio-item-overlay-inner {
   opacity: 1;
   transition: opacity 0.6s ease .3s;
 }

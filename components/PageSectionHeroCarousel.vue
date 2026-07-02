@@ -328,7 +328,6 @@ onBeforeUnmount(() => {
   min-width: 0;
   height: 100%;
   overflow: hidden;
-  background: #000;
 }
 
 .hero-carousel__mobile {

@@ -111,6 +111,7 @@ export const useSiteSettings = () => {
         }
       },
       footerLottieAnimation,
+      footerLottieJson,
       footerColumns[] {
         _key,
         content
@@ -226,6 +227,18 @@ export const useSiteSettings = () => {
   const footerLottieAnimation = computed(
     () => settings.value?.footerLottieAnimation !== false,
   )
+  const footerLottieAnimationData = computed(() => {
+    const raw = settings.value?.footerLottieJson
+    if (typeof raw !== 'string') return null
+    const trimmed = raw.trim()
+    if (!trimmed) return null
+    try {
+      const data = JSON.parse(trimmed)
+      return data && typeof data === 'object' ? data : null
+    } catch {
+      return null
+    }
+  })
   const footerColumns = computed(() => settings.value?.footerColumns || [])
   const footerCallToAction = computed(() => settings.value?.footerCallToAction || [])
   const headerType = computed(() => settings.value?.headerType || 'responsive')
@@ -256,6 +269,7 @@ export const useSiteSettings = () => {
     singlePortfolioClientVideoSettings,
     navigationContact,
     footerLottieAnimation,
+    footerLottieAnimationData,
     footerColumns,
     footerCallToAction,
     headerType,

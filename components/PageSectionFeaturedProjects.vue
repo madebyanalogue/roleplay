@@ -43,10 +43,11 @@
             :key="item.project?._id || item._key"
             class="featured-project"
           >
-            <NuxtLink
-              v-if="item.project?.slug?.current"
-              :to="portfolioProjectPath(item.project.slug)"
+            <component
+              :is="isProjectClickable(item.project) ? NuxtLink : 'div'"
+              v-bind="projectLinkProps(item.project)"
               class="featured-project-link"
+              :class="{ 'featured-project-link--static': !isProjectClickable(item.project) }"
             >
               <div class="featured-project-image-container rounded-medium">
                 <div class="featured-project-image-wrapper">
@@ -54,7 +55,10 @@
                     :project="item.project"
                     image-class="featured-project-image"
                   />
-                  <div class="portfolio-item-overlay pad-40">
+                  <div
+                    v-if="isProjectClickable(item.project)"
+                    class="portfolio-item-overlay pad-40"
+                  >
                     <div
                       class="portfolio-item-overlay-bg"
                       aria-hidden="true"
@@ -81,7 +85,7 @@
                   </div>
                 </div>
               </div>
-            </NuxtLink>
+            </component>
           </article>
           </div>
         </div>
@@ -102,6 +106,16 @@ const props = defineProps({
 })
 
 const { portfolioProjectPath } = useSiteSettings()
+const NuxtLink = resolveComponent('NuxtLink')
+
+function isProjectClickable(project) {
+  return !!project?.slug?.current && project?.disableThumbnailClickThrough !== true
+}
+
+function projectLinkProps(project) {
+  if (!isProjectClickable(project)) return {}
+  return { to: portfolioProjectPath(project.slug) }
+}
 
 const sectionRef = ref(null)
 const pinRef = ref(null)
@@ -432,6 +446,7 @@ watch(
           item._key,
           item.project?._id,
           item.project?.slug?.current,
+          item.project?.disableThumbnailClickThrough,
           item.project?.featuredImage?.asset?.url,
           item.project?.featuredImageMobile?.asset?.url,
           item.project?.thumbnailMediaType,
@@ -602,6 +617,10 @@ onUnmounted(() => {
   width: 100%;
 }
 
+.featured-project-link--static {
+  cursor: default;
+}
+
 .featured-project-image-container {
   width: 100%;
   height: min(
@@ -680,14 +699,14 @@ onUnmounted(() => {
   line-height: 1.1;
 }
 
-.featured-project-link:hover .portfolio-item-overlay-bg,
-.featured-project-link:focus-visible .portfolio-item-overlay-bg {
+.featured-project-link:not(.featured-project-link--static):hover .portfolio-item-overlay-bg,
+.featured-project-link:not(.featured-project-link--static):focus-visible .portfolio-item-overlay-bg {
   opacity: 0.9;
   transition: opacity 0.5s ease 0s;
 }
 
-.featured-project-link:hover .portfolio-item-overlay-inner,
-.featured-project-link:focus-visible .portfolio-item-overlay-inner {
+.featured-project-link:not(.featured-project-link--static):hover .portfolio-item-overlay-inner,
+.featured-project-link:not(.featured-project-link--static):focus-visible .portfolio-item-overlay-inner {
   opacity: 1;
   transition: opacity 0.6s ease 0.3s;
 }
@@ -759,7 +778,7 @@ onUnmounted(() => {
   background: currentColor;
 }
 
-.featured-project-link:hover .featured-project-title span:after {
+.featured-project-link:not(.featured-project-link--static):hover .featured-project-title span:after {
   transform: scaleX(1);
 }
 </style>

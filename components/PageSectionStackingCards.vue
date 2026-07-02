@@ -58,30 +58,31 @@
                   </div>
                 </div>
               </div>
-
-              <div class="sticky-cards__media">
-                <video
-                  v-if="card.mediaType === 'video' && card.video?.asset?.url"
-                  autoplay
-                  muted
-                  loop
-                  playsinline
-                  class="sticky-cards__video"
-                >
-                  <source
-                    :src="card.video.asset.url"
-                    :type="videoMimeTypeFromUrl(card.video.asset.url)"
+              <div class="sticky-cards__media-wrapper">
+                <div class="sticky-cards__media">
+                  <video
+                    v-if="card.mediaType === 'video' && card.video?.asset?.url"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    class="sticky-cards__video"
                   >
-                </video>
+                    <source
+                      :src="card.video.asset.url"
+                      :type="videoMimeTypeFromUrl(card.video.asset.url)"
+                    >
+                  </video>
 
-                <NuxtImg
-                  v-else-if="card.image?.asset?.url"
-                  :src="card.image.asset.url"
-                  :alt="card.title || ''"
-                  :width="card.image.asset.metadata?.dimensions?.width"
-                  :height="card.image.asset.metadata?.dimensions?.height"
-                  class="sticky-cards__image"
-                />
+                  <NuxtImg
+                    v-else-if="card.image?.asset?.url"
+                    :src="card.image.asset.url"
+                    :alt="card.title || ''"
+                    :width="card.image.asset.metadata?.dimensions?.width"
+                    :height="card.image.asset.metadata?.dimensions?.height"
+                    class="sticky-cards__image"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -602,7 +603,7 @@ onUnmounted(() => {
 }
 
 .sticky-cards__slide {
-  height: calc(100svh - var(--header-height) - calc(var(--gutter) * 2));
+  min-height: calc(100svh - var(--header-height) - calc(var(--gutter) * 2));
   position: relative;
 }
 
@@ -618,7 +619,6 @@ onUnmounted(() => {
   position: absolute;
   top: 100px;
   right: var(--gutter);
-  bottom: var(--gutter);
   left: var(--gutter);
   color: var(--black);
   transform-style: preserve-3d;
@@ -644,7 +644,7 @@ onUnmounted(() => {
 
 .sticky-cards__grid {
   display: flex;
-  align-items: stretch;
+  align-items: start;
   justify-content: space-between;
   gap: var(--gutter);
   height: 100%;
@@ -652,7 +652,6 @@ onUnmounted(() => {
 }
 
 .sticky-cards__text {
-  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -666,7 +665,15 @@ onUnmounted(() => {
   border-radius: calc(var(--unit) * 60) calc(var(--unit) * 20)
     calc(var(--unit) * 20) calc(var(--unit) * 60);
   overflow: hidden;
+  flex:1;
+}
+
+.sticky-cards__media-wrapper {
+  flex: 0 0 auto;
   width: 100%;
+  height: 100%;
+  max-height: 100%;
+  flex:1;
 }
 
 .sticky-cards__title {
@@ -685,14 +692,15 @@ onUnmounted(() => {
 @media (min-width: 700px) {
   .sticky-cards__media {
     aspect-ratio: 3/2;
+ 
   }
 }
 @media (min-width: 700px) {
-  .sticky-cards__media {
-max-width: 75%;
+  .sticky-cards__media-wrapper {
+    position: relative;
+    height: 100%;
   }
 }
-
 
 
 
@@ -701,6 +709,15 @@ max-width: 75%;
     position: sticky;
     top: calc(var(--header-height) + calc(var(--gutter) * 1));
     z-index: 2;
+  }
+  .sticky-cards__grid {
+    display: grid;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--gutter);
+    height: 100%;
+    width: 100%;
+    grid-template-columns: 1fr 2fr;
   }
 }
 

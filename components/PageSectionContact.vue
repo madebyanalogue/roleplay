@@ -46,7 +46,7 @@
         </div>
 
         <div
-          v-if="section.contactVideoSubtitle || videoUrl"
+          v-if="videoEnabled"
           class="contact-section__column contact-section__column--right"
         >
           <div
@@ -98,6 +98,12 @@ const dotColour = computed(
 )
 
 const videoUrl = computed(() => props.section.contactVideo?.asset?.url || '')
+
+const videoEnabled = computed(() => {
+  if (props.section.contactEnableVideo === true) return true
+  if (props.section.contactEnableVideo === false) return false
+  return !!(props.section.contactVideoSubtitle || videoUrl.value)
+})
 
 const videoAspectClass = computed(() => {
   const ratio = props.section.contactVideoAspectRatio
