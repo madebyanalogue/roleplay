@@ -1,5 +1,5 @@
 <template>
-  <section ref="wrapRef" data-follower-wrap class="preview-container grid gap-40 pad-30 pad-md-30 pad-top">
+  <section ref="wrapRef" data-follower-wrap class="preview-container grid gap-40 pad-30 pad-md-70 pad-top">
 
     <h2 v-if="section.title" class="subtitle subtitle--circle orange-dot">
       {{ section.title }}

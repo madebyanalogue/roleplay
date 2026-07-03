@@ -22,7 +22,6 @@
             image-class="portfolio-item-image rounded-medium"
           />
           <div
-            v-if="isProjectClickable(project)"
             class="portfolio-item-overlay pad-40"
           >
             <div
@@ -221,13 +220,13 @@ function gridStyleForIndex(index, total) {
   transition: opacity 0.4s ease 0s;
 }
 
-.portfolio-item-link:not(.portfolio-item-link--static):hover .portfolio-item-overlay-bg,
-.portfolio-item-link:not(.portfolio-item-link--static):focus-visible .portfolio-item-overlay-bg {
+.portfolio-item-link:hover .portfolio-item-overlay-bg,
+.portfolio-item-link:focus-visible .portfolio-item-overlay-bg {
   opacity: 0.9;
   transition: opacity 0.5s ease 0s;
 }
-.portfolio-item-link:not(.portfolio-item-link--static):hover .portfolio-item-overlay-inner,
-.portfolio-item-link:not(.portfolio-item-link--static):focus-visible .portfolio-item-overlay-inner {
+.portfolio-item-link:hover .portfolio-item-overlay-inner,
+.portfolio-item-link:focus-visible .portfolio-item-overlay-inner {
   opacity: 1;
   transition: opacity 0.6s ease .3s;
 }

@@ -25,8 +25,10 @@
               :src="item.image.asset.url"
               :alt="section.title || ''"
               class="hero-carousel__media hero-carousel__slide"
-              :class="{ 'hero-carousel__slide--active': index === leftIndex && leftImagesReady }"
+              :class="{ 'hero-carousel__slide--active': index === leftIndex }"
               fit="cover"
+              :loading="index === 0 ? 'eager' : 'lazy'"
+              :fetchpriority="index === 0 ? 'high' : undefined"
             />
           </template>
         </div>
@@ -55,8 +57,10 @@
               :src="item.image.asset.url"
               :alt="section.title || ''"
               class="hero-carousel__media hero-carousel__slide"
-              :class="{ 'hero-carousel__slide--active': index === rightIndex && rightImagesReady }"
+              :class="{ 'hero-carousel__slide--active': index === rightIndex }"
               fit="cover"
+              :loading="index === 0 ? 'eager' : 'lazy'"
+              :fetchpriority="index === 0 ? 'high' : undefined"
             />
           </template>
         </div>
@@ -86,8 +90,10 @@
             :src="item.image.asset.url"
             :alt="section.title || ''"
             class="hero-carousel__media hero-carousel__slide"
-            :class="{ 'hero-carousel__slide--active': index === mobileIndex && mobileImagesReady }"
+            :class="{ 'hero-carousel__slide--active': index === mobileIndex }"
             fit="cover"
+            :loading="index === 0 ? 'eager' : 'lazy'"
+            :fetchpriority="index === 0 ? 'high' : undefined"
           />
         </template>
       </div>
@@ -106,9 +112,6 @@ const props = defineProps({
 const leftIndex = ref(0)
 const rightIndex = ref(0)
 const mobileIndex = ref(0)
-const leftImagesReady = ref(false)
-const rightImagesReady = ref(false)
-const mobileImagesReady = ref(false)
 
 let leftInterval = null
 let rightInterval = null
@@ -195,25 +198,18 @@ async function preloadImageSet(items = []) {
   return true
 }
 
-async function preloadAllImageSets() {
+function preloadAllImageSets() {
   if (!import.meta.client) return
 
   const session = ++preloadSession
-  leftImagesReady.value = imageUrlsFromItems(leftItems.value).length === 0
-  rightImagesReady.value = imageUrlsFromItems(rightItems.value).length === 0
-  mobileImagesReady.value = imageUrlsFromItems(mobileSourceItems.value).length === 0
 
-  await Promise.all([
+  Promise.all([
     preloadImageSet(leftItems.value),
     preloadImageSet(rightItems.value),
     preloadImageSet(mobileSourceItems.value),
-  ])
-
-  if (session !== preloadSession) return
-
-  leftImagesReady.value = true
-  rightImagesReady.value = true
-  mobileImagesReady.value = true
+  ]).then(() => {
+    if (session !== preloadSession) return
+  })
 }
 
 function clearIntervals() {
@@ -266,8 +262,8 @@ function initCarousels() {
   }
 }
 
-async function setupCarousels() {
-  await preloadAllImageSets()
+function setupCarousels() {
+  preloadAllImageSets()
   initCarousels()
 }
 
@@ -328,6 +324,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   height: 100%;
   overflow: hidden;
+  background: #000;
 }
 
 .hero-carousel__mobile {

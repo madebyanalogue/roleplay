@@ -56,7 +56,6 @@
                     image-class="featured-project-image"
                   />
                   <div
-                    v-if="isProjectClickable(item.project)"
                     class="portfolio-item-overlay pad-40"
                   >
                     <div
@@ -699,14 +698,14 @@ onUnmounted(() => {
   line-height: 1.1;
 }
 
-.featured-project-link:not(.featured-project-link--static):hover .portfolio-item-overlay-bg,
-.featured-project-link:not(.featured-project-link--static):focus-visible .portfolio-item-overlay-bg {
+.featured-project-link:hover .portfolio-item-overlay-bg,
+.featured-project-link:focus-visible .portfolio-item-overlay-bg {
   opacity: 0.9;
   transition: opacity 0.5s ease 0s;
 }
 
-.featured-project-link:not(.featured-project-link--static):hover .portfolio-item-overlay-inner,
-.featured-project-link:not(.featured-project-link--static):focus-visible .portfolio-item-overlay-inner {
+.featured-project-link:hover .portfolio-item-overlay-inner,
+.featured-project-link:focus-visible .portfolio-item-overlay-inner {
   opacity: 1;
   transition: opacity 0.6s ease 0.3s;
 }
@@ -778,7 +777,7 @@ onUnmounted(() => {
   background: currentColor;
 }
 
-.featured-project-link:not(.featured-project-link--static):hover .featured-project-title span:after {
+.featured-project-link:hover .featured-project-title span:after {
   transform: scaleX(1);
 }
 </style>
