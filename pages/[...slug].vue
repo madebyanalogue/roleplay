@@ -219,6 +219,8 @@ const { data: page, pending, error } = useAsyncData(
         heroCarouselLeft[] {
           _key,
           mediaType,
+          videoSource,
+          videoVimeo,
           image {
             asset-> {
               _id,
@@ -242,6 +244,8 @@ const { data: page, pending, error } = useAsyncData(
         heroCarouselRight[] {
           _key,
           mediaType,
+          videoSource,
+          videoVimeo,
           image {
             asset-> {
               _id,
@@ -265,6 +269,8 @@ const { data: page, pending, error } = useAsyncData(
         heroCarouselMobile[] {
           _key,
           mediaType,
+          videoSource,
+          videoVimeo,
           image {
             asset-> {
               _id,
