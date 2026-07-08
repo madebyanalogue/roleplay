@@ -5,8 +5,21 @@
       <div class="hero-carousel__column rounded-medium">
         <div class="hero-carousel__stack">
           <template v-for="(item, index) in leftItems" :key="`left-item-${item._key || index}`">
+            <div
+              v-if="item.mediaType === 'video' && vimeoBgUrlFor(item)"
+              class="hero-carousel__slide hero-carousel__vimeo"
+              :class="{ 'hero-carousel__slide--active': index === leftIndex }"
+            >
+              <iframe
+                :src="vimeoBgUrlFor(item)"
+                class="hero-carousel__vimeo-frame"
+                title=""
+                allow="autoplay; fullscreen; picture-in-picture"
+                loading="lazy"
+              />
+            </div>
             <video
-              v-if="item.mediaType === 'video' && item.video?.asset?.url"
+              v-else-if="item.mediaType === 'video' && item.video?.asset?.url"
               class="hero-carousel__media hero-carousel__slide"
               :class="{ 'hero-carousel__slide--active': index === leftIndex }"
               autoplay
@@ -37,8 +50,21 @@
       <div v-if="showRightDesktop" class="hero-carousel__column rounded-medium">
         <div class="hero-carousel__stack">
           <template v-for="(item, index) in rightItems" :key="`right-item-${item._key || index}`">
+            <div
+              v-if="item.mediaType === 'video' && vimeoBgUrlFor(item)"
+              class="hero-carousel__slide hero-carousel__vimeo"
+              :class="{ 'hero-carousel__slide--active': index === rightIndex }"
+            >
+              <iframe
+                :src="vimeoBgUrlFor(item)"
+                class="hero-carousel__vimeo-frame"
+                title=""
+                allow="autoplay; fullscreen; picture-in-picture"
+                loading="lazy"
+              />
+            </div>
             <video
-              v-if="item.mediaType === 'video' && item.video?.asset?.url"
+              v-else-if="item.mediaType === 'video' && item.video?.asset?.url"
               class="hero-carousel__media hero-carousel__slide"
               :class="{ 'hero-carousel__slide--active': index === rightIndex }"
               autoplay
@@ -70,8 +96,21 @@
     <div v-if="mobileActive" class="hero-carousel__mobile rounded-medium">
       <div class="hero-carousel__stack">
         <template v-for="(item, index) in mobileSourceItems" :key="`mobile-item-${item._key || index}`">
+          <div
+            v-if="item.mediaType === 'video' && vimeoBgUrlFor(item)"
+            class="hero-carousel__slide hero-carousel__vimeo"
+            :class="{ 'hero-carousel__slide--active': index === mobileIndex }"
+          >
+            <iframe
+              :src="vimeoBgUrlFor(item)"
+              class="hero-carousel__vimeo-frame"
+              title=""
+              allow="autoplay; fullscreen; picture-in-picture"
+              loading="lazy"
+            />
+          </div>
           <video
-            v-if="item.mediaType === 'video' && item.video?.asset?.url"
+            v-else-if="item.mediaType === 'video' && item.video?.asset?.url"
             class="hero-carousel__media hero-carousel__slide"
             :class="{ 'hero-carousel__slide--active': index === mobileIndex }"
             autoplay
@@ -118,9 +157,33 @@ let rightInterval = null
 let mobileInterval = null
 let preloadSession = 0
 
+function parseVimeoId(value) {
+  const s = String(value || '').trim()
+  if (!s) return null
+  if (/^\d+$/.test(s)) return s
+  let match = s.match(/vimeo\.com\/(?:video\/)?(\d+)/i)
+  if (match) return match[1]
+  match = s.match(/player\.vimeo\.com\/video\/(\d+)/i)
+  return match ? match[1] : null
+}
+
+function vimeoIdFor(item) {
+  if (item?.mediaType !== 'video' || item?.videoSource !== 'vimeo') return ''
+  return parseVimeoId(item?.videoVimeo) || ''
+}
+
+function vimeoBgUrlFor(item) {
+  const id = vimeoIdFor(item)
+  if (!id) return ''
+  return `https://player.vimeo.com/video/${id}?background=1&autoplay=1&muted=1&loop=1`
+}
+
 function isValidItem(item) {
   if (!item) return false
-  if (item.mediaType === 'video') return Boolean(item.video?.asset?.url)
+  if (item.mediaType === 'video') {
+    if (item.videoSource === 'vimeo') return Boolean(vimeoIdFor(item))
+    return Boolean(item.video?.asset?.url)
+  }
   return Boolean(item.image?.asset?.url)
 }
 
@@ -348,6 +411,38 @@ onBeforeUnmount(() => {
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+/* Vimeo background: crop the letterboxed iframe to cover the slide (object-fit: cover equivalent) */
+.hero-carousel__vimeo {
+  overflow: hidden;
+  container-type: size;
+  background: #000;
+}
+
+.hero-carousel__vimeo-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Container wider than 16:9 -> pin width, overscan height */
+@container (min-aspect-ratio: 16 / 9) {
+  .hero-carousel__vimeo-frame {
+    height: 56.25cqw;
+  }
+}
+
+/* Container taller than 16:9 -> pin height, overscan width */
+@container (max-aspect-ratio: 16 / 9) {
+  .hero-carousel__vimeo-frame {
+    width: 177.78cqh;
+  }
 }
 
 .hero-carousel__slide {
