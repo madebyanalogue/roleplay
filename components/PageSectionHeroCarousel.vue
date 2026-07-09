@@ -9,6 +9,7 @@
               v-if="item.mediaType === 'video' && vimeoBgUrlFor(item)"
               class="hero-carousel__slide hero-carousel__vimeo"
               :class="{ 'hero-carousel__slide--active': index === leftIndex }"
+              :style="vimeoSlideStyle(item)"
             >
               <iframe
                 :src="vimeoBgUrlFor(item)"
@@ -54,6 +55,7 @@
               v-if="item.mediaType === 'video' && vimeoBgUrlFor(item)"
               class="hero-carousel__slide hero-carousel__vimeo"
               :class="{ 'hero-carousel__slide--active': index === rightIndex }"
+              :style="vimeoSlideStyle(item)"
             >
               <iframe
                 :src="vimeoBgUrlFor(item)"
@@ -100,6 +102,7 @@
             v-if="item.mediaType === 'video' && vimeoBgUrlFor(item)"
             class="hero-carousel__slide hero-carousel__vimeo"
             :class="{ 'hero-carousel__slide--active': index === mobileIndex }"
+            :style="vimeoSlideStyle(item)"
           >
             <iframe
               :src="vimeoBgUrlFor(item)"
@@ -178,6 +181,34 @@ function vimeoBgUrlFor(item) {
   return `https://player.vimeo.com/video/${id}?background=1&autoplay=1&muted=1&loop=1`
 }
 
+const vimeoAspectRatios = ref({})
+
+async function fetchVimeoAspectRatio(id) {
+  if (!id || vimeoAspectRatios.value[id]) return
+  try {
+    const response = await fetch(
+      `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(`https://vimeo.com/${id}`)}`,
+    )
+    if (!response.ok) return
+    const data = await response.json()
+    const { width, height } = data
+    if (width > 0 && height > 0) {
+      vimeoAspectRatios.value = { ...vimeoAspectRatios.value, [id]: { w: width, h: height } }
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function vimeoSlideStyle(item) {
+  const id = vimeoIdFor(item)
+  const ratio = id ? vimeoAspectRatios.value[id] : null
+  if (!ratio) return {}
+  return {
+    '--vimeo-ar': ratio.w / ratio.h,
+  }
+}
+
 function isValidItem(item) {
   if (!item) return false
   if (item.mediaType === 'video') {
@@ -227,6 +258,17 @@ const mobileTimingMs = computed(() => leftTimingMs.value)
 
 const mobileSourceItems = computed(() => {
   return mobileItems.value.length ? mobileItems.value : leftItems.value
+})
+
+const allVimeoIds = computed(() => {
+  const ids = new Set()
+  for (const items of [leftItems.value, rightItems.value, mobileSourceItems.value]) {
+    for (const item of items) {
+      const id = vimeoIdFor(item)
+      if (id) ids.add(id)
+    }
+  }
+  return [...ids]
 })
 
 const mobileActive = computed(() => {
@@ -347,6 +389,15 @@ watch(
   },
 )
 
+watch(
+  allVimeoIds,
+  (ids) => {
+    if (!import.meta.client) return
+    ids.forEach(fetchVimeoAspectRatio)
+  },
+  { immediate: true },
+)
+
 onMounted(() => {
   setupCarousels()
 })
@@ -431,17 +482,17 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-/* Container wider than 16:9 -> pin width, overscan height */
-@container (min-aspect-ratio: 16 / 9) {
+/* Container wider than video -> pin width, overscan height */
+@container (min-aspect-ratio: var(--vimeo-ar, 1.7777777778)) {
   .hero-carousel__vimeo-frame {
-    height: 56.25cqw;
+    height: calc(100cqw / var(--vimeo-ar, 1.7777777778));
   }
 }
 
-/* Container taller than 16:9 -> pin height, overscan width */
-@container (max-aspect-ratio: 16 / 9) {
+/* Container taller than video -> pin height, overscan width */
+@container (max-aspect-ratio: var(--vimeo-ar, 1.7777777778)) {
   .hero-carousel__vimeo-frame {
-    width: 177.78cqh;
+    width: calc(100cqh * var(--vimeo-ar, 1.7777777778));
   }
 }
 
