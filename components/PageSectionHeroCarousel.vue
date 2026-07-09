@@ -445,10 +445,9 @@ onBeforeUnmount(() => {
   position: relative;
   display: none;
   width: 100%;
-  aspect-ratio: 5 / 4;
+  aspect-ratio: .9;
   max-height: 120dvh;
   overflow: hidden;
-  background: #000;
 }
 
 .hero-carousel__media {
